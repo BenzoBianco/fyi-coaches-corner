@@ -4,89 +4,105 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>FYI Coaches' Corner</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet">
 <style>
-:root{
-  --navy:#13293d; --teal:#1f8a70; --teal-dk:#166a56; --bg:#f6f7f9; --card:#ffffff;
-  --line:#e3e6ea; --text:#1a2430; --muted:#6b7480; --amber:#c98a1f; --red:#b3413a; --green:#1f8a70;
-}
+:root{ --radius:10px; }
+/* Theme palettes, taken directly from The Bridge, one per tab, so Coaches'
+   Corner reads as the same product rather than a lookalike. The body's
+   theme class switches with the active tab, same mechanism The Bridge
+   uses per business. */
+body.theme-clients{ --bg:#F4F6F9;--card:#FFF;--primary:#2A3550;--accent:#4A6FA5;--accent2:#C59C44;--text:#26293A;--muted:#69707F;--border:#DFE3EB; }
+body.theme-prospects{ --bg:#F7F5F9;--card:#FFF;--primary:#3B2F4A;--accent:#7A5C93;--accent2:#C59C44;--text:#312A3A;--muted:#6F6678;--border:#E5DFEA; }
+body.theme-rel{ --bg:#F4F7F6;--card:#FFF;--primary:#24413C;--accent:#3E8E7E;--accent2:#C59C44;--text:#22322E;--muted:#657771;--border:#DCE7E3; }
+body.theme-sop{ --bg:#F7F5F2;--card:#FFF;--primary:#3B3730;--accent:#8A6D3F;--accent2:#6090C9;--text:#332F29;--muted:#726B60;--border:#E6E0D6; }
+body.theme-training{ --bg:#F5F3F8;--card:#FFF;--primary:#3A3252;--accent:#6B5B95;--accent2:#C59C44;--text:#2E2940;--muted:#6E6880;--border:#E4DFEC; }
+
 *{box-sizing:border-box}
-body{margin:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text)}
+html,body{margin:0;padding:0}
+body{background:var(--bg,#F4F6F9);color:var(--text,#26293A);font-family:'Inter',-apple-system,sans-serif;min-height:100vh;transition:background .25s ease}
+h1,h2,h3,.brand,nav button,.section-title{font-family:'Montserrat',sans-serif}
 .hidden{display:none !important}
 /* ---- Login ---- */
-#loginScreen{min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--navy)}
-.loginBox{background:var(--card);border-radius:12px;padding:36px;width:340px;box-shadow:0 20px 50px rgba(0,0,0,.3)}
-.loginBox h1{font-size:19px;margin:0 0 4px}
-.loginBox p.sub{color:var(--muted);font-size:13px;margin:0 0 20px}
-.loginBox input{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:8px;margin-bottom:10px;font-size:14px}
-.loginBox button{width:100%;padding:11px;border:0;border-radius:8px;background:var(--teal);color:#fff;font-size:14px;font-weight:600;cursor:pointer}
-.loginBox button:hover{background:var(--teal-dk)}
-.loginErr{color:var(--red);font-size:13px;margin:8px 0 0;min-height:16px}
-.loginLinks{margin-top:14px;font-size:12px;color:var(--muted);text-align:center}
-.loginLinks a{color:var(--teal);cursor:pointer;text-decoration:none}
+#loginScreen{min-height:100vh;display:flex;align-items:center;justify-content:center;background:#1D4D71}
+.loginBox{background:#fff;border-radius:12px;padding:36px;width:340px;box-shadow:0 20px 50px rgba(0,0,0,.3)}
+.loginBox h1{font-family:'Montserrat',sans-serif;font-weight:800;font-size:20px;margin:0 0 4px;color:#2A3550}
+.loginBox p.sub{color:#69707F;font-size:13px;margin:0 0 20px}
+.loginBox input{width:100%;padding:10px 12px;border:1px solid #DFE3EB;border-radius:8px;margin-bottom:10px;font-size:14px;font-family:'Inter',sans-serif}
+.loginBox button{width:100%;padding:11px;border:0;border-radius:8px;background:#4A6FA5;color:#fff;font-size:14px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer}
+.loginBox button:hover{filter:brightness(.94)}
+.loginErr{color:#B23A33;font-size:13px;margin:8px 0 0;min-height:16px}
+.loginLinks{margin-top:14px;font-size:12px;color:#69707F;text-align:center}
+.loginLinks a{color:#4A6FA5;cursor:pointer;text-decoration:none;font-weight:600}
 /* ---- App shell ---- */
 #app{display:none}
 #app.show{display:block}
-header{background:var(--navy);color:#fff;padding:14px 20px;display:flex;align-items:center;justify-content:space-between}
-header .brand{font-weight:700;font-size:16px}
-header .brand small{font-weight:400;color:#9fb3c4;margin-left:8px;font-size:12px}
-header .who{font-size:13px;color:#cfe0eb;display:flex;align-items:center;gap:12px}
-header .who button{background:transparent;border:1px solid #3a5169;color:#cfe0eb;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12px}
-nav{display:flex;gap:4px;background:#fff;border-bottom:1px solid var(--line);padding:0 16px;overflow-x:auto}
-nav button{padding:12px 14px;border:0;background:transparent;cursor:pointer;font-size:13px;color:var(--muted);border-bottom:2px solid transparent;white-space:nowrap}
-nav button.active{color:var(--teal-dk);border-bottom-color:var(--teal);font-weight:600}
-main{padding:20px;max-width:1100px;margin:0 auto}
-.banner{background:#fff3e0;border:1px solid #f0c988;color:#7a5309;padding:10px 14px;border-radius:8px;font-size:13px;margin-bottom:16px}
-.banner.err{background:#fdecea;border-color:#f0a8a2;color:#7a2a24}
-.banner.ok{background:#e7f5ef;border-color:#a7dcc7;color:#155c44}
+header.top{background:#1D4D71;color:#fff;padding:14px 22px;display:flex;align-items:center;justify-content:space-between}
+header.top .brand{font-weight:800;font-size:17px}
+header.top .brand small{font-weight:500;font-family:'Inter',sans-serif;color:#AFC9DC;margin-left:8px;font-size:12px}
+header.top .who{font-size:13px;color:#D9E7F0;display:flex;align-items:center;gap:12px}
+header.top .who button{background:transparent;border:1px solid #3E7098;color:#D9E7F0;padding:6px 12px;border-radius:7px;cursor:pointer;font-size:12px;font-family:'Inter',sans-serif}
+nav{display:flex;gap:7px;background:var(--card,#fff);border-bottom:1px solid var(--border,#DFE3EB);padding:12px 22px;overflow-x:auto;flex-wrap:wrap}
+nav button{padding:8px 15px;border-radius:999px;border:1.5px solid var(--border,#DFE3EB);background:var(--bg,#F4F6F9);color:var(--muted,#69707F);cursor:pointer;font-size:.8rem;font-weight:600;white-space:nowrap;transition:all .15s ease}
+nav button:hover{border-color:var(--accent,#4A6FA5);color:var(--primary,#2A3550)}
+nav button.active{background:var(--primary,#2A3550);border-color:var(--primary,#2A3550);color:#fff}
+main{padding:22px;max-width:1140px;margin:0 auto}
+.banner{background:#FBF3E2;border:1px solid #E0B45C;color:#8A671B;padding:10px 14px;border-radius:9px;font-size:13px;margin-bottom:16px}
+.banner.err{background:#FBEBEA;border-color:#D98782;color:#A8382F}
+.banner.ok{background:#EFF7EF;border-color:#7BAE7F;color:#3E7C43}
 .toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;gap:10px;flex-wrap:wrap}
-.toolbar input[type=search]{padding:8px 12px;border:1px solid var(--line);border-radius:8px;font-size:13px;min-width:220px}
-.btn{padding:8px 14px;border:0;border-radius:7px;background:var(--teal);color:#fff;font-size:13px;font-weight:600;cursor:pointer}
-.btn:hover{background:var(--teal-dk)}
-.btn.secondary{background:#fff;color:var(--teal-dk);border:1px solid var(--teal)}
-.btn.ghost{background:transparent;color:var(--muted);border:1px solid var(--line)}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
-.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px;cursor:pointer;transition:box-shadow .15s}
-.card:hover{box-shadow:0 4px 14px rgba(0,0,0,.08)}
-.card h3{margin:0 0 4px;font-size:14px}
-.card .meta{font-size:12px;color:var(--muted);display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
-.tag{display:inline-block;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:600}
-.tag.green{background:#e7f5ef;color:var(--green)}
-.tag.amber{background:#fdf2e0;color:var(--amber)}
-.tag.red{background:#fdecea;color:var(--red)}
-.tag.grey{background:#eef0f2;color:var(--muted)}
-.empty{color:var(--muted);font-size:13px;padding:30px;text-align:center}
+.toolbar input[type=search]{padding:8px 12px;border:1px solid var(--border,#DFE3EB);border-radius:8px;font-size:13px;min-width:220px;font-family:'Inter',sans-serif;background:var(--card,#fff)}
+.btn{padding:7px 13px;border:0;border-radius:7px;background:var(--accent,#4A6FA5);color:#fff;font-size:.78rem;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif}
+.btn:hover{filter:brightness(.94)}
+.btn.secondary{background:transparent;color:var(--primary,#2A3550);border:1px solid var(--accent,#4A6FA5)}
+.btn.ghost{background:transparent;color:var(--muted,#69707F);border:1px solid var(--border,#DFE3EB)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(268px,1fr));gap:12px}
+.card{background:var(--bg,#F4F6F9);border:1px solid var(--border,#DFE3EB);border-radius:var(--radius);padding:13px 14px;border-left:4px solid var(--border,#DFE3EB);cursor:pointer;transition:transform .15s ease,box-shadow .15s ease}
+.card:hover{transform:translateY(-2px);box-shadow:0 4px 14px rgba(0,0,0,.07)}
+.card.rag-green{border-left-color:#57A05C}
+.card.rag-amber{border-left-color:#E0A93C}
+.card.rag-red{border-left-color:#C0453F}
+.card h3{margin:0 0 4px;font-family:'Montserrat',sans-serif;font-weight:700;font-size:.94rem;color:var(--primary,#2A3550)}
+.card .meta{font-size:.71rem;color:var(--muted,#69707F);display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.tag{display:inline-block;padding:3px 8px;border-radius:999px;font-size:.63rem;font-weight:600;background:var(--card,#fff);border:1px solid var(--border,#DFE3EB);color:var(--muted,#69707F)}
+.tag.green{background:#EFF7EF;border-color:#7BAE7F;color:#3E7C43}
+.tag.amber{background:#FBF3E2;border-color:#E0B45C;color:#8A671B}
+.tag.red{background:#FBEBEA;border-color:#D98782;color:#A8382F}
+.tag.grey{background:var(--card,#fff);color:var(--muted,#69707F)}
+.empty{color:var(--muted,#69707F);font-size:13px;padding:30px;text-align:center}
 /* ---- Detail panel ---- */
-.detail{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:20px}
-.detail .back{background:none;border:0;color:var(--teal-dk);cursor:pointer;font-size:13px;margin-bottom:14px;padding:0}
-.detail h2{margin:0 0 16px}
+.detail{background:var(--card,#fff);border:1px solid var(--border,#DFE3EB);border-radius:12px;padding:22px}
+.detail .back{background:none;border:0;color:var(--accent,#4A6FA5);font-weight:700;cursor:pointer;font-size:.8rem;margin-bottom:14px;padding:0;font-family:'Inter',sans-serif}
+.detail h2{margin:0 0 16px;font-family:'Montserrat',sans-serif;font-weight:800;color:var(--primary,#2A3550)}
 .fieldGrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .field{display:flex;flex-direction:column;gap:4px}
-.field label{font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.03em}
-.field input,.field select,.field textarea{padding:8px 10px;border:1px solid var(--line);border-radius:6px;font-size:13px;font-family:inherit}
+.field label{font-size:.63rem;color:var(--muted,#69707F);font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+.field input,.field select,.field textarea{padding:8px 10px;border:1px solid var(--border,#DFE3EB);border-radius:6px;font-size:13px;font-family:'Inter',sans-serif;background:var(--bg,#F4F6F9)}
+.field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--accent,#4A6FA5);background:var(--card,#fff)}
 .field textarea{grid-column:1/-1;min-height:70px;resize:vertical}
 .field.full{grid-column:1/-1}
 .detailActions{margin-top:18px;display:flex;gap:8px;align-items:center}
-.savedNote{font-size:12px;color:var(--muted)}
+.savedNote{font-size:12px;color:var(--muted,#69707F)}
 /* ---- SOPs ---- */
 .sopList{display:flex;flex-direction:column;gap:6px}
-.sopRow{padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:#fff;cursor:pointer;display:flex;justify-content:space-between;font-size:13px}
-.sopRow:hover{border-color:var(--teal)}
-.sopGroup{font-size:11px;text-transform:uppercase;color:var(--muted);letter-spacing:.04em;margin:16px 0 6px}
-.sopDoc{background:#fff;border:1px solid var(--line);border-radius:10px;padding:20px;line-height:1.55;font-size:14px}
-.sopDoc h2{margin-top:0}
-.sopDoc h4{margin:18px 0 6px;font-size:12px;text-transform:uppercase;color:var(--muted)}
+.sopRow{padding:10px 12px;border:1px solid var(--border,#DFE3EB);border-radius:8px;background:var(--card,#fff);cursor:pointer;display:flex;justify-content:space-between;font-size:13px}
+.sopRow:hover{border-color:var(--accent,#8A6D3F)}
+.sopGroup{font-size:.66rem;text-transform:uppercase;color:var(--muted,#69707F);letter-spacing:.05em;margin:16px 0 6px;font-weight:700}
+.sopDoc{background:var(--card,#fff);border:1px solid var(--border,#DFE3EB);border-radius:12px;padding:22px;line-height:1.55;font-size:14px}
+.sopDoc h2{margin-top:0;font-family:'Montserrat',sans-serif;color:var(--primary,#3B3730)}
+.sopDoc h4{margin:18px 0 6px;font-size:.66rem;text-transform:uppercase;color:var(--muted,#726B60);letter-spacing:.04em}
 /* ---- Training ---- */
-.module{background:#fff;border:1px solid var(--line);border-radius:10px;padding:16px;margin-bottom:12px}
-.module h3{margin:0 0 6px;font-size:14px}
-.module .why{color:var(--muted);font-size:13px;margin-bottom:10px}
+.module{background:var(--card,#fff);border:1px solid var(--border,#E4DFEC);border-radius:12px;padding:16px 18px;margin-bottom:12px}
+.module h3{margin:0 0 6px;font-family:'Montserrat',sans-serif;font-weight:700;font-size:.9rem;color:var(--primary,#3A3252)}
+.module .why{color:var(--muted,#6E6880);font-size:13px;margin-bottom:10px}
 .module ul.checklist{list-style:none;padding:0;margin:0}
 .module ul.checklist li{display:flex;gap:8px;align-items:flex-start;padding:5px 0;font-size:13px}
-.module ul.checklist input{margin-top:3px}
-.progressBar{height:6px;background:var(--line);border-radius:3px;overflow:hidden;margin:10px 0 20px}
-.progressBar .fill{height:100%;background:var(--teal)}
+.module ul.checklist input{margin-top:3px;accent-color:var(--accent,#6B5B95)}
+.progressBar{height:6px;background:var(--border,#E4DFEC);border-radius:3px;overflow:hidden;margin:10px 0 20px}
+.progressBar .fill{height:100%;background:var(--accent,#6B5B95)}
 </style>
 </head>
-<body>
+<body class="theme-clients">
 
 <div id="loginScreen">
   <div class="loginBox">
@@ -115,7 +131,7 @@ main{padding:20px;max-width:1100px;margin:0 auto}
 </div>
 
 <div id="app">
-  <header>
+  <header class="top">
     <div class="brand">FYI Coaches' Corner<small id="coachBadge"></small></div>
     <div class="who">
       <span id="whoEmail"></span>
@@ -131,6 +147,7 @@ main{padding:20px;max-width:1100px;margin:0 auto}
   </nav>
   <main id="main"></main>
 </div>
+
 
 <script>
 /* ================= Identity (no widget) ================= */
@@ -241,6 +258,11 @@ async function saveTraining(){
 function setTab(t){
   STATE.tab=t; STATE.clientOpen=null; STATE.prospectOpen=null; STATE.relOpen=null; STATE.sopOpen=null;
   document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('active', b.dataset.tab===t));
+  /* Same mechanism The Bridge uses per business: the active tab decides
+     the palette, so Coaches' Corner shifts tone the same way rather than
+     staying one flat colour throughout. */
+  const THEME_CLASS = { clients:'theme-clients', prospects:'theme-prospects', relationships:'theme-rel', sops:'theme-sop', training:'theme-training' };
+  document.body.className = THEME_CLASS[t] || 'theme-clients';
   render();
 }
 function render(){
@@ -258,6 +280,10 @@ function ragTag(v){
   if(k==='red') return '<span class="tag red">Red</span>';
   return v ? '<span class="tag grey">'+v+'</span>' : '';
 }
+function ragClass(v){
+  const k=(v||'').toLowerCase();
+  return (k==='green'||k==='amber'||k==='red') ? ' rag-'+k : '';
+}
 
 function renderClients(){
   const m=document.getElementById('main');
@@ -271,7 +297,7 @@ function renderClients(){
   if(!list.length){ m.innerHTML+='<div class="empty">No clients found.</div>'; return; }
   const grid=document.createElement('div'); grid.className='grid';
   list.forEach(c=>{
-    const card=document.createElement('div'); card.className='card';
+    const card=document.createElement('div'); card.className='card'+ragClass(c.rag);
     card.onclick=()=>{ STATE.clientOpen=c.airtableId; render(); };
     card.innerHTML='<h3>'+c.n+'</h3>'+
       '<div class="meta">'+ragTag(c.rag)+'<span class="tag grey">'+(c.p||'No program')+'</span>'+
@@ -1024,6 +1050,22 @@ const TRAIN_MODULES=[
     'Know when to hand a cross-sell to Ben rather than pitch it yourself',
     'Never discount without Ben\u2019s approval']}
 ];
+
+/* Netlify Identity puts the invite/confirmation token in the URL fragment
+   when someone clicks the link in their invite email, not anywhere the
+   old manual-paste flow could see without being told. This reads it
+   straight off the address bar, drops it into the accept screen, and
+   scrubs it from the visible URL and history so it doesn't linger there
+   after the password is set. */
+(function initFromInviteLink(){
+  const hash = location.hash || '';
+  const m = hash.match(/invite_token=([^&]+)/) || hash.match(/confirmation_token=([^&]+)/);
+  if(m){
+    showAccept();
+    document.getElementById('acToken').value = decodeURIComponent(m[1]);
+    history.replaceState(null, '', location.pathname);
+  }
+})();
 
 boot();
 </script>
