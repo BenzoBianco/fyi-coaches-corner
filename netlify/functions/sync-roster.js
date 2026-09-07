@@ -98,7 +98,16 @@ function mapRelationship(r) {
     last: f['Last Contacted'] || '',
     cadence: f['Cadence Days'] || 0,
     notes: f['Notes'] || '',
-    owner: f['Owner'] || ''
+    owner: f['Owner'] || '',
+    company: f['Company'] || '',
+    profession: f['Profession'] || '',
+    category: f['Category'] || '',
+    heat: f['Heat'] || null,
+    birthday: f['Birthday'] || '',
+    keyDateLabel: f['Key Date Label'] || '',
+    keyDateValue: f['Key Date Value'] || '',
+    nextAction: f['Next Action'] || '',
+    log: f['Contact Log'] || ''
   };
 }
 

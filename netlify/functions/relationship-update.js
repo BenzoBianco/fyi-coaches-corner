@@ -18,7 +18,16 @@ const FIELD_MAP = {
   last:    'Last Contacted',
   cadence: 'Cadence Days',
   notes:   'Notes',
-  owner:   'Owner'
+  owner:   'Owner',
+  company:      'Company',
+  profession:   'Profession',
+  category:     'Category',
+  heat:         'Heat',
+  birthday:     'Birthday',
+  keyDateLabel: 'Key Date Label',
+  keyDateValue: 'Key Date Value',
+  nextAction:   'Next Action',
+  log:          'Contact Log'
 };
 
 async function findRecord(base, pat, name) {
@@ -62,7 +71,7 @@ export default async (req, context) => {
     const col = FIELD_MAP[k];
     if (!col) { skipped.push(k); return; }
     if (v === undefined || v === null) return;
-    fields[col] = (k === 'cadence') ? Number(v) || 0 : v;
+    fields[col] = (k === 'cadence' || k === 'heat') ? Number(v) || 0 : v;
   });
   if (!isPrincipal(coach)) delete fields['Owner']; /* a coach can't reassign ownership from here */
 
