@@ -341,6 +341,58 @@ function renderClientDetail(){
     '<div class="detailActions"><button class="btn" onclick="pushClient(\''+c.airtableId+'\')">Save to Airtable</button>'+
     '<span class="savedNote" id="clientSaveNote"></span></div>';
   m.appendChild(d);
+
+  if(c.d && ANIMALS[c.d]) m.appendChild(discPanel(c.d));
+
+  const p30 = document.createElement('div'); p30.className='detail'; p30.style.marginTop='14px';
+  p30.innerHTML = renderP30Reference();
+  m.appendChild(p30);
+}
+
+/* ================= DISC ================= */
+function discPanel(animal){
+  const a=ANIMALS[animal]; if(!a) return document.createElement('div');
+  const lv=discLevels(animal);
+  const hi=lv.slice().sort((x,y)=>y.v-x.v)[0];
+  const lo=lv.slice().sort((x,y)=>x.v-y.v)[0];
+  const wrap=document.createElement('div'); wrap.className='detail'; wrap.style.marginTop='14px';
+  let bars='<div style="display:flex;gap:18px;align-items:flex-end;height:120px;margin:14px 0">';
+  lv.forEach(b=>{
+    const h=(b.v/4*100);
+    const color = b.v===4 ? 'var(--accent,#4A6FA5)' : b.v===1 ? 'var(--border,#DFE3EB)' : '#C59C44';
+    bars+='<div style="display:flex;flex-direction:column;align-items:center;gap:6px;flex:1">'+
+      '<div style="width:100%;max-width:44px;height:'+h+'%;background:'+color+';border-radius:6px 6px 0 0;align-self:flex-end"></div>'+
+      '<b style="font-family:Montserrat,sans-serif">'+b.l+'</b><span style="font-size:.68rem;color:var(--muted,#69707F)">'+DISC_LEVELS[b.v]+'</span>'+
+    '</div>';
+  });
+  bars+='</div>';
+  wrap.innerHTML='<h2>DISC profile, '+animal+' ('+a.p+' '+a.n+')</h2>'+bars+
+    '<div class="fieldGrid" style="margin-top:6px">'+
+      '<div class="field"><label>Highest</label><div>'+hi.l+', '+TRAIT[hi.l]+'</div></div>'+
+      '<div class="field"><label>Lowest</label><div>'+lo.l+', '+TRAIT[lo.l]+'</div></div>'+
+      '<div class="field"><label>Suits</label><div>'+a.role+'</div></div>'+
+      '<div class="field"><label>Pace</label><div>'+a.pace+'</div></div>'+
+      '<div class="field full"><label>Coaching them</label><div>'+COACH[hi.l]+'</div></div>'+
+    '</div>';
+  return wrap;
+}
+
+/* ================= First 30 Days, reference only =================
+   The program script is static, transcribed from The Bridge, and safe to
+   duplicate. Whether THIS client is running it, which tasks are ticked,
+   and the onboarding meeting date are per-client facts that only exist
+   in The Bridge's own local state right now, not in Airtable, so they
+   can't be shown or edited here yet. That migration is tracked
+   separately, not skipped. */
+function renderP30Reference(){
+  let html='<h2>'+PROGRAM_30.title+'</h2><p style="color:var(--muted,#69707F);font-size:13px">'+PROGRAM_30.sub+'</p>'+
+    '<div class="banner" style="margin:14px 0">Per-client progress on this program, the onboarding date and task sign-off, isn\'t tracked here yet. It still needs its own Airtable columns. This is the reference script only.</div>'+
+    '<div class="grid" style="margin-top:10px">';
+  PROGRAM_30.glance.forEach(g=>{
+    html+='<div class="card" style="cursor:default"><h3>'+g[0]+', '+g[1]+'</h3><div class="meta" style="margin-top:6px">'+g[2]+'</div></div>';
+  });
+  html+='</div>';
+  return html;
 }
 
 async function pushClient(id){
@@ -570,6 +622,338 @@ function toggleCheck(modId, idx, val){
 }
 
 /* ================= Content, duplicated from The Bridge ================= */
+const TRAIT={D:'drive and directness',I:'influence and warmth',S:'steadiness and patience',C:'compliance and detail'};
+const COACH={
+  D:'Get to the point. Lead with the outcome, not the process. They will push back, which is engagement, not resistance.',
+  I:'Talk it through out loud. They think by speaking. Give recognition and keep the energy up, then write the actions down for them.',
+  S:'Move at their pace. Change needs warning and a reason. They will agree in the room and stall later if they are not genuinely convinced.',
+  C:'Bring the detail and the evidence. Do not oversell. Give them the material in advance and let them come back with questions.'
+};
+const DISC_LETTERS=['D','I','S','C'];
+const DISC_LEVELS={4:'Very high',3:'High',2:'Low',1:'Very low'};
+function discLevels(animal){
+  const a=ANIMALS[animal]; if(!a) return null;
+  const [hi,lo]=a.p.split('/');
+  const rest=DISC_LETTERS.filter(l=>l!==hi&&l!==lo);
+  const out={};
+  out[hi]=4; out[lo]=1;
+  out[rest[0]] = (a.n===2||a.n===4) ? 3 : 2;
+  out[rest[1]] = (a.n===3||a.n===4) ? 3 : 2;
+  return DISC_LETTERS.map(l=>({l:l,v:out[l]}));
+}
+
+const ANIMALS={
+ 'Black Panther':{p:'D/I',n:1,role:'New Business',pace:'High',det:'Medium'},
+ 'Bear':{p:'D/I',n:2,role:'New Business',pace:'Low',det:'Medium'},
+ 'Jaguar':{p:'D/I',n:3,role:'New Business',pace:'High',det:'High'},
+ 'Polar Bear':{p:'D/I',n:4,role:'New Business',pace:'Low',det:'High'},
+ 'Leopard':{p:'D/S',n:1,role:'New Business',pace:'High',det:'Medium'},
+ 'Lion':{p:'D/S',n:2,role:'New Business & Account Management',pace:'High',det:'Medium'},
+ 'Snow Leopard':{p:'D/S',n:3,role:'New Business',pace:'High',det:'High'},
+ 'Cheetah':{p:'D/S',n:4,role:'New Business & Account Management',pace:'High',det:'High'},
+ 'Siberian Tiger':{p:'D/C',n:1,role:'New Business & Account Management',pace:'High',det:'Low'},
+ 'Puma':{p:'D/C',n:2,role:'New Business & Account Management',pace:'High',det:'Low'},
+ 'Black Bear':{p:'D/C',n:3,role:'New Business',pace:'Low',det:'Low'},
+ 'Grizzly Bear':{p:'D/C',n:4,role:'New Business & Account Management',pace:'Low',det:'Low'},
+ 'Antelope':{p:'I/D',n:1,role:'Account Management',pace:'Medium/High',det:'Medium'},
+ 'Gazelle':{p:'I/D',n:2,role:'Account Management',pace:'Low',det:'Medium'},
+ 'Impala':{p:'I/D',n:3,role:'Account Management',pace:'Medium/High',det:'High'},
+ 'Deer':{p:'I/D',n:4,role:'Account Management',pace:'Low',det:'High'},
+ 'Panther Chameleon':{p:'I/S',n:1,role:'Account Management',pace:'High',det:'Medium'},
+ 'Dolphin':{p:'I/S',n:2,role:'New Business & Account Management',pace:'High',det:'Medium'},
+ 'Chameleon':{p:'I/S',n:3,role:'Account Management',pace:'High',det:'High'},
+ 'Pacific Dolphin':{p:'I/S',n:4,role:'New Business & Account Management',pace:'High',det:'High'},
+ 'Russian Wolf':{p:'I/C',n:1,role:'Account Management',pace:'Medium/High',det:'Low'},
+ 'Wolf':{p:'I/C',n:2,role:'New Business & Account Management',pace:'Medium/High',det:'Low'},
+ 'Artic Fox':{p:'I/C',n:3,role:'Account Management',pace:'Low',det:'Low'},
+ 'Artic Wolf':{p:'I/C',n:4,role:'Account Management',pace:'Low',det:'Low'},
+ 'Koala':{p:'S/D',n:1,role:'Sales Support',pace:'Low',det:'Medium'},
+ 'Ruffed Lemur':{p:'S/D',n:2,role:'Customer Support',pace:'Low',det:'Medium'},
+ 'Loris':{p:'S/D',n:3,role:'Sales Support',pace:'Low',det:'High'},
+ 'Retriever':{p:'S/D',n:4,role:'Customer Support',pace:'Low',det:'Medium'},
+ 'Red Panda':{p:'S/I',n:1,role:'Sales Support',pace:'Low',det:'Medium'},
+ 'Japanese Black Bear':{p:'S/I',n:2,role:'Sales Support',pace:'Low',det:'Low'},
+ 'Panda':{p:'S/I',n:3,role:'Sales Support',pace:'Low',det:'High'},
+ 'Sun Bear':{p:'S/I',n:4,role:'Sales Support',pace:'Low',det:'High'},
+ 'Leopard Seal':{p:'S/C',n:1,role:'Sales Support',pace:'Low',det:'Low'},
+ 'Seal':{p:'S/C',n:2,role:'Customer Support',pace:'Low',det:'Low'},
+ 'Stella Sea Lion':{p:'S/C',n:3,role:'Sales Support',pace:'Low',det:'Low'},
+ 'Sea Lion':{p:'S/C',n:4,role:'Customer Support',pace:'Low',det:'Low'},
+ 'Barn Owl':{p:'C/D',n:1,role:'Technical Sales or Technical Customer Support',pace:'High',det:'High'},
+ 'Barred Owl':{p:'C/D',n:2,role:'Tech Sales Support',pace:'Low',det:'High'},
+ 'Snowy Owl':{p:'C/D',n:3,role:'Technical Sales or Technical Customer Support',pace:'High',det:'High'},
+ 'Owl':{p:'C/D',n:4,role:'Tech Sales Support',pace:'Low',det:'High'},
+ 'Peregrine':{p:'C/I',n:1,role:'Technical Sales or Technical Customer Support',pace:'High',det:'High'},
+ 'Kestrel':{p:'C/I',n:2,role:'Tech Sales Support',pace:'Low',det:'High'},
+ 'Red-tailed Hawk':{p:'C/I',n:3,role:'Technical Sales or Technical Customer Support',pace:'High',det:'High'},
+ 'Sparrow Hawk':{p:'C/I',n:4,role:'Tech Sales Support',pace:'Low',det:'High'},
+ 'Osprey':{p:'C/S',n:1,role:'Technical Sales or Technical Customer Support',pace:'High',det:'High'},
+ 'Peacock':{p:'C/S',n:2,role:'Technical Sales or Technical Customer Support',pace:'High',det:'High'},
+ 'African Eagle':{p:'C/S',n:3,role:'Technical Sales or Technical Customer Support',pace:'High',det:'High'},
+ 'Eagle':{p:'C/S',n:4,role:'Technical Sales or Technical Customer Support',pace:'High',det:'High'}
+};
+
+const PROGRAM_30={
+ title:'The First 30 Days',
+ sub:'The onboarding meeting and your first four weeks, mapped end to end',
+ strap:'WEEK 0 → WEEK 4 · THE FYI METHOD',
+ intro:'This program covers the onboarding meeting and the four weeks that follow it. Onboarding sets the relationship, the rules, and the standards. The four weeks then build the foundation underneath the business: the numbers, the marketing engine, the referral partners, and the operating rhythm. You run one focused meeting each week, and the mentee starts moving toward independence at around the twelve-week mark.',
+ howToRun:[
+  {h:'Thirty minutes, every week, same day and time.',b:'Protect the slot. Standards and accountability from the first meeting set the tone for the whole program.'},
+  {h:'Open every meeting with a three-minute pipeline and deal check.',b:'Time is of the essence in broking, so anything live comes first, before the week\u2019s main topic.'},
+  {h:'Rotate through the eight core areas.',b:'New deals, existing pipeline, current marketing, compliance, current performance, systems and processes, challenges and pain points, and goals. Each week leads with one primary focus. You will rarely cover all eight in half an hour, and that is by design.'},
+  {h:'Everything measures back to the goals set in Week 1.',b:'If a task does not move one of those numbers, question why it is on the list.'},
+  {h:'Set tasks every single week.',b:'Implementation is the whole game. Information without action changes nothing.'}
+ ],
+ coreAreas:['New deals','Existing pipeline','Current marketing','Compliance','Current performance','Systems and processes','Challenges and pain points','Goals'],
+ glance:[
+  ['00','The Onboarding Meeting','The relationship, the rules, and the system tour, ending with a clear bridge into Week 1.'],
+  ['01','Goals & Mercury Nexus Analytics','The target is set and wired into the system so progress is tracked from day one.'],
+  ['02','Marketing & Personal Brand','The biggest driver of the business is switched on: warm database plus a simple, credible brand.'],
+  ['03','Referral Partners & the Value Pack','A pipeline that no longer depends on one finite list of contacts.'],
+  ['04','Systems, Rhythm & 30-Day Review','The operating system is installed and the first thirty days of numbers are reviewed.']
+ ],
+ setNumbers:'The method here is fixed; the targets are not. A brand-new broker working refinances for family and friends gets a realistic, activity-based target for the first ninety days, not a revenue fantasy. Tailor every figure to the person in front of you and to what their DISC profile tells you about how they sell.',
+ principles:[
+  {h:'Implementation beats information.',b:'Tools and knowledge only pay when they are used. Success in this industry comes down to one word: implementation.'},
+  {h:'This is a relationship business, not a finance business.',b:'Emotionally invested clients tell everyone they know. Build the human connection first and the referrals follow.'},
+  {h:'Standards and accountability set the tone from week one.',b:'On time, phone away, tasks done. Hold the line kindly and the results take care of themselves.'},
+  {h:'One list, one channel, one system done well beats a scattered effort spread across five.',b:'Depth first, then breadth.'},
+  {h:'Make the broker different from the field of twenty-two and a half thousand.',b:'Better tools, better communication, and better follow-through are the whole edge.'}
+ ],
+ workflow:{
+  note:'Every mentee runs their deals through the same twenty stages, grouped into three swim lanes. This is the backbone the whole program measures against, and it is what lets the CRM work for a solo broker while still expanding to a full team.',
+  note2:'The nine stages Connective gives you from lead to settlement are not enough to run a real pipeline, so all twenty go into Mercury once admin access is granted. Use this as the reference for the system tour in the onboarding meeting, the swim-lane goals in Week 1, and the Kanban review in Week 4.',
+  legend:'Blue stages are done by the broker. Green stages are done by the team or assistants.',
+  lanes:[
+   {n:'1',t:'Lead to submission',r:'Stages 1 – 9',stages:[
+    ['1','Lead','A potential client enters the CRM through enquiry, referral, or marketing source.','broker'],
+    ['2','Discovery Call Booked','A meeting is scheduled to discuss the client\u2019s loan needs and financial situation.','team'],
+    ['3','Discovery Call Held','The broker gathers information about income, expenses, and property goals.','broker'],
+    ['4','Get Basic Documents','The client provides essential documents such as ID, income proof, and bank statements.','team'],
+    ['5','Preparing Strategy','The broker reviews the client\u2019s financial position and identifies suitable loan options.','team'],
+    ['6','Strategy Ready for Client','The recommended loan strategy and lender options are prepared for the client.','team'],
+    ['7','Awaiting Strategy Acceptance','The client reviews the strategy and confirms whether to proceed.','team'],
+    ['8','Hot / Warm Prospects','The client shows strong interest but is not ready just yet.','team'],
+    ['9','Prepare Submission','All documents and details are compiled to complete the loan application.','team']
+   ]},
+   {n:'2',t:'Submission to approval',r:'Stages 10 – 15',stages:[
+    ['10','Submitted to Lender','The loan application is formally submitted to the lender.','team'],
+    ['11','Pre-Assessment / MIR','The lender performs an initial review of the application.','team'],
+    ['12','Conditional Approval','The lender grants preliminary approval with certain conditions.','team'],
+    ['13','AIP Approved','Approval in Principle confirms the loan can proceed pending final checks.','team'],
+    ['14','Conditions Sent to Lender','Required documents are provided to satisfy lender conditions.','team'],
+    ['15','Unconditional Approval','Final loan approval is granted by the lender.','broker']
+   ]},
+   {n:'3',t:'Approval to settlement',r:'Stages 16 – 20',stages:[
+    ['16','Mortgage Documents Issued','Loan documents are sent to the client for signing.','team'],
+    ['17','Docs Returned / Certification Pending','Signed documents are returned and verified.','team'],
+    ['18','Settlement Ready to Book','All requirements are complete and settlement can be scheduled.','team'],
+    ['19','Settlement Booked','The settlement date is confirmed with all parties.','team'],
+    ['20','Settled','The loan settlement is completed successfully.','broker']
+   ]}
+  ]
+ },
+ stages:[
+  {id:'w0',n:'00',t:'The Onboarding Meeting',
+   focus:'Establish the relationship, set the standards, tour the system, and confirm the mentee is set up correctly, so the first coaching meeting can go straight to work.',
+   whereH:'How this meeting differs',
+   where:'This is not the 30-minute coaching rhythm. It runs longer and covers relationship, ground rules, and a full system tour. You are setting the tone for everything that follows, so hold the standards from the first minute. Work through the eight items in order, and treat the bullets as your live prompts: let each one open the conversation it is meant to.',
+   scriptH:'The eight items, in order',
+   script:[
+    {n:'1',t:'Welcome and introduction',p:[
+     'Brief introduction both ways: tell me about you. This is your first real read on them.',
+     'Share your Transformation Statement and the journey you take a mentee on.',
+     'Set the tone: there are no dumb questions.']},
+    {n:'2',t:'Expectations and ground rules',p:[
+     'My role: educate you and hold you accountable. Your role: listen, learn, and apply.',
+     'This mentoring is for you personally, not your team. I don\u2019t train, coach or mentor your staff, whatever you take from these sessions is yours to pass on.',
+     'Weekly meetings for the first three months, rotating through the eight core areas.',
+     'One meeting a week to get you set up, then two once you are busy.',
+     'Phones on aeroplane mode, both of us, so nothing interrupts.',
+     'Standards matter: I am on time and expect the same. Ten minutes late and we rebook.',
+     'Any questions?']},
+    {n:'3',t:'The FYI Tribe platform and WhatsApp',p:[
+     'How to book extra meetings and calls through FYI Tribe.',
+     'Day-to-day contact runs through WhatsApp, not the portal discussion.',
+     'The sixty-plus videos: watch them, then bring me deal-specific questions.',
+     'Darrel will email you a watchlist of eight videos in the order to watch them. The first two matter before our Week 1 session.',
+     'Tasks are set in the meeting summary in shared files, and I expect them back promptly.',
+     'Any questions?']},
+    {n:'4',t:'Mercury systems and access',p:[
+     'Have you met your partnership manager, and do you know their role?',
+     {t:'Do you know who your partnership manager is?',field:'partnershipManager',placeholder:'Their name'},
+     'Have they given you a Mercury tour and shown you how to get accredited?',
+     'You make my team admin on Mercury, so I can see your deals and install the workflow.',
+     'We walk the 20-stage workflow together. Open the workflow reference above.',
+     'Any questions?']},
+    {n:'5',t:'DISC profile',p:[
+     'Purpose: your personality type. Once I know how you learn, I teach you accordingly.',
+     'You will get an email; it takes five minutes.',
+     'Confirm it is done, or set it now.',
+     'Any questions?']},
+    {n:'6',t:'Goal setting, preview only',p:[
+     'Show the analytics page: Connective uses your goals to populate it.',
+     'Talk goals at a high level today. We build the full goals sheet together in Week 1.',
+     'In Week 1 you email it to goals@connective.com.au for Connective to load.',
+     'Any questions?']},
+    {n:'6b',t:'How long we are together',p:[
+     'Let us talk about time, because there are two clocks running and it helps to know '+
+       'the difference early.',
+     'The first is our program, and it runs for twelve months. I know that sounds like a '+
+       'long time when you are standing at the start of it. In my experience it is about '+
+       'right. The first few months are mostly unlearning habits, the middle is where the '+
+       'work compounds, and the back end is where you start to see it in your numbers. '+
+       'Anything shorter and we would be stopping just as it gets good.',
+     'The second is Connective. They require every new broker to be under mentorship for a '+
+       'set number of months, and yours is on your file. I will tell you what it is today so '+
+       'you have it from the start.',
+     'They are two different things and they do not always finish together. You might complete '+
+       'the Connective period with program still to run, or the other way round. Neither is a '+
+       'problem, it just means we keep an eye on both.',
+     'The main thing is that neither of us is ever guessing. Both dates sit in The Bridge, and '+
+       'any time you want to know where you are against them, just ask.',
+     'Anything you want to ask about that?']},
+
+    {n:'7',t:'How we will work through your applications',p:[
+     'While you are under supervision, I look at every application twice rather than once. '+
+       'That is deliberate, and it is worth explaining why, because it will save you a lot '+
+       'of frustration.',
+     'The first look is before anything goes to a lender. Send it to me once the file is '+
+       'built and the compliance work is done, so your best interest duty objectives are '+
+       'written, the requirements are captured, and the exit strategy is documented. '+
+       'This is the stage where a small thing is still a small thing. Catching it here '+
+       'takes five minutes; catching it after submission can cost you a week and some '+
+       'credibility with the lender.',
+     'The second look is when you are packaged and ready to apply online. That is the last '+
+       'set of eyes before it leaves you, and it is usually quick, because by then the hard '+
+       'thinking is already done.',
+     'One thing that will help us both. It is tempting to send a file early to keep things '+
+       'moving, but a half-built file at the first review means I am guessing at what you '+
+       'meant, and you end up doing the work twice. Send it when it is genuinely ready and '+
+       'we will both go faster.',
+     'Connective sets the number at twelve supervised applications. We track every one on '+
+       'your file, so you will always know exactly where you are without having to count '+
+       'them up yourself. You will be surprised how quickly they go by.',
+     'Anything you want to ask about that?']},
+    {n:'8',t:'Summary and recap',p:[
+     'The monthly feedback form: three minutes, and it helps me sharpen the program while giving you a say.',
+     'Confirm next steps, and the bridge into Week 1.',
+     'Any questions?']}
+   ],
+   bridgeH:'Onboarding into Week 1',
+   bridgeNote:'The onboarding meeting only pays off if it hands over cleanly. Close every onboarding by locking these down, so the mentee arrives at Week 1 already set up and knowing what is coming.',
+   bridge:[
+    {h:'In our next meeting · Week 1',items:[
+     'We set your goals and break them across the three swim lanes.',
+     'We complete the goals sheet together, and you email it to goals@connective.com.au for Connective to load into Mercury Nexus analytics.',
+     'We turn that into a written 90-day activity target you can hold yourself to.',
+     'We confirm the 20-stage workflow is installed in your Mercury.']}
+   ],
+   mentee:['Complete the DISC profile if it is not already done',
+     'Confirm your partnership manager has done the Mercury tour and your accreditations are transferring',
+     'Make the FYI team admin on Mercury, following the instructions Darrel will send',
+     'Start the warm contact list: family, friends, past colleagues, and prior-industry contacts',
+     'Bring rough numbers to Week 1: an income target and the hours per week available',
+     'Save the WhatsApp group to your phone and watch the goal-setting and analytics videos'],
+   mentor:['Send the starter video watchlist, via Darrel',
+     'Send the DISC profile and a short explanation, via Darrel',
+     'Send the Mercury admin-access instructions, via Darrel',
+     'Book the next eight weeks of meetings, via Darrel',
+     'Brand the first tool ready to hand over in Week 2'],
+   done:'The relationship and the rules are clear, the DISC profile is complete, the admin-access instructions are sent, the next eight weeks are booked, and the mentee leaves knowing exactly what to do before Week 1.'},
+
+  {id:'w1',n:'01',t:'Goals & Mercury Nexus Analytics',
+   focus:'Set the numbers everything else measures against, and load them into Mercury Nexus analytics through Connective so progress is tracked from the first deal.',
+   whereH:'Where this sits',
+   where:'You cannot manage what you do not measure. Before any marketing or partner work, the mentee needs a clear target and a system that tracks it. Goals go to Connective, Connective loads them into the analytics, and as deals settle the patterns start to show which of the three swim lanes is strong and which one needs coaching. Set the expectation now: the pattern data is a payoff for later weeks, so this week the job is simply to set the target and switch on the tracking.',
+   prepMentor:'Confirm admin access has been granted on Mercury so the 20-stage workflow can be installed. Review the DISC profile; it tells you how to teach this person and which swim lane is the likely weak point. Have the goals sheet ready to complete live.',
+   prepMentee:'Bring rough numbers: an income target, the hours per week available for the business, and a first pass at the warm contact list of family, friends and past colleagues.',
+   agenda:[
+    ['0 – 3 min','Pipeline and deal check. Anything live, anything blocked. Clear it first.'],
+    ['3 – 8 min','Set the headline goal. Work backwards from the desired income: gross commission, settlement volume, number of settled loans, applications, then discovery calls. Use a sensible average loan size and conversion rate.'],
+    ['8 – 18 min','Break the goal across the three swim lanes so the analytics can track it: lead to submission, submission to approval, approval to settlement. Confirm the goals-sheet fields: settlement target, application target, conversion, average loan size, and run-off assumption.'],
+    ['18 – 25 min','Complete the goals sheet together and confirm the mentee will email it to goals@connective.com.au for loading into Mercury Nexus.'],
+    ['25 – 30 min','Confirm the 20-stage workflow install status, set the tasks below, and recap the single most important action for the week.']
+   ],
+   mentee:['Grant or confirm admin access if not already done, following the instructions from Darrel',
+     'Email the completed goals sheet to goals@connective.com.au so Connective can load it into the analytics',
+     'Build the warm database into one simple sheet: family, friends, past colleagues, and any real estate or finance contacts',
+     'Watch the goal-setting and analytics videos in the FYI Tribe learning library'],
+   mentor:['Confirm the mentee has emailed the goals sheet to goals@connective.com.au',
+     'Install the 20 statuses in Mercury once admin access is confirmed',
+     'Record a short Loom on any specific question that came up and add it to the library'],
+   done:'The goals sheet is complete and emailed to Connective, the target is loaded into analytics, the 20-stage workflow is installed or scheduled, and the mentee holds a written 90-day activity target they can repeat back to you.'},
+
+  {id:'w2',n:'02',t:'Marketing & Personal Brand',
+   focus:'Switch on the single biggest driver of the business by activating the warm database and building a simple, credible personal brand, because this is a relationship business.',
+   whereH:'Where this sits',
+   where:'Marketing is roughly eighty percent of the business. With goals set, this week drives the activity that feeds them. For a new broker the fastest and cheapest pipeline is the warm database, paired with a clean personal brand and real social proof. Keep the website simple: a video, social proof, a booking link, done. Do not let the mentee pour weeks into a beautiful website that almost nobody reads.',
+   prepMentor:'Review the mentee\u2019s current website and social profiles, and flag anything over-built. Have the Purchase Range Reckoner ready, branded in their colours and logo, to hand over.',
+   prepMentee:'Bring the warm database list from Week 1 and links to current social profiles. Note any credibility from a prior career that could serve as early social proof.',
+   agenda:[
+    ['0 – 3 min','Pipeline and deal check.'],
+    ['3 – 10 min','The personal brand. Position around the person, not the company name. The structure that works: a short video, real social proof, a booking link. Identify what social proof this person can show right now, including credibility carried over from any previous career.'],
+    ['10 – 18 min','Warm database activation. The refinance play for family and friends in the first ninety days. Segment the list and pick the first tier to contact. Hand over the outreach script and adapt it to their voice.'],
+    ['18 – 25 min','Content rhythm. One channel done well beats five done badly, and LinkedIn is the FYI default. Set a simple, repeatable posting cadence and a habit of repurposing one idea into several posts.'],
+    ['25 – 30 min','Set the tasks below and recap.']
+   ],
+   scriptBox:{
+    h:'Warm reactivation message · template to adapt per contact',
+    body:'Hi [Name], quick one. As you probably already know, I\u2019ve moved into mortgage broking, and I\u2019ve been helping people close to me take a proper look at their home loan before rates shift again. There\u2019s nothing you need to do today. It might just be worth knowing where you actually stand. And whenever you\u2019re ready to see how much you could be saving, I\u2019ll make the whole thing simple for you.',
+    note:'The wording uses pacing and gentle presupposition, so the reader feels no pressure while a clear next step is planted. Teach the pattern, not the exact words, so every broker still sounds like themselves.'
+   },
+   mentee:['Contact the first tier of the warm database, around ten people, using the adapted script',
+     'Set the personal brand basics: profile photo, a clear headline, and a plan to collect social proof',
+     'Post once on the chosen channel before the next meeting'],
+   mentor:['Deliver the Purchase Range Reckoner, branded in the mentee\u2019s colours and logo',
+     'Provide the outreach script template in writing',
+     'Note who the mentee finds hardest to contact; that resistance is worth coaching'],
+   done:'The first warm outreach batch is sent, the personal brand basics are live, one piece of content is posted, and the branded reckoner is in the mentee\u2019s hands.'},
+
+  {id:'w3',n:'03',t:'Referral Partners & the Partner Value Pack',
+   focus:'Build the first referral partner relationships and put the Partner Value Pack to work, so the pipeline stops depending on one finite list of contacts.',
+   whereH:'Where this sits',
+   where:'The warm database runs out. Referral partners are the engine of a pipeline that lasts and scales. The differentiator is simple: most of the field of twenty-two and a half thousand brokers ask partners for scraps, while the FYI broker shows up with a value pack that makes the partner look good to their own clients. Prior careers are a warm way in: accountants, financial advisers, buyers agents, real estate contacts, and conveyancers. Temper expectations, because this week plants these relationships and the harvest comes later.',
+   prepMentor:'Have the Partner Value Pack ready to brand, and prepare the differentiation angle for this specific mentee based on their background and network.',
+   prepMentee:'List potential partner types and any existing contact inside each one. Prior colleagues and industry relationships count, and often convert fastest.',
+   agenda:[
+    ['0 – 3 min','Pipeline and deal check.'],
+    ['3 – 9 min','Who are the right partners. Quality over quantity. Map existing warm contacts first, since a lukewarm introduction beats a cold approach every time.'],
+    ['9 – 16 min','The value-first approach. What you give before you ask. How the Partner Value Pack works: the partner shares a link, the client fills in a few details, and it comes straight back to the broker. Position the broker as the professional who makes the partner look good.'],
+    ['16 – 24 min','The approach conversation. How to open a partner relationship without sounding needy. Pick two or three partners to approach this week and rehearse the opening line.'],
+    ['24 – 30 min','Set the tasks below and recap.']
+   ],
+   mentee:['Approach two or three target partners with the value-first pitch and the Partner Value Pack link',
+     'Reconnect with prior-career contacts as potential partners',
+     'Log every partner conversation in the pipeline notes'],
+   mentor:['Brand and send the Partner Value Pack',
+     'Provide the partner approach script',
+     'Flag any partner type that suits this mentee\u2019s background especially well'],
+   done:'Two or three partner conversations are open, the Partner Value Pack is live and branded, and a target partner list is documented for the weeks ahead.'},
+
+  {id:'w4',n:'04',t:'Systems, Rhythm & 30-Day Review',
+   focus:'Embed the operating rhythm, review the first deals through the swim lanes, and check goals against actuals before the mentee moves toward independence.',
+   whereH:'Where this sits',
+   where:'By Week 4 there should be live activity. Now you install the discipline that keeps deals moving, read what the analytics are starting to show, and shore up the weak swim lane, which for a natural hunter is usually the admin-heavy middle lane. This becomes the operating system for the rest of the program and beyond.',
+   prepMentor:'Pull the mentee\u2019s Kanban and analytics and note the early patterns. Decide in advance which swim lane you expect to be the weak point, then test it against the data.',
+   prepMentee:'Have every live deal staged correctly in the 20-stage Kanban, so the review is quick and honest.',
+   agenda:[
+    ['0 – 3 min','Pipeline and deal check.'],
+    ['3 – 10 min','Kanban discipline. The 20 stages; green is the team, blue is the broker. Install the weekly pipeline review habit: every deal, every stage, every week, in the spirit of the old Tuesday NINJA meeting.'],
+    ['10 – 18 min','The 30-day review. Goals against actuals in the analytics. Which swim lane is lagging, and why. Keep it factual, not emotional.'],
+    ['18 – 25 min','Shore up the weak lane. Put a system or process around the stage where deals stall, so the time to getting paid shortens.'],
+    ['25 – 30 min','Set the cadence for weeks 5 to 8, remind the mentee about the monthly feedback form, and recap.']
+   ],
+   mentee:['Run one self-led pipeline review before the next meeting',
+     'Confirm every live deal is correctly staged in the Kanban',
+     'Complete the monthly feedback form if it is due'],
+   mentor:['Review the analytics and set the coaching focus for weeks 5 to 8',
+     'Confirm the next eight-week booking block with Darrel',
+     'Decide whether the elite CRM bolt-on is worth raising yet'],
+   done:'All deals are staged, the first 30-day review is complete, the weak swim lane has a fix in place, and weeks 5 to 8 are booked.'}
+ ]
+};
 
 const SOPS=[
 /* ================= FINANCE & ADMIN ================= */
