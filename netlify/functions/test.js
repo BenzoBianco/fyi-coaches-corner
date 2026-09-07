@@ -7,12 +7,14 @@ export default async () => {
   const pat  = process.env.AIRTABLE_PAT;
   const stateTbl = process.env.COACHES_STATE_TABLE;
   const coachMap = process.env.COACH_MAP;
+  const gcal = process.env.GCAL_ICS;
 
   lines.push('ENVIRONMENT VARIABLES');
   lines.push('  AIRTABLE_BASE         ' + (base ? 'set  (' + base + ')' : 'MISSING'));
   lines.push('  AIRTABLE_PAT          ' + (pat ? 'set  (' + pat.slice(0, 8) + '...)' : 'MISSING'));
   lines.push('  COACHES_STATE_TABLE   ' + (stateTbl ? 'set  (' + stateTbl + ')' : 'MISSING'));
   lines.push('  COACH_MAP             ' + (coachMap ? 'set' : 'MISSING'));
+  lines.push('  GCAL_ICS              ' + (gcal ? 'set' : 'not set, next/last session will be skipped'));
   lines.push('');
 
   if (coachMap) {

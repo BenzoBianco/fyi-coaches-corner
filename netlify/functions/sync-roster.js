@@ -49,7 +49,12 @@ function mapClient(r) {
     email: f['Email'] || '',
     clientStatus: f['Status'] || '',
     referredBy: f['Referred By Client'] || '',
-    sup: f['Supervision Progress'] || ''
+    sup: f['Supervision Progress'] || '',
+    mobileInContacts: !!f['Mobile In Contacts'],
+    emailInContacts: !!f['Email In Contacts'],
+    addressInContacts: !!f['Address In Contacts'],
+    p30running: !!f['First 30 Days Running'],
+    p30: f['First 30 Days Progress'] || ''
   };
 }
 
