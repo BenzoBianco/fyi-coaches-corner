@@ -30,7 +30,9 @@ const FIELD_MAP = {
   notes:        'Notes',
   mandatedMonths: 'Mandated Months',
   calName:      'Calendar Name',
-  exitReasonCode: 'Exit reason'
+  exitReasonCode: 'Exit reason',
+  referredBy:   'Referred By Client',
+  sup:          'Supervision Progress'
 };
 
 async function findRecord(base, pat, name) {

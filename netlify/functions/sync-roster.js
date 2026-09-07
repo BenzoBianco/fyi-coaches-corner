@@ -47,7 +47,9 @@ function mapClient(r) {
     calName: f['Calendar Name'] || '',
     exitReasonCode: f['Exit reason'] || '',
     email: f['Email'] || '',
-    clientStatus: f['Status'] || ''
+    clientStatus: f['Status'] || '',
+    referredBy: f['Referred By Client'] || '',
+    sup: f['Supervision Progress'] || ''
   };
 }
 
