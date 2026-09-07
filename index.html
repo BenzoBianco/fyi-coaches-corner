@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>FYI Coaches' Corner v1.09.12</title>
+<title>FYI Coaches' Corner v1.09.13</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -109,6 +109,59 @@ main{padding:22px;max-width:1140px;margin:0 auto}
 .module ul.checklist input{margin-top:3px;accent-color:var(--accent,#6B5B95)}
 .progressBar{height:6px;background:var(--border,#E4DFEC);border-radius:3px;overflow:hidden;margin:10px 0 20px}
 .progressBar .fill{height:100%;background:var(--accent,#6B5B95)}
+
+/* ---- Relationships tab, styled to match Ben's standalone tracker exactly ---- */
+.relTracker{--rt-navy:#333547;--rt-blue:#6090c7;--rt-blue-dark:#4a76ab;--rt-gold:#c59c44;--rt-silver:#d8d8d8;--rt-red:#b3452c;--rt-paper:#f7f7f5;--rt-ink-soft:#6b6d7a;font-family:'Montserrat',sans-serif;color:var(--rt-navy)}
+.relTracker .rt-dash{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}
+.relTracker .rt-dash-card{background:#fff;border-radius:10px;padding:16px 18px;box-shadow:0 1px 2px rgba(51,53,71,.06),0 6px 20px rgba(51,53,71,.06);border-left:4px solid var(--rt-silver)}
+.relTracker .rt-dash-card .num{font-size:28px;font-weight:800;line-height:1}
+.relTracker .rt-dash-card .lbl{font-size:12px;color:var(--rt-ink-soft);font-weight:600;text-transform:uppercase;letter-spacing:.04em;margin-top:6px}
+.relTracker .rt-dash-card.overdue{border-left-color:var(--rt-red)} .relTracker .rt-dash-card.overdue .num{color:var(--rt-red)}
+.relTracker .rt-dash-card.soon{border-left-color:var(--rt-gold)} .relTracker .rt-dash-card.soon .num{color:var(--rt-gold)}
+.relTracker .rt-dash-card.ok{border-left-color:var(--rt-blue)} .relTracker .rt-dash-card.ok .num{color:var(--rt-blue-dark)}
+.relTracker .rt-toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:18px}
+.relTracker .rt-toolbar input[type=text]{flex:1;min-width:180px;padding:10px 14px;border:1px solid var(--rt-silver);border-radius:8px;font-family:inherit;font-size:13px;background:#fff}
+.relTracker .rt-toolbar select{padding:10px 12px;border:1px solid var(--rt-silver);border-radius:8px;font-family:inherit;font-size:13px;background:#fff;color:var(--rt-navy)}
+.relTracker .rt-btn{font-family:inherit;font-size:13px;font-weight:700;border-radius:8px;padding:10px 16px;border:none;cursor:pointer}
+.relTracker .rt-btn-primary{background:var(--rt-navy);color:#fff}
+.relTracker .rt-btn-ghost{background:#fff;color:var(--rt-navy);border:1px solid var(--rt-silver)}
+.relTracker .rt-chips{display:flex;gap:6px}
+.relTracker .rt-chip{padding:8px 12px;border-radius:20px;font-size:12px;font-weight:700;border:1px solid var(--rt-silver);background:#fff;cursor:pointer;color:var(--rt-ink-soft)}
+.relTracker .rt-chip.active{background:var(--rt-navy);color:#fff;border-color:var(--rt-navy)}
+.relTracker .rt-row{background:#fff;border-radius:10px;box-shadow:0 1px 2px rgba(51,53,71,.06),0 6px 20px rgba(51,53,71,.06);padding:14px 16px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:10px}
+.relTracker .rt-ring-wrap{flex:none;position:relative;width:52px;height:52px}
+.relTracker .rt-ring-wrap svg{width:52px;height:52px;transform:rotate(-90deg)}
+.relTracker .rt-ring-bg{fill:none;stroke:#eceef2;stroke-width:5}
+.relTracker .rt-ring-fg{fill:none;stroke-width:5;stroke-linecap:round}
+.relTracker .rt-ring-label{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800}
+.relTracker .rt-main{flex:1;min-width:220px}
+.relTracker .rt-name-line{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.relTracker .rt-name{font-weight:700;font-size:15px;cursor:pointer}
+.relTracker .rt-name:hover{text-decoration:underline}
+.relTracker .rt-tag{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;padding:3px 8px;border-radius:12px;background:#eef1f7;color:var(--rt-blue-dark)}
+.relTracker .rt-heat{font-size:11.5px;font-weight:800;color:#fff;border-radius:12px;padding:3px 10px}
+.relTracker .rt-company{font-size:12.5px;color:var(--rt-ink-soft);margin-top:1px}
+.relTracker .rt-meta{font-size:12.5px;color:var(--rt-ink-soft);margin-top:3px;display:flex;gap:14px;flex-wrap:wrap}
+.relTracker .rt-meta a{color:var(--rt-ink-soft);text-decoration:none}
+.relTracker .rt-last{font-size:12px;color:var(--rt-ink-soft);margin-top:4px}
+.relTracker .rt-last b{color:var(--rt-navy)}
+.relTracker .rt-keydate{font-size:11px;font-weight:700;color:#8a6a1f;background:#fff8e6;border:1px solid #f0dfa8;border-radius:12px;padding:2px 9px}
+.relTracker .rt-next{font-size:12.5px;margin-top:6px;padding:7px 10px;background:#eef1f7;border-left:3px solid var(--rt-blue);border-radius:0 6px 6px 0;color:var(--rt-navy)}
+.relTracker .rt-log-controls{display:flex;align-items:center;gap:8px;flex:none}
+.relTracker .rt-log-controls select{padding:8px 10px;border:1px solid var(--rt-silver);border-radius:7px;font-family:inherit;font-size:12.5px}
+.relTracker .rt-log-btn{background:var(--rt-blue);color:#fff;font-family:inherit;font-weight:700;font-size:12.5px;padding:9px 14px;border:none;border-radius:7px;cursor:pointer}
+.relTracker .rt-log-btn:hover{background:var(--rt-blue-dark)}
+.relTracker .rt-log-btn.inbound{background:var(--rt-navy)}
+.relTracker .rt-log-btn.inbound:hover{background:#22232f}
+.relTracker .rt-icon-btn{background:none;border:none;cursor:pointer;color:var(--rt-ink-soft);padding:6px;border-radius:6px;font-size:12.5px;font-weight:700}
+.relTracker .rt-icon-btn:hover{background:#f1f1f0;color:var(--rt-navy)}
+.relTracker .rt-detail{width:100%;display:none;border-top:1px solid #eee;margin-top:12px;padding-top:12px;font-size:13px}
+.relTracker .rt-detail.open{display:block}
+.relTracker .rt-detail .notes{color:var(--rt-navy);margin-bottom:10px;white-space:pre-wrap}
+.relTracker .rt-history-title{font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--rt-ink-soft);margin:14px 0 6px}
+.relTracker .rt-history-item{display:flex;gap:10px;font-size:12.5px;padding:4px 0;color:var(--rt-ink-soft)}
+.relTracker .rt-history-item b{color:var(--rt-navy);min-width:90px}
+.relTracker .rt-no-history{color:var(--rt-ink-soft);font-size:12.5px;font-style:italic}
 </style>
 </head>
 <body class="theme-clients">
@@ -141,7 +194,7 @@ main{padding:22px;max-width:1140px;margin:0 auto}
 
 <div id="app">
   <header class="top">
-    <div class="brand">FYI Coaches' Corner<span class="verBadge" id="verBadge" onclick="toggleChangelog()" title="Click for what's new">v1.09.12</span><small id="coachBadge"></small></div>
+    <div class="brand">FYI Coaches' Corner<span class="verBadge" id="verBadge" onclick="toggleChangelog()" title="Click for what's new">v1.09.13</span><small id="coachBadge"></small></div>
     <div class="who">
       <span id="whoEmail"></span>
       <button onclick="doLogout()">Sign out</button>
@@ -280,8 +333,14 @@ function copySupervisionEmail(clientId){
   } else { fallback(); }
 }
 
-const APP_VERSION = '1.09.12';
+const APP_VERSION = '1.09.13';
 const RELEASES = [
+  {v:'1.09.13', d:'07/09/2026', t:'Relationships tab restyled to match Ben\u2019s tracker', items:[
+    'Relationships now uses the tracker\u2019s own visual language: navy, blue and gold, Montserrat throughout, the ring badge showing days remaining on cadence, the four-card dashboard (Overdue, Due within 3 days, On track, Total), status filter chips and hottest-first sorting.',
+    'Inline logging added directly on each row, pick a method, click You reached out or They reached out, no need to open the record.',
+    'This restyle is scoped to Relationships only. Clients, Prospects, SOPs and Coach Training keep the Bridge-matched look from earlier, so the two visual languages don\u2019t mix inside one app.',
+    'The add/edit form itself still uses Coaches\u2019 Corner\u2019s existing field layout, not yet rebuilt to match the tracker\u2019s modal styling. The list and dashboard, the most visually distinctive part, are the ones rebuilt pixel for pixel.'
+  ]},
   {v:'1.09.12', d:'07/09/2026', t:'Relationships rebuilt around Ben\u2019s tracker design', items:[
     'Nine new Airtable fields wired in: Company, Profession, Category, Heat, Birthday, Key Date Label, Key Date Value, Next Action, Contact Log.',
     'Card list now sorts by cadence urgency, overdue first, with a heat badge, category tag, and next action shown inline, same priority order as the standalone tracker.',
@@ -1004,21 +1063,20 @@ function openNewProspect(){
    contacted, same logic, using Airtable's createdTime isn't available
    here so an uncontacted relationship just reads as overdue from day one
    of this app knowing about it. */
-const DEFAULT_CADENCE_DAYS = 30;
+const DEFAULT_CADENCE_DAYS = 11;
 function relCadenceStatus(r){
   const cadence = r.cadence>0 ? r.cadence : DEFAULT_CADENCE_DAYS;
-  if(!r.last) return {cls:'overdue', label:'Never contacted'};
+  if(!r.last) return {cls:'overdue', daysRemaining:-999, elapsed:cadence, cadence:cadence};
   const elapsed = -daysUntil(r.last);
   const remaining = cadence - elapsed;
-  if(remaining<0) return {cls:'overdue', label:Math.abs(remaining)+'d overdue'};
-  if(remaining<=3) return {cls:'soon', label:'Due in '+remaining+'d'};
-  return {cls:'ok', label:remaining+'d left'};
+  const cls = remaining<0 ? 'overdue' : remaining<=3 ? 'soon' : 'ok';
+  return {cls, daysRemaining:remaining, elapsed, cadence};
 }
 function heatColor(n){
   if(n==null) return '#69707F';
-  if(n<5) return '#4A6FA5';
-  if(n<=7) return '#E0873C';
-  return '#B3452C';
+  if(n<5) return '#6090c7';
+  if(n<=7) return '#e0873c';
+  return '#b3452c';
 }
 function annualCountdown(dateStr){
   if(!dateStr) return null;
@@ -1028,41 +1086,129 @@ function annualCountdown(dateStr){
   if(next<t) next.setFullYear(t.getFullYear()+1);
   return Math.round((next-t)/86400000);
 }
+function relRingSVG(status){
+  const r=21, circ=2*Math.PI*r;
+  const progress=Math.max(0, Math.min(1, status.elapsed/status.cadence));
+  const offset=circ*(1-progress);
+  const color = status.cls==='overdue'?'#b3452c':status.cls==='soon'?'#c59c44':'#6090c7';
+  const label = status.daysRemaining<0 ? Math.abs(status.daysRemaining)+'d' : status.daysRemaining+'d';
+  return '<div class="rt-ring-wrap"><svg viewBox="0 0 52 52">'+
+      '<circle class="rt-ring-bg" cx="26" cy="26" r="'+r+'"/>'+
+      '<circle class="rt-ring-fg" cx="26" cy="26" r="'+r+'" stroke="'+color+'" stroke-dasharray="'+circ+'" stroke-dashoffset="'+offset+'"/>'+
+    '</svg><div class="rt-ring-label" style="color:'+color+'">'+label+'</div></div>';
+}
+
+if(!STATE.relFilter) STATE.relFilter='';
+if(!STATE.relSort) STATE.relSort='urgency';
 
 function renderRelationships(){
   const m=document.getElementById('main');
   if(STATE.relOpen!==null) return renderRelationshipDetail();
-  const bar=document.createElement('div'); bar.className='toolbar';
-  bar.innerHTML='<div></div><button class="btn" onclick="STATE.relOpen=\'new\'; render()">New relationship</button>';
-  m.appendChild(bar);
-  if(!STATE.relationships.length){ m.innerHTML+='<div class="empty">No relationships found.</div>'; return; }
 
-  const list = STATE.relationships.slice().sort((a,b)=>{
-    const sa=relCadenceStatus(a).cls, sb=relCadenceStatus(b).cls;
-    const order={overdue:0, soon:1, ok:2};
-    return order[sa]-order[sb];
+  const wrap=document.createElement('div'); wrap.className='relTracker';
+
+  const statuses = STATE.relationships.map(relCadenceStatus);
+  const counts = {overdue:0, soon:0, ok:0};
+  statuses.forEach(s=>counts[s.cls]++);
+  wrap.innerHTML = '<div class="rt-dash">'+
+      '<div class="rt-dash-card overdue"><div class="num">'+counts.overdue+'</div><div class="lbl">Overdue</div></div>'+
+      '<div class="rt-dash-card soon"><div class="num">'+counts.soon+'</div><div class="lbl">Due within 3 days</div></div>'+
+      '<div class="rt-dash-card ok"><div class="num">'+counts.ok+'</div><div class="lbl">On track</div></div>'+
+      '<div class="rt-dash-card total"><div class="num">'+STATE.relationships.length+'</div><div class="lbl">Total contacts</div></div>'+
+    '</div>';
+
+  const q=(STATE.relSearch||'').toLowerCase();
+  const toolbar=document.createElement('div'); toolbar.className='rt-toolbar';
+  toolbar.innerHTML='<input type="text" id="rtSearch" placeholder="Search by name, email or mobile..." value="'+(STATE.relSearch||'')+'">'+
+    '<select id="rtCategory"><option value="">All categories</option>'+
+      ['Top Referrer','Referral Partner','Prospect','Other'].map(o=>'<option '+(STATE.relCategoryFilter===o?'selected':'')+'>'+o+'</option>').join('')+
+    '</select>'+
+    '<div class="rt-chips">'+
+      ['', 'overdue','soon','ok'].map(s=>'<button class="rt-chip'+(STATE.relFilter===s?' active':'')+'" data-status="'+s+'">'+(s||'All')+'</button>').join('')+
+    '</div>'+
+    '<select id="rtSort"><option value="urgency" '+(STATE.relSort==='urgency'?'selected':'')+'>Sort: Due date</option><option value="heat" '+(STATE.relSort==='heat'?'selected':'')+'>Sort: Hottest first</option></select>'+
+    '<button class="rt-btn rt-btn-primary" onclick="STATE.relOpen=\'new\'; render()">+ Add contact</button>';
+  wrap.appendChild(toolbar);
+
+  let visible = STATE.relationships.filter(r=>{
+    if(STATE.relCategoryFilter && r.category!==STATE.relCategoryFilter) return false;
+    if(q){
+      const hay=(r.n+' '+(r.email||'')+' '+(r.phone||'')+' '+(r.company||'')+' '+(r.profession||'')).toLowerCase();
+      if(hay.indexOf(q)===-1) return false;
+    }
+    if(STATE.relFilter && relCadenceStatus(r).cls!==STATE.relFilter) return false;
+    return true;
   });
-  const grid=document.createElement('div'); grid.className='grid';
-  list.forEach(r=>{
-    const cad = relCadenceStatus(r);
-    const card=document.createElement('div'); card.className='card pr-'+(cad.cls==='overdue'?'stale':cad.cls==='soon'?'warm':'fresh');
-    card.onclick=()=>{ STATE.relOpen=r.airtableId; render(); };
-    let html='<h3>'+r.n+'</h3>';
-    if(r.company || r.profession) html+='<div class="meta" style="margin-top:2px">'+[r.profession, r.company].filter(Boolean).join(' at ')+'</div>';
-    html+='<div class="meta" style="margin-top:8px">';
-    if(r.category) html+='<span class="tag" style="background:#EEF1F7;border-color:#C3D6EA;color:#33587F">'+r.category+'</span>';
-    if(r.heat!=null) html+='<span class="tag" style="background:'+heatColor(r.heat)+';border-color:'+heatColor(r.heat)+';color:#fff">Heat '+r.heat+'</span>';
-    if(r.type) html+='<span class="tag grey">'+r.type+'</span>';
-    html+='</div>';
-    html+='<div class="meta" style="margin-top:8px;font-weight:600;color:'+(cad.cls==='overdue'?'#B23A33':cad.cls==='soon'?'#8A671B':'#3E7C43')+'">'+cad.label+
-      (r.last?' &middot; last '+new Date(r.last).toLocaleDateString('en-AU'):'')+'</div>';
-    if(r.nextAction) html+='<div style="font-size:.76rem;margin-top:8px;padding:7px 10px;background:var(--bg,#F4F7F6);border-left:3px solid var(--accent,#3E8E7E);border-radius:0 6px 6px 0">'+r.nextAction+'</div>';
-    const bdayIn=annualCountdown(r.birthday);
-    if(bdayIn!==null && bdayIn<=30) html+='<div class="meta" style="margin-top:6px"><span class="tag" style="background:#F7E9F0;border-color:#E2C0D2;color:#8C3B63">Birthday in '+bdayIn+'d</span></div>';
-    card.innerHTML=html;
-    grid.appendChild(card);
+  visible = visible.slice().sort((a,b)=>{
+    if(STATE.relSort==='heat') return (b.heat==null?-1:b.heat)-(a.heat==null?-1:a.heat);
+    return relCadenceStatus(a).daysRemaining - relCadenceStatus(b).daysRemaining;
   });
-  m.appendChild(grid);
+
+  const list=document.createElement('div');
+  if(!visible.length){
+    list.innerHTML='<div class="empty">No contacts match this filter.</div>';
+  } else {
+    visible.forEach(r=>{
+      const status=relCadenceStatus(r);
+      const bDays=annualCountdown(r.birthday), kDays=annualCountdown(r.keyDateValue);
+      let keyBadges='';
+      if(bDays!==null && bDays<=14) keyBadges+='<span class="rt-keydate">Birthday in '+(bDays===0?'today':bDays+'d')+'</span>';
+      if(kDays!==null && kDays<=14 && r.keyDateLabel) keyBadges+='<span class="rt-keydate">'+r.keyDateLabel+' in '+(kDays===0?'today':kDays+'d')+'</span>';
+      const heatBadge = r.heat!=null ? '<span class="rt-heat" style="background:'+heatColor(r.heat)+'">Heat '+r.heat+'</span>' : '';
+      const companyLine = (r.company||r.profession) ? '<div class="rt-company">'+[r.company,r.profession].filter(Boolean).join(' &middot; ')+'</div>' : '';
+      const lastLine = r.last ? 'Last contact: <b>'+new Date(r.last).toLocaleDateString('en-AU')+'</b>' : 'Never contacted yet';
+      const nextHtml = r.nextAction ? '<div class="rt-next"><b>Next:</b> '+r.nextAction+'</div>' : '';
+      const log=relLogFor(r);
+      const historyHtml = log.length ? log.slice().reverse().map(h=>
+        '<div class="rt-history-item"><b>'+new Date(h.date).toLocaleDateString('en-AU')+'</b><span>'+h.method+', '+(h.direction==='inbound'?'them':'you')+'</span></div>'
+      ).join('') : '<div class="rt-no-history">No contact logged yet.</div>';
+
+      const row=document.createElement('div'); row.className='rt-row';
+      row.innerHTML = relRingSVG(status)+
+        '<div class="rt-main">'+
+          '<div class="rt-name-line"><span class="rt-name" onclick="STATE.relOpen=\''+r.airtableId+'\'; render()">'+r.n+'</span>'+heatBadge+(r.category?'<span class="rt-tag">'+r.category+'</span>':'')+keyBadges+'</div>'+
+          companyLine+
+          '<div class="rt-meta">'+(r.email?'<a href="mailto:'+r.email+'">'+r.email+'</a>':'')+(r.phone?'<a href="tel:'+r.phone+'">'+r.phone+'</a>':'')+'</div>'+
+          '<div class="rt-last">'+lastLine+'</div>'+
+          nextHtml+
+        '</div>'+
+        '<div class="rt-log-controls">'+
+          '<select class="rtMethod">'+['Phone call','SMS','Email','In person','LinkedIn','Other'].map(o=>'<option>'+o+'</option>').join('')+'</select>'+
+          '<button type="button" class="rt-log-btn" data-log="outbound">You reached out</button>'+
+          '<button type="button" class="rt-log-btn inbound" data-log="inbound">They reached out</button>'+
+          '<button type="button" class="rt-icon-btn" data-toggle>Notes</button>'+
+        '</div>'+
+        '<div class="rt-detail" data-detail>'+
+          (r.notes?'<div class="notes">'+r.notes+'</div>':'<div class="notes" style="color:#a9abb5">No notes added yet.</div>')+
+          '<div class="rt-history-title">Check-in history</div>'+historyHtml+
+        '</div>';
+      row.querySelector('[data-log="outbound"]').onclick=()=>quickLog(r.airtableId, row.querySelector('.rtMethod').value, 'outbound');
+      row.querySelector('[data-log="inbound"]').onclick=()=>quickLog(r.airtableId, row.querySelector('.rtMethod').value, 'inbound');
+      row.querySelector('[data-toggle]').onclick=()=>row.querySelector('[data-detail]').classList.toggle('open');
+      list.appendChild(row);
+    });
+  }
+  wrap.appendChild(list);
+
+  const m2=document.getElementById('main'); m2.innerHTML=''; m2.appendChild(wrap);
+
+  document.getElementById('rtSearch').oninput=e=>{ STATE.relSearch=e.target.value; render(); };
+  document.getElementById('rtCategory').onchange=e=>{ STATE.relCategoryFilter=e.target.value; render(); };
+  document.getElementById('rtSort').onchange=e=>{ STATE.relSort=e.target.value; render(); };
+  wrap.querySelectorAll('.rt-chip').forEach(b=>{ b.onclick=()=>{ STATE.relFilter=b.dataset.status; render(); }; });
+}
+
+async function quickLog(relId, method, direction){
+  const r=STATE.relationships.find(x=>x.airtableId===relId);
+  const date=new Date().toISOString().slice(0,10);
+  const log=relLogFor(r);
+  log.push({date, method, direction});
+  r.log=JSON.stringify(log);
+  r.last=date;
+  try{
+    await authedFetch('/.netlify/functions/relationship-update',{method:'POST', body:JSON.stringify({recordId:relId, name:r.n, fields:{log:r.log, last:date}})});
+  }catch(e){}
+  render();
 }
 
 function relLogFor(r){
