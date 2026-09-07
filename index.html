@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>FYI Coaches' Corner v1.09.06</title>
+<title>FYI Coaches' Corner v1.09.07</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -141,7 +141,7 @@ main{padding:22px;max-width:1140px;margin:0 auto}
 
 <div id="app">
   <header class="top">
-    <div class="brand">FYI Coaches' Corner<span class="verBadge" id="verBadge" onclick="toggleChangelog()" title="Click for what's new">v1.09.06</span><small id="coachBadge"></small></div>
+    <div class="brand">FYI Coaches' Corner<span class="verBadge" id="verBadge" onclick="toggleChangelog()" title="Click for what's new">v1.09.07</span><small id="coachBadge"></small></div>
     <div class="who">
       <span id="whoEmail"></span>
       <button onclick="doLogout()">Sign out</button>
@@ -222,8 +222,13 @@ async function authedFetch(url, opts){
    Bump APP_VERSION, the <title>, the header badge, and add a RELEASES
    entry, all in the same edit, or the changelog silently falls behind
    the build the way The Bridge's own once did. */
-const APP_VERSION = '1.09.06';
+const APP_VERSION = '1.09.07';
 const RELEASES = [
+  {v:'1.09.07', d:'07/09/2026', t:'Fixed: Supervision needed a name and date, not just a tick', items:[
+    'Correction, not a new request: "Do need to enter the borrower\u2019s name" was read as "don\u2019t need" last build. Each of the 12 supervision entries now has a borrower name field and a date field alongside Complete.',
+    'Existing tick-only data upgrades automatically the first time a client\u2019s panel is opened, nothing is lost.',
+    'Date fields use the browser\u2019s own date picker, which displays DD/MM/YYYY on an Australian locale. The underlying value Airtable stores is unaffected either way.'
+  ]},
   {v:'1.09.06', d:'07/09/2026', t:'Supervision tracker and client header detail', items:[
     'Supervision panel added to every client with mandated months set: 12 applications, one Complete tick each, no borrower name captured, at Ben\u2019s request simplified from The Bridge\u2019s two-stage review. Stored in the new Supervision Progress Airtable field, ticking saves immediately.',
     'Client header now shows the CA number and mandated months as badges, and a subtitle line: coach, state, lifecycle stage, program, referred by.',
@@ -481,44 +486,55 @@ function renderClientDetail(){
 }
 
 /* ================= Supervision ================= */
-/* Twelve applications, each ticked off once, not reviewed twice the way
-   The Bridge's original tracked it. Simplified at Ben's request: one
-   Complete box per application, no borrower name captured. Stored as a
-   JSON array of 12 booleans in the Supervision Progress field, so it
-   round-trips through Airtable rather than living only in this app. */
+/* Twelve applications, each with a borrower name, the date, and a
+   Complete tick. Simplified from The Bridge's two-stage review at Ben's
+   request, but the name and date are real fields, not decoration.
+   Stored as a JSON array of 12 objects in Supervision Progress. */
 function supStateFor(c){
-  try{ const v=JSON.parse(c.sup||'[]'); if(Array.isArray(v) && v.length===12) return v; }catch(e){}
-  return new Array(12).fill(false);
+  try{
+    const v=JSON.parse(c.sup||'[]');
+    if(Array.isArray(v) && v.length===12){
+      /* Heals the earlier tick-only format automatically, no data lost,
+         just upgraded the first time this client's panel is opened. */
+      return v.map(x => (x && typeof x === 'object') ? x : {name:'', date:'', complete:!!x});
+    }
+  }catch(e){}
+  return Array.from({length:12}, () => ({name:'', date:'', complete:false}));
 }
 
 function supervisionPanel(c){
   const sup = supStateFor(c);
-  const done = sup.filter(Boolean).length;
-  const toRun = Math.max(0, (c.mandatedMonths||0) - done);
+  const done = sup.filter(x=>x.complete).length;
   const wrap=document.createElement('div'); wrap.className='detail'; wrap.style.marginTop='14px';
   let html='<h2>Supervision</h2>'+
-    '<p style="color:var(--muted,#69707F);font-size:13px;margin-top:-8px">Twelve applications, each ticked off once complete.</p>'+
+    '<p style="color:var(--muted,#69707F);font-size:13px;margin-top:-8px">Twelve applications, borrower, date, and complete when signed off.</p>'+
     '<div style="display:flex;justify-content:space-between;align-items:center;background:var(--bg,#F4F6F9);border:1px solid var(--border,#DFE3EB);border-radius:10px;padding:14px 18px;margin:14px 0">'+
       '<div><b style="font-family:Montserrat,sans-serif;font-size:1.6rem;color:var(--primary,#2A3550)">'+done+'</b><div style="font-size:.66rem;text-transform:uppercase;letter-spacing:.04em;color:var(--muted,#69707F);font-weight:700">of 12 complete</div></div>'+
       '<div style="text-align:right"><b style="font-family:Montserrat,sans-serif;font-size:1.6rem;color:var(--primary,#2A3550)">'+(c.mandatedMonths||0)+'</b><div style="font-size:.66rem;text-transform:uppercase;letter-spacing:.04em;color:var(--muted,#69707F);font-weight:700">mandated months</div></div>'+
-    '</div>'+
-    '<div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(110px,1fr))">';
-  sup.forEach((val,i)=>{
-    html+='<label style="display:flex;flex-direction:column;align-items:center;gap:6px;background:var(--bg,#F4F6F9);border:1px solid var(--border,#DFE3EB);border-radius:10px;padding:12px 8px;cursor:pointer">'+
-      '<b style="font-family:Montserrat,sans-serif;color:var(--muted,#69707F)">'+(i+1)+'</b>'+
-      '<input type="checkbox" style="width:20px;height:20px;accent-color:var(--accent,#4A6FA5)" '+(val?'checked':'')+' onchange="toggleSupervision(\''+c.airtableId+'\','+i+',this.checked)">'+
-      '<span style="font-size:.68rem;color:var(--muted,#69707F)">Complete</span>'+
-    '</label>';
+    '</div><div style="display:flex;flex-direction:column;gap:8px">';
+  sup.forEach((row,i)=>{
+    html+='<div style="display:flex;align-items:center;gap:10px;background:var(--bg,#F4F6F9);border:1px solid var(--border,#DFE3EB);border-radius:10px;padding:10px 14px">'+
+      '<b style="font-family:Montserrat,sans-serif;color:var(--muted,#69707F);width:20px">'+(i+1)+'</b>'+
+      '<input type="text" placeholder="Borrower name" value="'+(row.name||'').replace(/"/g,'&quot;')+'" '+
+        'style="flex:1;padding:7px 9px;border:1px solid var(--border,#DFE3EB);border-radius:6px;font-size:13px;font-family:Inter,sans-serif;background:var(--card,#fff)" '+
+        'onchange="updateSupervisionRow(\''+c.airtableId+'\','+i+',\'name\',this.value)">'+
+      '<input type="date" value="'+(row.date||'')+'" '+
+        'style="padding:7px 9px;border:1px solid var(--border,#DFE3EB);border-radius:6px;font-size:13px;font-family:Inter,sans-serif;background:var(--card,#fff)" '+
+        'onchange="updateSupervisionRow(\''+c.airtableId+'\','+i+',\'date\',this.value)">'+
+      '<label style="display:flex;align-items:center;gap:5px;font-size:.75rem;color:var(--muted,#69707F);white-space:nowrap">'+
+        '<input type="checkbox" style="width:18px;height:18px;accent-color:var(--accent,#4A6FA5)" '+(row.complete?'checked':'')+' '+
+          'onchange="updateSupervisionRow(\''+c.airtableId+'\','+i+',\'complete\',this.checked)"> Complete</label>'+
+    '</div>';
   });
   html+='</div><div class="savedNote" id="supSaveNote" style="margin-top:10px"></div>';
   wrap.innerHTML=html;
   return wrap;
 }
 
-async function toggleSupervision(clientId, idx, val){
+async function updateSupervisionRow(clientId, idx, key, val){
   const c=STATE.clients.find(x=>x.airtableId===clientId);
   const sup=supStateFor(c);
-  sup[idx]=val;
+  sup[idx][key]=val;
   c.sup=JSON.stringify(sup);
   const note=document.getElementById('supSaveNote'); if(note) note.textContent='Saving...';
   try{
@@ -526,9 +542,7 @@ async function toggleSupervision(clientId, idx, val){
     const d=await r.json();
     if(note) note.textContent = (!r.ok || d.ok===false) ? (d.message||'Save failed.') : 'Saved '+new Date().toLocaleTimeString();
   }catch(e){ if(note) note.textContent='Could not reach the server.'; }
-  /* Re-render just the summary numbers without losing scroll position on every click. */
-  const openBefore = STATE.clientOpen;
-  if(openBefore===clientId) render();
+  if(key==='complete' && STATE.clientOpen===clientId) render();
 }
 
 /* ================= Meeting Intelligence ================= */
