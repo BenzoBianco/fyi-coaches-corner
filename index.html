@@ -1,0 +1,1031 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FYI Coaches' Corner</title>
+<style>
+:root{
+  --navy:#13293d; --teal:#1f8a70; --teal-dk:#166a56; --bg:#f6f7f9; --card:#ffffff;
+  --line:#e3e6ea; --text:#1a2430; --muted:#6b7480; --amber:#c98a1f; --red:#b3413a; --green:#1f8a70;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text)}
+.hidden{display:none !important}
+/* ---- Login ---- */
+#loginScreen{min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--navy)}
+.loginBox{background:var(--card);border-radius:12px;padding:36px;width:340px;box-shadow:0 20px 50px rgba(0,0,0,.3)}
+.loginBox h1{font-size:19px;margin:0 0 4px}
+.loginBox p.sub{color:var(--muted);font-size:13px;margin:0 0 20px}
+.loginBox input{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:8px;margin-bottom:10px;font-size:14px}
+.loginBox button{width:100%;padding:11px;border:0;border-radius:8px;background:var(--teal);color:#fff;font-size:14px;font-weight:600;cursor:pointer}
+.loginBox button:hover{background:var(--teal-dk)}
+.loginErr{color:var(--red);font-size:13px;margin:8px 0 0;min-height:16px}
+.loginLinks{margin-top:14px;font-size:12px;color:var(--muted);text-align:center}
+.loginLinks a{color:var(--teal);cursor:pointer;text-decoration:none}
+/* ---- App shell ---- */
+#app{display:none}
+#app.show{display:block}
+header{background:var(--navy);color:#fff;padding:14px 20px;display:flex;align-items:center;justify-content:space-between}
+header .brand{font-weight:700;font-size:16px}
+header .brand small{font-weight:400;color:#9fb3c4;margin-left:8px;font-size:12px}
+header .who{font-size:13px;color:#cfe0eb;display:flex;align-items:center;gap:12px}
+header .who button{background:transparent;border:1px solid #3a5169;color:#cfe0eb;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12px}
+nav{display:flex;gap:4px;background:#fff;border-bottom:1px solid var(--line);padding:0 16px;overflow-x:auto}
+nav button{padding:12px 14px;border:0;background:transparent;cursor:pointer;font-size:13px;color:var(--muted);border-bottom:2px solid transparent;white-space:nowrap}
+nav button.active{color:var(--teal-dk);border-bottom-color:var(--teal);font-weight:600}
+main{padding:20px;max-width:1100px;margin:0 auto}
+.banner{background:#fff3e0;border:1px solid #f0c988;color:#7a5309;padding:10px 14px;border-radius:8px;font-size:13px;margin-bottom:16px}
+.banner.err{background:#fdecea;border-color:#f0a8a2;color:#7a2a24}
+.banner.ok{background:#e7f5ef;border-color:#a7dcc7;color:#155c44}
+.toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;gap:10px;flex-wrap:wrap}
+.toolbar input[type=search]{padding:8px 12px;border:1px solid var(--line);border-radius:8px;font-size:13px;min-width:220px}
+.btn{padding:8px 14px;border:0;border-radius:7px;background:var(--teal);color:#fff;font-size:13px;font-weight:600;cursor:pointer}
+.btn:hover{background:var(--teal-dk)}
+.btn.secondary{background:#fff;color:var(--teal-dk);border:1px solid var(--teal)}
+.btn.ghost{background:transparent;color:var(--muted);border:1px solid var(--line)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px;cursor:pointer;transition:box-shadow .15s}
+.card:hover{box-shadow:0 4px 14px rgba(0,0,0,.08)}
+.card h3{margin:0 0 4px;font-size:14px}
+.card .meta{font-size:12px;color:var(--muted);display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.tag{display:inline-block;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:600}
+.tag.green{background:#e7f5ef;color:var(--green)}
+.tag.amber{background:#fdf2e0;color:var(--amber)}
+.tag.red{background:#fdecea;color:var(--red)}
+.tag.grey{background:#eef0f2;color:var(--muted)}
+.empty{color:var(--muted);font-size:13px;padding:30px;text-align:center}
+/* ---- Detail panel ---- */
+.detail{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:20px}
+.detail .back{background:none;border:0;color:var(--teal-dk);cursor:pointer;font-size:13px;margin-bottom:14px;padding:0}
+.detail h2{margin:0 0 16px}
+.fieldGrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.field{display:flex;flex-direction:column;gap:4px}
+.field label{font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.03em}
+.field input,.field select,.field textarea{padding:8px 10px;border:1px solid var(--line);border-radius:6px;font-size:13px;font-family:inherit}
+.field textarea{grid-column:1/-1;min-height:70px;resize:vertical}
+.field.full{grid-column:1/-1}
+.detailActions{margin-top:18px;display:flex;gap:8px;align-items:center}
+.savedNote{font-size:12px;color:var(--muted)}
+/* ---- SOPs ---- */
+.sopList{display:flex;flex-direction:column;gap:6px}
+.sopRow{padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:#fff;cursor:pointer;display:flex;justify-content:space-between;font-size:13px}
+.sopRow:hover{border-color:var(--teal)}
+.sopGroup{font-size:11px;text-transform:uppercase;color:var(--muted);letter-spacing:.04em;margin:16px 0 6px}
+.sopDoc{background:#fff;border:1px solid var(--line);border-radius:10px;padding:20px;line-height:1.55;font-size:14px}
+.sopDoc h2{margin-top:0}
+.sopDoc h4{margin:18px 0 6px;font-size:12px;text-transform:uppercase;color:var(--muted)}
+/* ---- Training ---- */
+.module{background:#fff;border:1px solid var(--line);border-radius:10px;padding:16px;margin-bottom:12px}
+.module h3{margin:0 0 6px;font-size:14px}
+.module .why{color:var(--muted);font-size:13px;margin-bottom:10px}
+.module ul.checklist{list-style:none;padding:0;margin:0}
+.module ul.checklist li{display:flex;gap:8px;align-items:flex-start;padding:5px 0;font-size:13px}
+.module ul.checklist input{margin-top:3px}
+.progressBar{height:6px;background:var(--line);border-radius:3px;overflow:hidden;margin:10px 0 20px}
+.progressBar .fill{height:100%;background:var(--teal)}
+</style>
+</head>
+<body>
+
+<div id="loginScreen">
+  <div class="loginBox">
+    <h1>FYI Coaches' Corner</h1>
+    <p class="sub">Sign in with the account you were invited on.</p>
+    <input id="liEmail" type="email" placeholder="Email" autocomplete="username">
+    <input id="liPass" type="password" placeholder="Password" autocomplete="current-password">
+    <button id="liBtn" onclick="doLogin()">Sign in</button>
+    <div class="loginErr" id="liErr"></div>
+    <div class="loginLinks"><a onclick="showAccept()">Accepting an invite? Set your password here</a></div>
+  </div>
+</div>
+
+<div id="acceptScreen" class="hidden">
+  <div id="loginScreen" style="display:flex">
+    <div class="loginBox">
+      <h1>Set your password</h1>
+      <p class="sub">Paste the token from your invite email link, then choose a password.</p>
+      <input id="acToken" placeholder="Invite token (from the email link)">
+      <input id="acPass" type="password" placeholder="New password" autocomplete="new-password">
+      <button onclick="doAccept()">Set password and sign in</button>
+      <div class="loginErr" id="acErr"></div>
+      <div class="loginLinks"><a onclick="showLogin()">Back to sign in</a></div>
+    </div>
+  </div>
+</div>
+
+<div id="app">
+  <header>
+    <div class="brand">FYI Coaches' Corner<small id="coachBadge"></small></div>
+    <div class="who">
+      <span id="whoEmail"></span>
+      <button onclick="doLogout()">Sign out</button>
+    </div>
+  </header>
+  <nav id="tabs">
+    <button data-tab="clients" onclick="setTab('clients')">Clients</button>
+    <button data-tab="prospects" onclick="setTab('prospects')">Prospects</button>
+    <button data-tab="relationships" onclick="setTab('relationships')">Relationships</button>
+    <button data-tab="sops" onclick="setTab('sops')">SOPs</button>
+    <button data-tab="training" onclick="setTab('training')">Coach Training</button>
+  </nav>
+  <main id="main"></main>
+</div>
+
+<script>
+/* ================= Identity (no widget) ================= */
+const IDENTITY = location.origin + '/.netlify/identity';
+function saveSession(s){ localStorage.setItem('cc_session', JSON.stringify(s)); }
+function getSession(){ try{ return JSON.parse(localStorage.getItem('cc_session')||'null'); }catch(e){ return null; } }
+function clearSession(){ localStorage.removeItem('cc_session'); }
+
+async function doLogin(){
+  const email=document.getElementById('liEmail').value.trim();
+  const pass=document.getElementById('liPass').value;
+  const err=document.getElementById('liErr'); err.textContent='';
+  if(!email||!pass){ err.textContent='Enter your email and password.'; return; }
+  try{
+    const r=await fetch(IDENTITY+'/token',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},
+      body:'grant_type=password&username='+encodeURIComponent(email)+'&password='+encodeURIComponent(pass)});
+    const d=await r.json();
+    if(!r.ok){ err.textContent = d.error_description || 'Sign in failed. Check your email and password.'; return; }
+    saveSession({access_token:d.access_token, refresh_token:d.refresh_token, email});
+    boot();
+  }catch(e){ err.textContent='Could not reach the sign-in service.'; }
+}
+
+function showAccept(){ document.getElementById('loginScreen').classList.add('hidden'); document.getElementById('acceptScreen').classList.remove('hidden'); }
+function showLogin(){ document.getElementById('acceptScreen').classList.add('hidden'); document.getElementById('loginScreen').classList.remove('hidden'); }
+
+async function doAccept(){
+  const token=document.getElementById('acToken').value.trim();
+  const pass=document.getElementById('acPass').value;
+  const err=document.getElementById('acErr'); err.textContent='';
+  if(!token||!pass){ err.textContent='Paste the token and choose a password.'; return; }
+  try{
+    /* Password must be included in this single call. A separate verify-then-update
+       pattern fails, and a failed token attempt burns the token, requiring a fresh
+       invite. */
+    const r=await fetch(IDENTITY+'/verify',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({type:'signup', token, password:pass})});
+    const d=await r.json();
+    if(!r.ok){ err.textContent = d.msg || d.error_description || 'That token was not accepted. Ask Ben to resend the invite.'; return; }
+    saveSession({access_token:d.token && d.token.access_token, refresh_token:d.token && d.token.refresh_token, email:d.email});
+    boot();
+  }catch(e){ err.textContent='Could not reach the sign-in service.'; }
+}
+
+function doLogout(){ clearSession(); location.reload(); }
+
+async function authedFetch(url, opts){
+  const s=getSession();
+  opts=opts||{}; opts.headers=Object.assign({'Authorization':'Bearer '+(s?s.access_token:''), 'Content-Type':'application/json'}, opts.headers||{});
+  let r=await fetch(url,opts);
+  if(r.status===401 && s && s.refresh_token){
+    const rr=await fetch(IDENTITY+'/token',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},
+      body:'grant_type=refresh_token&refresh_token='+encodeURIComponent(s.refresh_token)});
+    if(rr.ok){ const d=await rr.json(); saveSession({access_token:d.access_token, refresh_token:d.refresh_token, email:s.email});
+      opts.headers['Authorization']='Bearer '+d.access_token; r=await fetch(url,opts); }
+  }
+  return r;
+}
+
+/* ================= State ================= */
+const STATE = { coach:null, principal:false, clients:[], prospects:[], relationships:[], tab:'clients',
+  clientOpen:null, prospectOpen:null, relOpen:null, sopOpen:null, trainProgress:{} };
+
+async function boot(){
+  const s=getSession();
+  if(!s){ return; }
+  document.getElementById('loginScreen').classList.add('hidden');
+  document.getElementById('acceptScreen').classList.add('hidden');
+  document.getElementById('app').classList.add('show');
+  document.getElementById('whoEmail').textContent = s.email || '';
+  await loadRoster();
+  await loadTraining();
+  setTab('clients');
+}
+
+function banner(msg, kind){
+  const m=document.getElementById('main');
+  const b=document.createElement('div');
+  b.className='banner'+(kind?(' '+kind):'');
+  b.textContent=msg;
+  m.prepend(b);
+  if(kind!=='err') setTimeout(()=>b.remove(), 5000);
+}
+
+async function loadRoster(){
+  try{
+    const r=await authedFetch('/.netlify/functions/sync-roster',{method:'POST'});
+    const d=await r.json();
+    if(!r.ok || !d.ok){ document.getElementById('main').innerHTML='<div class="banner err">'+(d.message||d.why||'Could not load your roster. Reload, or tell Ben if it keeps happening.')+'</div>'; return; }
+    STATE.coach=d.coach; STATE.principal=d.principal;
+    STATE.clients=d.clients||[]; STATE.prospects=d.prospects||[]; STATE.relationships=d.relationships||[];
+    document.getElementById('coachBadge').textContent = STATE.principal ? 'all coaches' : STATE.coach;
+  }catch(e){ document.getElementById('main').innerHTML='<div class="banner err">Could not reach the server. Check your connection and reload.</div>'; }
+}
+
+async function loadTraining(){
+  try{
+    const r=await authedFetch('/.netlify/functions/state',{method:'GET'});
+    const d=await r.json();
+    STATE.trainProgress = d.value ? JSON.parse(d.value) : {};
+  }catch(e){ STATE.trainProgress = {}; }
+}
+async function saveTraining(){
+  try{ await authedFetch('/.netlify/functions/state',{method:'POST', body: JSON.stringify({value: JSON.stringify(STATE.trainProgress)})}); }
+  catch(e){ banner('Progress could not be saved. Try again.', 'err'); }
+}
+
+function setTab(t){
+  STATE.tab=t; STATE.clientOpen=null; STATE.prospectOpen=null; STATE.relOpen=null; STATE.sopOpen=null;
+  document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('active', b.dataset.tab===t));
+  render();
+}
+function render(){
+  const fn = { clients:renderClients, prospects:renderProspects, relationships:renderRelationships,
+    sops:renderSOPs, training:renderTraining }[STATE.tab];
+  document.getElementById('main').innerHTML='';
+  fn();
+}
+
+/* ================= Clients ================= */
+function ragTag(v){
+  const k=(v||'').toLowerCase();
+  if(k==='green') return '<span class="tag green">Green</span>';
+  if(k==='amber') return '<span class="tag amber">Amber</span>';
+  if(k==='red') return '<span class="tag red">Red</span>';
+  return v ? '<span class="tag grey">'+v+'</span>' : '';
+}
+
+function renderClients(){
+  const m=document.getElementById('main');
+  if(STATE.clientOpen) return renderClientDetail();
+  const q=(document.getElementById('cQ')?document.getElementById('cQ').value:'').toLowerCase();
+  const list=STATE.clients.filter(c=>!q || c.n.toLowerCase().includes(q));
+  const bar=document.createElement('div'); bar.className='toolbar';
+  bar.innerHTML='<input type="search" id="cQ" placeholder="Search clients" oninput="render()" value="'+(q?q:'')+'">'+
+    '<button class="btn" onclick="openNewClient()">New client</button>';
+  m.appendChild(bar);
+  if(!list.length){ m.innerHTML+='<div class="empty">No clients found.</div>'; return; }
+  const grid=document.createElement('div'); grid.className='grid';
+  list.forEach(c=>{
+    const card=document.createElement('div'); card.className='card';
+    card.onclick=()=>{ STATE.clientOpen=c.airtableId; render(); };
+    card.innerHTML='<h3>'+c.n+'</h3>'+
+      '<div class="meta">'+ragTag(c.rag)+'<span class="tag grey">'+(c.p||'No program')+'</span>'+
+      (STATE.principal?'<span class="tag grey">'+(c.c||'Unassigned')+'</span>':'')+'</div>'+
+      '<div class="meta">'+(c.st||'')+(c.f?' &middot; $'+Number(c.f).toLocaleString()+'/mo':'')+'</div>';
+    grid.appendChild(card);
+  });
+  m.appendChild(grid);
+}
+
+function fieldRow(label, id, value, type){
+  type=type||'text';
+  if(type==='textarea') return '<div class="field full"><label>'+label+'</label><textarea id="'+id+'">'+(value||'')+'</textarea></div>';
+  return '<div class="field"><label>'+label+'</label><input id="'+id+'" type="'+type+'" value="'+(value==null?'':String(value).replace(/"/g,'&quot;'))+'"></div>';
+}
+
+function renderClientDetail(){
+  const m=document.getElementById('main');
+  const c=STATE.clients.find(x=>x.airtableId===STATE.clientOpen);
+  if(!c){ STATE.clientOpen=null; return renderClients(); }
+  const d=document.createElement('div'); d.className='detail';
+  d.innerHTML='<button class="back" onclick="STATE.clientOpen=null; render()">&larr; Back to clients</button>'+
+    '<h2>'+c.n+'</h2>'+
+    '<div class="fieldGrid">'+
+      fieldRow('Status','fClientStatus',c.clientStatus)+
+      fieldRow('Program','fP',c.p)+
+      fieldRow('Lifecycle stage','fSt',c.st)+
+      fieldRow('Engagement (Green/Amber/Red)','fEng',c.rag)+
+      fieldRow('Monthly fee','fF',c.f,'number')+
+      fieldRow('State','fS',c.s)+
+      fieldRow('CA number','fCa',c.ca)+
+      fieldRow('Referral source','fRefSource',c.refSource)+
+      fieldRow('DISC','fDisc',c.d)+
+      fieldRow('Mobile','fPhone',c.phone)+
+      fieldRow('Date of birth','fDob',c.dob,'date')+
+      fieldRow('Start date','fStartDate',c.startDate,'date')+
+      fieldRow('Exit date','fExitDate',c.exitDate,'date')+
+      fieldRow('Mandated months','fMandatedMonths',c.mandatedMonths,'number')+
+      fieldRow('Notes','fNotes',c.notes,'textarea')+
+    '</div>'+
+    '<div class="detailActions"><button class="btn" onclick="pushClient(\''+c.airtableId+'\')">Save to Airtable</button>'+
+    '<span class="savedNote" id="clientSaveNote"></span></div>';
+  m.appendChild(d);
+}
+
+async function pushClient(id){
+  const c=STATE.clients.find(x=>x.airtableId===id);
+  const fields={
+    clientStatus: document.getElementById('fClientStatus').value,
+    p: document.getElementById('fP').value,
+    st: document.getElementById('fSt').value,
+    eng: document.getElementById('fEng').value,
+    f: document.getElementById('fF').value,
+    s: document.getElementById('fS').value,
+    ca: document.getElementById('fCa').value,
+    refSource: document.getElementById('fRefSource').value,
+    disc: document.getElementById('fDisc').value,
+    phone: document.getElementById('fPhone').value,
+    dob: document.getElementById('fDob').value,
+    startDate: document.getElementById('fStartDate').value,
+    exitDate: document.getElementById('fExitDate').value,
+    mandatedMonths: document.getElementById('fMandatedMonths').value,
+    notes: document.getElementById('fNotes').value
+  };
+  const note=document.getElementById('clientSaveNote'); note.textContent='Saving...';
+  try{
+    const r=await authedFetch('/.netlify/functions/client-update',{method:'POST', body:JSON.stringify({recordId:id, name:c.n, fields})});
+    const d=await r.json();
+    if(!r.ok || d.ok===false){ note.textContent = d.message || 'Save failed.'; return; }
+    note.textContent='Saved '+new Date().toLocaleTimeString();
+    Object.assign(c, fields, {rag:fields.eng});
+  }catch(e){ note.textContent='Could not reach the server.'; }
+}
+
+function openNewClient(){
+  const name=prompt('New client name:');
+  if(!name) return;
+  authedFetch('/.netlify/functions/client',{method:'POST', body:JSON.stringify({name})})
+    .then(r=>r.json()).then(async d=>{
+      if(!d.ok){ banner(d.message||'Could not create the client.', 'err'); return; }
+      await loadRoster(); render();
+    });
+}
+
+/* ================= Prospects ================= */
+function renderProspects(){
+  const m=document.getElementById('main');
+  const bar=document.createElement('div'); bar.className='toolbar';
+  bar.innerHTML='<div></div><button class="btn" onclick="openNewProspect()">New prospect</button>';
+  m.appendChild(bar);
+  if(!STATE.prospects.length){ m.innerHTML+='<div class="empty">No prospects found.</div>'; return; }
+  const grid=document.createElement('div'); grid.className='grid';
+  STATE.prospects.forEach(p=>{
+    const card=document.createElement('div'); card.className='card';
+    card.innerHTML='<h3>'+p.n+'</h3><div class="meta"><span class="tag grey">'+(p.stage||'No stage')+'</span>'+
+      (p.fee?'<span class="tag grey">$'+Number(p.fee).toLocaleString()+'/mo</span>':'')+'</div>'+
+      '<div class="meta">'+(p.src||'')+(p.close?' &middot; expected '+p.close:'')+'</div>';
+    grid.appendChild(card);
+  });
+  m.appendChild(grid);
+}
+function openNewProspect(){
+  const name=prompt('New prospect name:');
+  if(!name) return;
+  authedFetch('/.netlify/functions/prospect',{method:'POST', body:JSON.stringify({name})})
+    .then(r=>r.json()).then(async d=>{
+      if(!d.ok){ banner(d.message||'Could not create the prospect.', 'err'); return; }
+      await loadRoster(); render();
+    });
+}
+
+/* ================= Relationships ================= */
+function renderRelationships(){
+  const m=document.getElementById('main');
+  if(STATE.relOpen!==null) return renderRelationshipDetail();
+  const bar=document.createElement('div'); bar.className='toolbar';
+  bar.innerHTML='<div></div><button class="btn" onclick="STATE.relOpen=\'new\'; render()">New relationship</button>';
+  m.appendChild(bar);
+  if(!STATE.relationships.length){ m.innerHTML+='<div class="empty">No relationships found.</div>'; return; }
+  const grid=document.createElement('div'); grid.className='grid';
+  STATE.relationships.forEach(r=>{
+    const card=document.createElement('div'); card.className='card';
+    card.onclick=()=>{ STATE.relOpen=r.airtableId; render(); };
+    card.innerHTML='<h3>'+r.n+'</h3><div class="meta"><span class="tag grey">'+(r.type||'')+'</span>'+
+      (r.pri?'<span class="tag grey">'+r.pri+'</span>':'')+'</div>'+
+      '<div class="meta">'+(r.status||'')+(r.last?' &middot; last contacted '+r.last:'')+'</div>';
+    grid.appendChild(card);
+  });
+  m.appendChild(grid);
+}
+function renderRelationshipDetail(){
+  const m=document.getElementById('main');
+  const isNew = STATE.relOpen==='new';
+  const r = isNew ? {n:'',type:'',pri:'',status:'',email:'',phone:'',last:'',cadence:'',notes:''} : STATE.relationships.find(x=>x.airtableId===STATE.relOpen);
+  if(!r){ STATE.relOpen=null; return renderRelationships(); }
+  const d=document.createElement('div'); d.className='detail';
+  d.innerHTML='<button class="back" onclick="STATE.relOpen=null; render()">&larr; Back to relationships</button>'+
+    '<h2>'+(isNew?'New relationship':r.n)+'</h2>'+
+    '<div class="fieldGrid">'+
+      (isNew?fieldRow('Name','rName',''):'')+
+      fieldRow('Type','rType',r.type)+
+      fieldRow('Priority','rPri',r.pri)+
+      fieldRow('Status','rStatus',r.status)+
+      fieldRow('Email','rEmail',r.email,'email')+
+      fieldRow('Mobile','rPhone',r.phone)+
+      fieldRow('Last contacted','rLast',r.last,'date')+
+      fieldRow('Cadence (days)','rCadence',r.cadence,'number')+
+      fieldRow('Notes','rNotes',r.notes,'textarea')+
+    '</div>'+
+    '<div class="detailActions"><button class="btn" onclick="pushRelationship('+(isNew?'null':'\''+r.airtableId+'\'')+')">Save to Airtable</button>'+
+    '<span class="savedNote" id="relSaveNote"></span></div>';
+  m.appendChild(d);
+}
+async function pushRelationship(id){
+  const isNew = id===null;
+  const name = isNew ? document.getElementById('rName').value.trim() : STATE.relationships.find(x=>x.airtableId===id).n;
+  if(isNew && !name){ document.getElementById('relSaveNote').textContent='A name is required.'; return; }
+  const fields={
+    type: document.getElementById('rType').value,
+    pri: document.getElementById('rPri').value,
+    status: document.getElementById('rStatus').value,
+    email: document.getElementById('rEmail').value,
+    phone: document.getElementById('rPhone').value,
+    last: document.getElementById('rLast').value,
+    cadence: document.getElementById('rCadence').value,
+    notes: document.getElementById('rNotes').value
+  };
+  const note=document.getElementById('relSaveNote'); note.textContent='Saving...';
+  try{
+    const r=await authedFetch('/.netlify/functions/relationship-update',{method:'POST', body:JSON.stringify({recordId:id, name, fields})});
+    const d=await r.json();
+    if(!r.ok || d.ok===false){ note.textContent=d.message||'Save failed.'; return; }
+    note.textContent='Saved '+new Date().toLocaleTimeString();
+    await loadRoster();
+    STATE.relOpen = d.id;
+  }catch(e){ note.textContent='Could not reach the server.'; }
+}
+
+/* ================= SOPs ================= */
+function renderSOPs(){
+  const m=document.getElementById('main');
+  if(STATE.sopOpen) return renderSopDoc();
+  const q=(document.getElementById('sQ')?document.getElementById('sQ').value:'').toLowerCase();
+  const bar=document.createElement('div'); bar.className='toolbar';
+  bar.innerHTML='<input type="search" id="sQ" placeholder="Search SOPs" oninput="render()" value="'+(q||'')+'">';
+  m.appendChild(bar);
+  const groups={};
+  SOPS.filter(s=>!q || s.n.toLowerCase().includes(q) || (s.g||'').toLowerCase().includes(q)).forEach(s=>{
+    (groups[s.g]=groups[s.g]||[]).push(s);
+  });
+  const wrap=document.createElement('div');
+  Object.entries(groups).forEach(([g,items])=>{
+    wrap.innerHTML+='<div class="sopGroup">'+g+'</div>';
+    const list=document.createElement('div'); list.className='sopList';
+    items.forEach(s=>{
+      const row=document.createElement('div'); row.className='sopRow';
+      row.onclick=()=>{ STATE.sopOpen=s.id; render(); };
+      row.innerHTML='<span>'+s.n+'</span><span>&rarr;</span>';
+      list.appendChild(row);
+    });
+    wrap.appendChild(list);
+  });
+  m.appendChild(wrap);
+}
+function renderSopDoc(){
+  const m=document.getElementById('main');
+  const s=SOPS.find(x=>x.id===STATE.sopOpen);
+  if(!s){ STATE.sopOpen=null; return renderSOPs(); }
+  const d=document.createElement('div'); d.className='detail';
+  let body='<button class="back" onclick="STATE.sopOpen=null; render()">&larr; Back to SOPs</button>';
+  body+='<div class="sopDoc"><h2>'+s.n+'</h2>';
+  if(s.purpose) body+='<h4>Purpose</h4><p>'+s.purpose+'</p>';
+  if(s.scope) body+='<h4>Scope</h4><p>'+s.scope+'</p>';
+  if(Array.isArray(s.inputs) && s.inputs.length){ body+='<h4>What you need</h4><ul>'+s.inputs.map(x=>'<li>'+x+'</li>').join('')+'</ul>'; }
+  if(Array.isArray(s.steps) && s.steps.length){
+    body+='<h4>Steps</h4><ol>';
+    s.steps.forEach(step=>{
+      body+='<li><b>'+step.t+'</b>';
+      if(Array.isArray(step.b) && step.b.length) body+='<ul>'+step.b.map(x=>'<li>'+x+'</li>').join('')+'</ul>';
+      body+='</li>';
+    });
+    body+='</ol>';
+  }
+  if(Array.isArray(s.check) && s.check.length){ body+='<h4>Signed off when</h4><ul>'+s.check.map(x=>'<li>'+x+'</li>').join('')+'</ul>'; }
+  if(Array.isArray(s.notes) && s.notes.length){ body+='<h4>Notes</h4><ul>'+s.notes.map(x=>'<li>'+x+'</li>').join('')+'</ul>'; }
+  body+='</div>';
+  d.innerHTML=body;
+  m.appendChild(d);
+}
+
+/* ================= Coach Training ================= */
+function renderTraining(){
+  const m=document.getElementById('main');
+  const mine = STATE.trainProgress || {};
+  const totalChecks = TRAIN_MODULES.reduce((a,mod)=>a+mod.check.length,0);
+  let done=0;
+  TRAIN_MODULES.forEach(mod=>{ (mine[mod.id]||[]).forEach(v=>{ if(v) done++; }); });
+  const pct = totalChecks ? Math.round(done/totalChecks*100) : 0;
+
+  const head=document.createElement('div');
+  head.innerHTML='<p style="color:var(--muted);font-size:13px">'+done+' of '+totalChecks+' items signed off, '+pct+'%.</p>'+
+    '<div class="progressBar"><div class="fill" style="width:'+pct+'%"></div></div>';
+  m.appendChild(head);
+
+  TRAIN_MODULES.forEach(mod=>{
+    const box=document.createElement('div'); box.className='module';
+    let html='<h3>'+mod.t+'</h3><div class="why">'+mod.why+'</div>';
+    if(Array.isArray(mod.res) && mod.res.length){
+      const links = mod.res.filter(x=>x.k==='drive'||x.k==='read');
+      if(links.length){
+        html+='<div style="font-size:12px;color:var(--muted);margin-bottom:10px">'+
+          links.map(x=> x.k==='drive' ? '<a href="'+x.u+'" target="_blank" style="color:var(--teal-dk)">'+x.t+'</a>' : x.t ).join(' &middot; ')+
+        '</div>';
+      }
+    }
+    html+='<ul class="checklist">';
+    mod.check.forEach((label,i)=>{
+      const checked = (mine[mod.id] && mine[mod.id][i]) ? 'checked' : '';
+      html+='<li><input type="checkbox" '+checked+' onchange="toggleCheck(\''+mod.id+'\','+i+',this.checked)"> <span>'+label+'</span></li>';
+    });
+    html+='</ul>';
+    box.innerHTML=html;
+    m.appendChild(box);
+  });
+}
+function toggleCheck(modId, idx, val){
+  STATE.trainProgress[modId] = STATE.trainProgress[modId] || [];
+  STATE.trainProgress[modId][idx] = val;
+  saveTraining();
+}
+
+/* ================= Content, duplicated from The Bridge ================= */
+
+const SOPS=[
+/* ================= FINANCE & ADMIN ================= */
+{id:'s01',g:'Finance & Admin',n:'Manual Reconciliation for Pay.com.au',
+ purpose:'To ensure all Pay.com.au transactions are manually reconciled accurately and consistently, maintaining clean financial records and ensuring the clearing account balances to zero.',
+ scope:'All team members responsible for reconciling Pay.com.au transactions, preparing manual bank statements, and updating Xero.',
+ inputs:['Access to Pay.com.au','Access to Argo Drive, Accounting and Finance, Transactions','CSV import statement template','Access to Xero','Access to CBA bank statement'],
+ steps:[
+  {t:'Extract transactions from Pay.com.au',b:['Log in to Pay.com.au','Download the latest transaction report','Ensure the report covers the full period requiring reconciliation']},
+  {t:'Access the CSV import template',b:['Go to Argo Drive, Accounting and Finance, Transactions','Locate the CSV import statement template','Download a fresh copy for this reconciliation period']},
+  {t:'Populate the CSV template',b:['Open the Pay.com.au transaction report','Fill in date, description, received, spent, reference and notes','Ensure all data matches the Pay.com.au report exactly']},
+  {t:'Compare transactions in Xero',b:['Open Xero and go to the Pay.com.au bank account','Cross-check each transaction against Xero records','Identify any missing, duplicated or mismatched entries']},
+  {t:'Reconcile CBA first',b:['Open the CBA account in Xero','Reconcile all relevant transactions before touching Pay.com.au','CBA feeds are automated and more reliable than manual imports','This ensures the reconciliation aligns with actual cash movement']},
+  {t:'Understand typical transaction flows',b:['Argo Main to Pay.com.au to NBITS, for IT costs','Argo Main to Pay.com.au to Airwallex AU, for Philippines costs','Use these flows to identify and categorise transactions correctly']},
+  {t:'Account for Pay.com.au bank fees',b:['Fees do not appear in any bank transaction report','Calculate using: received minus spent equals bank fees','Create a manual journal entry in the CSV import file','Tag the fee as GST on expenses to ensure GST deductibility']},
+  {t:'Cross-check totals before importing',b:['Sum all transactions in the CSV template','The total must equal zero, because Pay.com.au is a clearing account','If the total is not zero, recheck entries for errors']},
+  {t:'Upload and reconcile in Xero',b:['Upload the completed CSV statement into Xero','Most transfers will auto-match','Invoices and bank fees must be reconciled using Create','Ensure all items are properly coded and accounted for']}
+ ],
+ check:['Pay.com.au transactions extracted','CSV template downloaded and populated','Xero Pay.com.au account cross-checked','CBA account reconciled first','NBITS and Airwallex flows verified','Bank fees calculated and journal entry created','CSV totals confirmed to equal zero','Manual statement uploaded to Xero','All transactions reconciled correctly'],
+ notes:['If totals do not balance to zero, recheck for missing fees or duplicated entries','If CBA transactions do not match Pay.com.au flows, investigate before importing','If Xero rejects the CSV, check formatting: dates, column order, negative values','Always ensure GST coding is correct for fees and expenses']},
+
+{id:'s02',g:'Finance & Admin',n:'Handling a Failed Payment, GHL and Stripe',
+ purpose:'To ensure failed payments are handled promptly, professionally and consistently. This protects revenue, maintains client trust, and ensures accurate financial tracking.',
+ scope:'All team members responsible for monitoring payments, communicating with clients, and managing subscription automations in GoHighLevel and Stripe.',
+ inputs:['Access to Stripe','Access to Gmail, email templates available','Access to GoHighLevel','Permission to send client emails','Ability to take and upload screenshots without exposing sensitive data'],
+ steps:[
+  {t:'Identify the cause of the failed payment',b:['Open Stripe','Check the payment attempt and review the error message','Check the client email notification for additional details','Note the cause: insufficient funds, expired card, bank decline']},
+  {t:'Notify the client within 12 hours',b:['Open Gmail and use the approved failed-payment template','Attach a screenshot of the failed transaction from Stripe','Ensure no sensitive information is visible in the screenshot','Send within 12 hours of the failed payment']},
+  {t:'Confirm subscription automations in GoHighLevel',b:['Go to Payments, Settings, Subscriptions','Check that automatic retry settings are active','Ensure the system is set to retry multiple times','Confirm the automation is linked to the client subscription']},
+  {t:'Escalate after the third failed attempt',b:['If the third retry fails, notify the coach immediately','Prepare and send a manual invoice','Include a clear explanation of the outstanding amount and payment options']}
+ ],
+ check:['Cause of failed payment identified in Stripe','Client notified within 12 hours using the correct template','Screenshot attached with sensitive data hidden','Subscription retry automations checked in GoHighLevel','Coach informed after the third failed attempt','Manual invoice sent'],
+ notes:['If the client responds with updated details, process manually and update the subscription','If the client disputes the charge, escalate to the coach before acting','Always double-check screenshots for sensitive information','If GHL automations appear incorrect or inactive, notify the document owner immediately']},
+
+{id:'s03',g:'Finance & Admin',n:'Mercury Nexus Pro Plus, Customise Client CRM',
+ purpose:'To ensure each client receives a fully customised Mercury CRM that matches their business branding, workflow requirements, and the standard FYI Business Coaching setup.',
+ scope:'All team members responsible for CRM setup, branding, client communication and workflow customisation for Mercury Nexus Pro Plus clients.',
+ inputs:['Access to the client Google Drive folder','Access to the FYI Master Sheet','Access to Mercury CRM','Access to Gmail','Access to Canva','Authentication approval from Ben','Snippets and Doc Request folder'],
+ steps:[
+  {t:'Request CRM duplication from Connective',b:['Ask the authorised admin to email Connective','Request duplication of Ben\u2019s CRM including Status Editor, Auto Actions, Task Templates and Email Templates']},
+  {t:'Prepare the client Google Sheet',b:['Duplicate the CRM Google Sheet template','Save in the client folder as YYYY.MM.DD_Company Name - CRM','Update to reflect the client company name and brand colours','Replace all references to Strider Finance with the client company name','Replace Troy with the client first name']},
+  {t:'Request branding assets from the client',b:['Email the client requesting their company logo and brand colours']},
+  {t:'Create sample infographics',b:['Create three sample infographics matching their branding and company profile','Email the three options and ask which they prefer','Make revisions if requested','Once approved, create the remaining ten infographics']},
+  {t:'Log in to the client CRM',b:['Inform Ben you are starting the customisation','Go to Mercury and enter the client username and password from the FYI Master Sheet, Current Mentees columns T and U','Request authentication from Ben','Tick the Remember Me box','Once logged in, proceed with customisation']},
+  {t:'Complete CRM customisation',b:['Open the client Google Sheet and follow the Task List','Tick each item as you complete it','Under Email Templates, request the client calendar link','Use the Snippets and Doc Request folders as needed','Ensure Status Editor, Auto Actions, Task Templates and Email Templates all match Ben\u2019s CRM']},
+  {t:'Finalise and update templates',b:['Email the client with the completed Task Sheet','Request their booking link if not yet provided','Update all email templates and auto actions that require the booking link','Cross-check the Task Sheet to ensure nothing is missed']},
+  {t:'Confirm completion',b:['Inform the client that CRM customisation is complete','Confirm they have access and everything is functioning correctly']}
+ ],
+ check:['CRM duplication requested from Connective','Google Sheet duplicated and customised','Branding assets received from client','Three sample infographics created and approved','11 final infographics completed','Logged into Mercury CRM with authentication','Full CRM customisation completed','Email templates updated with booking link','Task Sheet sent to client','Client informed that CRM setup is complete'],
+ notes:['If Connective does not duplicate the CRM correctly, request a revision before customisation begins','Always double-check that all templates match Ben\u2019s CRM before finalising']},
+
+{id:'s04',g:'Finance & Admin',n:'Changing Card Details for Mentees',
+ purpose:'To outline the process for assisting mentees who need to update their payment card details, ensuring billing continuity and accurate subscription management.',
+ scope:'The FYI Admin Team when supporting mentees with updating or replacing card details for active subscriptions in the FYI Client Portal.',
+ inputs:['GoHighLevel Payment section','Client access to their FYI Client Portal','Client login credentials','New card details','Active subscription in the system'],
+ steps:[
+  {t:'Receive the request from the mentee',b:['Confirm the mentee is requesting to update their card details','Provide the standard instructions: log in, Manage Your Account, Billing and Subscription, Update Card or Modify Payment Method','Ask the mentee to notify you once they have attempted the update']},
+  {t:'Check if the mentee can update their card',b:['If the Update Card option is visible, ask them to complete it and confirm','If the option is not visible, proceed to the next step']},
+  {t:'Issue a new subscription link, admin action',b:['First verify the current subscription coverage in the GHL Payments section','Pause the existing subscription: Payments, Subscriptions, Client Name, three dots, Pause','Inform the mentee a new link will be issued before their due date to avoid double payments','Explain the link must be completed promptly to avoid disruption','Generate and send the new subscription link','If on Mercury Nexus Pro, issue both required links','Instruct them to set up using their preferred card as soon as they receive it','Once they confirm the new subscription is active, cancel the old one','Notify the mentee the payment method has been updated and no further action is required']}
+ ],
+ check:['Provided the mentee with instructions to update the card','Confirmed whether the mentee could update the card themselves','Issued new subscription link if required','Cancelled old subscription if a new one was created','Confirmed successful billing update with the mentee'],
+ notes:['If the mentee is overdue on payment, prioritise issuing a new link to avoid service interruption','Always document unusual issues or repeated failed attempts in GHL for team visibility','If multiple failed payments occur, escalate to the support group for review']},
+
+/* ================= MBFP ================= */
+{id:'s05',g:'Mortgage Broker Foundation Program',n:'Discovery and Decision Pipeline',
+ purpose:'To move a new enquiry through to a signed agreement in a consistent, tracked sequence.',
+ scope:'All leads entering the FYI ecosystem. Ten pipeline stages.',
+ inputs:['GoHighLevel','FYI Info Pack, correct version','Discovery Questionnaire','FYI Participation Agreement','Client folder in Google Drive'],
+ steps:[
+  {t:'1.1 New Enquiry',b:['New leads enter the pipeline','Admin: ensure the lead is correctly added to GHL']},
+  {t:'1.2 Contacted, Awaiting Reply',b:['Mentor has made initial contact and is awaiting a response','Admin: monitor for replies and update the pipeline']},
+  {t:'1.3 Discovery Call Booked',b:['The discovery call has been scheduled','Admin: add to the mentor calendar and confirm with the lead']},
+  {t:'1.4 Discovery Call Completed',b:['The discovery call has taken place','Mentor: update notes in GHL','Admin: move the lead to the next stage']},
+  {t:'1.5 Info Pack Sent',b:['Send the correct FYI Info Pack, mentor will specify the version, with the Discovery Questionnaire','While in this stage an automated follow-up email sends every 2 days','The automation stops on Day 6, or as soon as the mentee leaves this stage, whichever comes first','Admin must monitor responses and update GHL notes']},
+  {t:'1.6 Follow Up Required',b:['If no response after 6 days they move here automatically','An internal notification email is sent to the mentor prompting direct contact','Admin must confirm the pipeline movement and record all communication in GHL']},
+  {t:'1.7 Decision Made, Yes',b:['This stage is for hot leads','Admin: prepare agreement and onboarding steps']},
+  {t:'1.8 Contract or Agreement Sent',b:['Email the FYI Participation Agreement to the prospect mentee','Admin: track signature status']},
+  {t:'1.9 Contract or Agreement Signed',b:['The agreement has been signed','Admin: save the contract in the client Google Drive folder and update GHL']},
+  {t:'1.10 Decision Made, No or Not Now',b:['The lead has decided not to proceed or has deferred','Admin: update GHL and close the lead']}
+ ],
+ check:['Lead added to GHL','Info pack and questionnaire sent','Follow-up automation running','Agreement sent and signature tracked','Signed contract saved in the client Drive folder'],
+ notes:['The follow-up cadence changed from three days to every two days stopping at Day 6. The older standalone PDF still shows the three-day rule.']},
+
+{id:'s06',g:'Mortgage Broker Foundation Program',n:'Mentee Onboarding',
+ purpose:'To ensure every new mentee is onboarded consistently and professionally, with all required documents, systems and communication in place before their program begins.',
+ scope:'All FYI Business Coaching mentees entering the Mortgage Broker Foundation Program or any FYI coaching stream.',
+ inputs:['Connective Mentoring Agreement','FYIBC Participation Agreement','Payment Links','Profile Me DISC Assessment Result','FYIBC Onboarding Session, the FYI First 30 Days','FYIBC Mentee Meeting Template','FYIBC Post-Meeting Record','FYIBC Airtable Client Section','Mercury Admin Access Instructions','JotForm Discovery Form Questionnaire Template'],
+ steps:[
+  {t:'2.1 Pending Client Start Date',b:['Add mentee to the Pending Start Date pipeline','A sequence of ten automated emails sends while they await their start date','When removing them from this pipeline, click Done in Enrolment History to stop further emails']},
+  {t:'2.2 Payment Links Sent, pre-onboarding requirements',b:['Within 48 hours before the start date send payment links, both if subscribing to Mercury Nexus Pro','Profile Me DISC Assessment for behavioural profiling','Mortgage Broker Foundation Program Participation Agreement if not yet completed']},
+  {t:'2.3 Payment Received',b:['Invite the mentee to the GHL FYI Tribe Community','Invite the mentee to the FYI Tribe WhatsApp Group','Send a Loom walkthrough of the client portal: where documents are stored, how to book sessions, how to access resources','In Airtable, go to the Prospects tab and change status to Won','Check the Clients tab to confirm they were added automatically','Update program type, start date, DISC traits, contact details and coaching cadence','Once verified, remove the mentee from the Prospects list to keep the database clean']},
+  {t:'2.4 Setup in Progress',b:['Add the mentee character traits to Airtable, Client Section','Save the DISC result in the client Google Drive folder and in GHL Contact Shared Files','Upload the DISC result to the client portal','Invite the mentee to a 30-minute Onboarding Session with Ben','Attach to GHL Contact Documents: FYIBC Onboarding Session, Mentee Meeting Template, Profile Me DISC Result']},
+  {t:'2.6 Orientation Complete',b:['Move the mentee to the Orientation Complete pipeline stage','An automated email sends the Discovery Form Questionnaire and Mercury Admin Access instructions','If the automatic email did not send, send it manually including the DISC result','Schedule and secure the first twelve weekly meetings with Ben, 30 minutes each','Create the first Post-Meeting Record following the Post-Meeting SOP','Add the mentee to ClickSend, MBFP Mentees Group, for SMS reminders']},
+  {t:'2.7 Send the starter video watchlist',b:[
+    'Email the eight starter videos in order, with when each should be watched',
+    'The list is on the Coach Training tab and on every client file under The First 30 Days',
+    'Mention it in the onboarding meeting so the mentee expects it',
+    'This replaces explaining the same ground live in Week 1 and Week 2']},
+  {t:'2.8 Ready for Program to Start',b:['Confirm all documents are saved and the mentee is ready to begin']}
+ ],
+ check:['Starter video watchlist emailed','Connective Mentoring Agreement saved in Drive','FYIBC Participation Agreement saved in Drive','Profile Me DISC Result saved in Drive','First Post-Meeting Record created','DISC Result in GHL Contact Shared Files','Onboarding Session in GHL Contact Shared Files','Mentee Meeting Template in GHL Contact Shared Files','JotForm Discovery Questionnaire sent','Mercury Admin Access Instructions sent','Next 12 weekly session invites sent','Added in Airtable FYIBC Client List','Added to ClickSend, MBFP Mentees','Added to GHL FYI Tribe','Added to FYI Tribe WhatsApp Group'],
+ notes:['Some mentees require a modified onboarding process; variations must be documented in GHL Notes','Team members must always check GHL notes before proceeding','Follow-up is required if DISC, agreements or payments are delayed','This version supersedes the February 2026 PDF, which predates Airtable, ClickSend and the WhatsApp group']},
+
+{id:'s07',g:'Mortgage Broker Foundation Program',n:'Full Mentee Onboarding Process, Discovery to Program Start',
+ purpose:'To ensure every new mentee is onboarded consistently and professionally across the full lifecycle, with responsibilities split between Mentor and Admin.',
+ scope:'All mentees entering the Mortgage Broker Foundation Program or any FYI coaching stream. Combines the Discovery pipeline and the Onboarding pipeline end to end.',
+ inputs:['Connective Mentoring Agreement','FYIBC Participation Agreement','Profile Me DISC Assessment Result','FYIBC Onboarding Session, FYI First 30 Days','FYIBC Mentee Meeting Template','FYIBC Post-Meeting Record','FYIBC Airtable Client Section','Mercury Admin Access Instructions','Discovery Form Questionnaire Template','ClickSend MBFP Mentees Group','Google Drive','GoHighLevel','FYI Tribe Portal','FYI Tribe WhatsApp Group'],
+ steps:[
+  {t:'Stage 1: Discovery and Decision Pipeline',b:['Runs 1.1 through 1.10 as per the Discovery and Decision Pipeline SOP','Each stage carries an explicit admin action alongside the mentor action','Follow-up automation every 2 days, stopping Day 6']},
+  {t:'Stage 2: Mentee Onboarding Pipeline',b:['Runs 2.1 through 2.7 as per the Mentee Onboarding SOP','Admin and Mentor responsibilities are separated at 2.4 and 2.6']},
+  {t:'2.4 Setup in Progress, split responsibilities',b:['Admin: add DISC traits to Airtable, save to Drive and GHL, attach onboarding documents, invite to the 30-minute session','Mentor: review DISC results and onboarding documents, prepare key focus points, conduct the onboarding session']},
+  {t:'2.6 Orientation Complete, split responsibilities',b:['Admin: move pipeline stage, confirm the automated email sent, schedule the first 12 weekly meetings, create the first Post-Meeting Record, add to ClickSend','Mentor: conduct the onboarding call, review the Discovery Form once submitted, prepare for the first coaching session']},
+  {t:'2.7 Ready for Program to Start',b:['Confirm all documents are saved','Move the mentee to Ready for Program to Start','Notify the mentor that onboarding is complete']}
+ ],
+ check:['Connective Mentoring Agreement in Drive','FYIBC Participation Agreement in Drive','Profile Me DISC Result in Drive','First Post-Meeting Record in Drive','DISC Result shared to mentee in GHL','Onboarding Session document in GHL','Mentee Meeting Template in GHL','Discovery Form Questionnaire sent','Mercury Admin Access Instructions sent','Loom walkthrough at GHL FYI Tribe sent','Next 12 weekly session invites sent','Added to Airtable FYIBC Client List','Added to ClickSend MBFP Mentees','Added to GHL FYI Tribe','Added to FYI Tribe WhatsApp Group'],
+ notes:['Any variations must be documented in GHL Notes','Team members must always check GHL before taking action','Follow up every 48 hours if the mentee delays DISC, agreements or payments']},
+
+{id:'s08',g:'Mortgage Broker Foundation Program',n:'Post-Meeting for Mentees',
+ purpose:'To ensure actions are captured, progress is tracked and accountability is maintained after each session with Ben or Helen.',
+ scope:'All mentees attending coaching sessions with Ben or Helen.',
+ inputs:['Zoom recording, Ben or Helen','ChatGPT','Google Drive client folder'],
+ steps:[
+  {t:'Download the Zoom recording',b:['Download the video file only','Save in the client Google Drive under Zoom Meetings','Name it YYYY.MM.DD - LAST NAME, First Name']},
+  {t:'Copy the Zoom summary notes',b:['Locate the auto-generated Zoom Summary','Copy the full text']},
+  {t:'Save and generate the meeting record in ChatGPT',b:['Save the file format using Current Page only','Prompt: please save this file for creating future post-meetings','Paste the Zoom Summary notes','Prompt: create a meeting record below using the format above, use Australian English','Review the generated record for accuracy']},
+  {t:'Create the Google Doc',b:['Create a new Google Doc','Title it Meeting Summary - LAST NAME, First Name','Paste the meeting summary in','Follow the standard formatting']},
+  {t:'Insert the meeting recording link',b:['Copy the Google Drive URL of the Zoom recording','Insert using Ctrl+K','Add the line: you may watch the meeting recording through this LINK']},
+  {t:'Check link visibility',b:['Ensure the recording link is accessible to the client','Adjust sharing permissions if needed']},
+  {t:'Review the meeting summary',b:['Confirm the first page is customised for the client','Ensure the Post-Meeting Notes section links to the current file','Check formatting, clarity and layout']},
+  {t:'Save the first page as a PDF',b:['Export page 1 only as a PDF','Title it Introduction']},
+  {t:'Upload the PDF to GoHighLevel',b:['Go to the client contact record in GHL','Upload the PDF to the Documents section','Click Share to make it visible in the client portal']}
+ ],
+ check:['Post-Meeting Summary is visible in the client FYI Tribe shared documents'],
+ notes:['The master document flags this SOP as "To Update"']},
+
+{id:'s09',g:'Mortgage Broker Foundation Program',n:'Mentee Monthly Scheduling',
+ purpose:'To ensure all mentees are consistently booked for their monthly coaching sessions and promptly reminded when overdue.',
+ scope:'All team members responsible for managing mentee bookings, updating the FYI Master Sheet and sending booking reminders.',
+ inputs:['Access to Google Calendar','Access to the FYI Master Sheet','Permission to email mentees','Understanding of each mentee development stage'],
+ steps:[
+  {t:'Schedule the monthly booking reminder',b:['Create a recurring calendar reminder titled Booking Reminder for Mentees','Set it to repeat on the 2nd of every month']},
+  {t:'Check last session dates in Google Calendar',b:['Open Google Calendar','Search for each mentee name','Check the date of their last session with Ben']},
+  {t:'Update the FYI Master Sheet',b:['Open the Master Sheet, Current Mentees tab','In Column J enter the date of each mentee last Zoom session','The tab turns orange automatically if there has been no session in over a month']},
+  {t:'Confirm Development Stage mentees are booked',b:['Review all mentees in the Development Stage','Ensure each has a confirmed booking at least once per month','If not, prepare to send a reminder']},
+  {t:'Email overdue mentees',b:['Identify all mentees whose Column J has turned orange','Email each to remind them to book their next session','Use the standard reminder email template']}
+ ],
+ check:['Calendar reminder scheduled for the 2nd of each month','Last session dates checked in Google Calendar','Column J updated for all mentees','All orange tabs identified','Development Stage mentees confirmed to have a booking this month','Reminder emails sent to all overdue mentees'],
+ notes:['If a mentee has already booked but it is not yet reflected in the sheet, confirm before sending a reminder']},
+
+{id:'s10',g:'Mortgage Broker Foundation Program',n:'Mortgage Broker Discovery Questionnaire',
+ purpose:'To ensure client discovery meetings are conducted using the Mortgage Broker Discovery Questionnaire for accurate fact finding, and to enable seamless delegation to the loan processor or parabroker for data entry into the aggregator CRM.',
+ scope:'Brokers conducting client discovery and fact-find meetings, and loan processors or parabrokers responsible for receiving the completed questionnaire and entering data into the aggregator CRM.',
+ inputs:['CA Number or aggregator CRM access','Access to the FYI Business Coaching JotForm template','JotForm login credentials','Email access','Access to the client Google Drive folder'],
+ steps:[
+  {t:'Duplicate the JotForm template',b:['FYI Business Coaching will provide the template','Duplicate it into your own JotForm account','Rename appropriately, for example Company Name - Client Discovery Form']},
+  {t:'Update the Finance Strategist dropdown',b:['Go to the Build tab','Locate the Finance Strategist dropdown field','Add all brokers who conduct client discovery meetings','Ensure names are accurate and consistent with internal records']},
+  {t:'Disable the default autoresponder',b:['Go to Settings','Select Emails','Open Autoresponder','Click Disable']},
+  {t:'Add notification email recipients',b:['Go to Settings, Emails, Add Email','Add the loan processor or parabroker','Add the finance strategist conducting the meeting','Confirm email addresses are correct and save']},
+  {t:'Complete the form during the client meeting',b:['The broker completes the JotForm in real time','All required client information must be captured accurately','At the end, choose either "Complete and ready for the team, press SUBMIT" or "INCOMPLETE and not ready for team action yet, press SAVE"']},
+  {t:'Submission and delegation',b:['If Submit: the loan processor or parabroker receives the completed form by email, reviews it, and begins data entry into the aggregator CRM','If Save: the form remains incomplete and no team action is required until submitted']},
+  {t:'Save the completed form',b:['Download the completed form, PDF version if required','Save to the client Google Drive folder','Name it YYYY.MM.DD_LAST NAME, First Name - Discovery Questionnaire']}
+ ],
+ check:['JotForm template duplicated','Finance Strategist dropdown updated','Default autoresponder disabled','Notification emails added correctly','Form completed during client meeting','Form submitted if ready for processing','Loan processor or parabroker received the form','Completed form saved in the client Google Drive folder','Data entered into aggregator CRM'],
+ notes:[]},
+
+{id:'s11',g:'Mortgage Broker Foundation Program',n:'Wednesday Group Chat Protocol',
+ purpose:'To ensure all mentees, coaches and admin staff are properly notified of the weekly Wednesday Group Chat, and that all relevant Zoom links are distributed via both email and GHL Tribe.',
+ scope:'All FYI Business Coaching mentees, coaches and admin team members who participate in or help facilitate the Wednesday Group Chat.',
+ inputs:['Access to GHL Group, FYI Tribe group','Access to Gmail','Contact list of all mentees and coaches','The Zoom meeting link for the 12:30pm Wednesday Group Chat','JPEG promo graphic for weekly reminders'],
+ steps:[
+  {t:'Tuesday 11am, send the promo',b:['Send the JPEG promo to all mentees and coaches via GHL Group and email','Remind them the Wednesday Group Chat is tomorrow']},
+  {t:'Tuesday 12pm, confirm the guest',b:['Check the WGC guest is still on track to feature on Wednesday','If confirmed, send a short confirmation email 48 hours before the session','Reconfirm attendance, topic and any materials needed']},
+  {t:'Wednesday 11am, reminder email',b:['Send a reminder to all mentees, coaches and admin staff','Confirm the Group Chat is on at 12:30pm','Include the Zoom link and meeting details']},
+  {t:'Wednesday 11am, GHL Group message',b:['Post in the FYI Tribe group announcing the Wednesday Group Chat, episode number, starts 12:30pm today','Include the Zoom link']},
+  {t:'Confirm everything sent',b:['Confirm all communications were sent successfully','Confirm the Zoom link is active and working']}
+ ],
+ check:['JPEG promo sent Tuesday 11am','Guest attendance checked and confirmation email sent','Reminder email sent Wednesday 11am','Group message posted Wednesday 11am','Zoom link verified and working','All mentees and coaches notified'],
+ notes:['If the Group Chat is cancelled, this must be decided by Monday close of business','Notify all mentees and coaches of the cancellation as soon as the decision is made','Admin should update the FYI Tribe calendar and internal task tracker','Last updated 16 February 2026 by Darrel. The channel moved from WhatsApp to GHL Group at that revision']},
+
+{id:'s12',g:'Mortgage Broker Foundation Program',n:'Post-Wednesday Group Chat',
+ purpose:'To ensure a consistent and efficient process for managing, preparing and publishing Wednesday Group Chat sessions from Riverside through to final publication in FYI Tribe.',
+ scope:'All team members responsible for video management, content preparation and course updates.',
+ inputs:['Riverside recording and transcript','Edited WGC video file','Google Drive access','Ben Vimeo account access','GoHighLevel access','FYI Tribe access','ChatGPT for summary generation','Canva for thumbnail creation','FYI Business Coaching Course Outline file','Email marketing system'],
+ steps:[
+  {t:'Notify editor and save files',b:['Inform the editor the WGC session is available in Riverside and ready for editing','Editor saves files in Google Drive under 41. Course, The Mortgage Broker Foundation Program, Wednesday Group Chat','Create a folder named YYYY.MM.DD - WGC Title']},
+  {t:'Prepare the WGC summary',b:['Log in to Riverside','Open the relevant WGC session','Scroll to Recordings and download the transcript','Paste the transcript into ChatGPT','Prompt: create a 200-word meeting summary using the video transcript','Save the summary for use in Vimeo and GHL']},
+  {t:'Save transcript and thumbnail to Google Drive',b:['Save the video transcript in the Drive WGC folder','Save the video thumbnail in the same folder','Ensure consistent naming and easy location']},
+  {t:'Upload the edited video to Vimeo',b:['Log in to Ben Vimeo account','Upload to Wednesday Group Coaching','Name it EP # - Episode Title','Paste the ChatGPT summary into the description','Paste the thumbnail created in Canva','Set copyright to Attribution and No Derivatives','Click Share']},
+  {t:'Add the episode to GoHighLevel',b:['Navigate to Memberships, Courses, Products','Select 900. Wednesday Group Chat','Click Videos, Add Content, Add Lesson','Copy the Embed Code from Vimeo','Paste into the Embed URL field in GHL','Add the same description used in Vimeo','Upload the same thumbnail','Click Save and Publish']},
+  {t:'Publish the episode to FYI Tribe',b:['Publish inside FYI Tribe using the standard naming format EP # - Episode Title']},
+  {t:'Update the FYI Business Coaching Course Summary',b:['Add the new WGC to the course outline','Update the course outline file in the FYI Tribe Discussion Section']},
+  {t:'Send email blast to members',b:['Send an email blast to all Wednesday Group Chat recipients','Confirm a new course has been published in FYI Tribe','Include the updated course outline in the email']}
+ ],
+ check:['Riverside recording accessed and processed','Editor notified and files saved in the correct Drive folder','Riverside transcript downloaded and summary created','Video uploaded to Vimeo with description and thumbnail','Episode created and published in GHL','Thumbnail added consistently across platforms','Episode published in FYI Tribe','Course outline updated','Email blast sent to members'],
+ notes:['Ensure the correct transcript is downloaded from Riverside before generating summaries','If the transcript is unavailable, request notes or manually review the recording','Maintain consistent naming across Google Drive, Vimeo and GHL','Any issues or delays must be recorded and communicated to the team','Always ensure the published episode aligns with FYI branding and formatting','This version supersedes the February 2026 PDF, which was Zoom-based and had five steps. Recording moved to Riverside and two steps were added']},
+
+{id:'s13',g:'Mortgage Broker Foundation Program',n:'Mentee Offboarding Process',
+ purpose:'To provide a clear, consistent and professional process for offboarding mentees, ensuring all access is removed, records are properly archived, and internal systems remain accurate and secure.',
+ scope:'All FYI Admin Team members responsible for managing mentee offboarding.',
+ inputs:['Offboarding notice from mentee','FYI Tribe access','FYI Master Sheet','WGC distribution lists','FYI Feedback distribution list','Google Drive client folder','GoHighLevel','Meeting recordings stored in Google Drive'],
+ steps:[
+  {t:'Receive offboarding notice',b:['Confirm receipt of the offboarding request','Update the Offboarding Checklist in Trello to initiate the process','Notify Ben or Helen that offboarding has commenced']},
+  {t:'Send confirmation of termination',b:['Send the Confirmation of Mentorship Termination Notice to the mentee','Save a copy of the email in the mentee Google Drive folder','Update GHL notes to reflect the communication']},
+  {t:'Verify final payment',b:['Check the subscription or invoice status in GHL','Confirm all payments have been finalised','If payment is outstanding, follow the standard payment follow-up process before proceeding']},
+  {t:'Schedule access removal',b:['Schedule removal of all access one day after the mentorship end date, 30 days after receipt of the Offboarding Notice','Set a calendar reminder to complete the removal on the scheduled date']},
+  {t:'Remove mentee access',b:['Remove from the FYI Tribe community','Delete or archive the record from the FYI Mastersheet','Remove from the Wednesday Group Chat events reminder list','Remove from the FYI Feedback distribution list']},
+  {t:'Archive mentee files',b:['Move the Google Drive folder to the Archive directory','Ensure all documents are complete: agreements, meeting summaries, correspondence, recordings']},
+  {t:'Update the GHL record',b:['Move the opportunity stage to Graduated / Exit Interview','Add final notes summarising the offboarding outcome']}
+ ],
+ check:['Offboarding notice received and logged','Confirmation of termination sent and saved','Final payment verified','Access removal scheduled','Removed from FYI Tribe','Removed from FYI Mastersheet','Removed from WGC distribution list','Removed from FYI Feedback distribution list','Mentee folder archived in Google Drive','GHL opportunity updated to Graduated / Exit Interview'],
+ notes:['If the mentee is transitioning to another FYI program, do not remove access until the new program begins','Any unusual circumstances must be clearly documented in GHL','Ensure all removals and updates are completed on time to maintain data security and system accuracy']},
+
+{id:'s14',g:'Mortgage Broker Foundation Program',n:'MBFP Graduate Transition and Offboarding',
+ purpose:'To provide a clear and consistent process for managing MBFP graduate mentees upon completion of mentorship, including offboarding, transition into the Business Optimisation Program, and internal system updates.',
+ scope:'All FYI Admin Team members processing MBFP graduates who are either offboarding or transitioning into the Business Optimisation Program.',
+ inputs:['Connective completion notice','FYI Master Sheet','GoHighLevel','FYI Tribe access','Google Drive client folder','GHL Payment Subscription Access','BOP Participation Agreement','WGC distribution lists','FYI Feedback distribution list','Trello checklist, Offboarding Graduated'],
+ steps:[
+  {t:'Receive completion notice',b:['Confirm receipt of the completion notice from Connective','Update the graduate tracking checklist in Trello','Notify Ben that the mentee has completed the MBFP program']},
+  {t:'Mentor sign-off',b:['Ben completes the final mentor sign-off with Connective','Ensure all final mentoring notes are completed in GHL']},
+  {t:'Pause upcoming subscription payment',b:['Pause the upcoming subscription payment pending their transition decision','Confirm the pause has been successfully processed']},
+  {t:'Send graduate transition email',b:['Send the email titled "You\u2019ve Come a Long Way. What Comes Next is Yours to Decide."','Outline available next steps: offboarding, or transition into Business Coaching / BOP','Save a copy in the client Google Drive folder']},
+  {t:'Confirm graduate decision',b:['Determine whether they will fully offboard or transition into Business Coaching / BOP','Record the decision in GHL and update internal tracking']},
+  {t:'Option A: graduate offboarding',b:['If they choose to offboard, begin the standard offboarding process','Follow the Mentee Offboarding Process SOP']},
+  {t:'Option B: transition to Business Coaching',b:['Begin transition into Business Coaching / BOP','No records, folders or historical information are to be deleted','Maintain continuity of client access and records']},
+  {t:'Option B: update tagging',b:['Update client tagging in GHL and the FYI Master Sheet','Use tags MBFP-Graduate and BOP']},
+  {t:'Option B: update GHL opportunity',b:['Update the opportunity stage to reflect the Business Coaching transition','Add notes on the transition outcome and next steps']},
+  {t:'Option B: update Drive folder structure',b:['Move the client folder from MBFP to BOP / Business Coaching','Ensure all existing files and records remain intact']},
+  {t:'Option B: send BOP Participation Agreement',b:['Send the BOP Participation Agreement for signature','Save the signed agreement in the client Google Drive folder']},
+  {t:'Option B: resume subscription',b:['Resume or update the client subscription once transition onboarding is confirmed','Ensure billing updates are recorded in GHL notes']}
+ ],
+ check:['Completion notice received from Connective','Ben completed mentor sign-off','Upcoming payment paused','Graduate transition email sent','Graduate decision confirmed and documented','GHL updated with proper tagging','Subscription cancelled or resumed appropriately','GHL and Master Sheet tagging updated','GHL opportunity updated','Client folder moved from MBFP to BOP','BOP Participation Agreement sent','Subscription resumed','Records retained with no deletions'],
+ notes:['If the graduate remains within FYI Business Coaching, no records, folders or historical information are to be deleted','Only archive or remove access for graduates who fully exit the FYI ecosystem','Ensure all updates are completed promptly to maintain accurate records and billing continuity','Any unusual circumstances or payment issues must be documented in GHL']},
+
+/* ================= BOP ================= */
+{id:'s15',g:'Business Optimisation Program',n:'BOP Lead Stage to Pre-Onboarding',
+ purpose:'To ensure all Business Optimisation Program leads are managed consistently and professionally from initial capture through to agreement and deposit, enabling a smooth transition into onboarding.',
+ scope:'All BOP leads entering the FYI Business Coaching ecosystem. Covers Mentor and Admin responsibilities during the lead stage.',
+ inputs:['FYIBC Mastersheet','FYI Pre-Session Diagnostic Questionnaire','BOP Discovery Form','Participation Agreement, Optimisation Momentum Program','Profile Me','Program Scope Outline for Mercury Nexus Pro Upgrade, Optimisation Momentum Program, or both','Investment Structure','GoHighLevel','Client folder in Google Drive','Email templates: discovery, proposal, follow-up'],
+ steps:[
+  {t:'Lead captured',b:['Prospect enters via discovery questionnaire, referral, LinkedIn or webinar, or direct enquiry','Admin: add the lead to the BOP Leads Pipeline in GHL and the FYIBC Master Sheet','Record name, email, source and notes','Goal: secure a discovery call booking with Ben']},
+  {t:'Discovery scheduled',b:['Send a calendar invite for the discovery call','Send the Pre-Session Diagnostic Questionnaire','Collect preliminary business data: company website, social media platforms, LinkedIn account']},
+  {t:'Discovery completed',b:['Mentor conducts the business assessment call','Decide: suitable for Mercury Nexus Pro Upgrade, Optimisation Momentum Program, both, or not suitable','Admin: update pipeline stage to Discovery Completed','Tag the lead to the preferred BOP program','Move unsuitable candidates to Disengaged / Cancelled','Record call notes and outcomes in GHL','Create a client folder: 3. Coaching, 43. Business Optimisation Program, Client Folder','Name it Company Name - LASTNAME, Firstname','Create a Client Correspondence subfolder and save all emails as PDF']},
+  {t:'Proposal or program outline sent',b:['Send the Discovery Form, Participation Agreement, Profile Me and Program Scope','Track progress: questions, signature, deposit','Update GHL notes and move to Proposal / Program Outline Sent']},
+  {t:'Agreement signed or deposit paid',b:['Triggers: Discovery Form completed, signed Participation Agreement received, deposit or initial invoice paid','Save the signed agreement and Discovery Form in the client Drive folder','Update GHL to Agreement Signed','Notify Ben the client is ready for onboarding','Prepare onboarding and diagnostic steps','Move the client to the Business Diagnostic Phase']}
+ ],
+ check:['Lead added to GHL with complete details','Discovery call scheduled and forms sent','Discovery outcome recorded in GHL','Proposal package sent','Agreement signed and saved in Google Drive','Deposit confirmed','Pipeline updated at each stage','Ben notified for onboarding','Mentor: discovery call completed','Mentor: suitability decision made','Mentor: program direction confirmed'],
+ notes:['If a lead becomes unresponsive, follow the standard FYI follow-up sequence','If the lead is better suited to another program, document the recommendation in GHL','All unusual circumstances must be recorded in GHL for team visibility','Any additional client requests or questions must be logged and tracked in GHL']},
+
+{id:'s16',g:'Business Optimisation Program',n:'Mercury Nexus Pro Upgrade, Onboarding and Setup',
+ purpose:'To ensure all Mercury Nexus Pro Upgrade clients are onboarded consistently and professionally, with all system access, branding assets and CRM customisation prepared prior to the Activation and Handover session.',
+ scope:'FYI Admin responsible for onboarding and preparing the client Mercury CRM for customisation and activation.',
+ inputs:['FYI Mercury Pro Upgrade, Your Next Steps email template','Connective Partnership Manager details','Company logo','CRM Customisation Tracker template','Canva access','Client folder in Google Drive','GoHighLevel','Mercury Admin Access instructions','Ben CA number and password','OTP from Ben','Connective Mercury access'],
+ steps:[
+  {t:'Send the "Your Next Steps" email',b:['Confirm the client payment has been successfully received first','Include instructions to grant Mercury Admin Access to Ben','Request confirmation of their Connective Partnership Manager','Request their company logo','Save a PDF copy in the client Drive folder under Client Correspondence']},
+  {t:'Save Mercury admin access details',b:['Once admin access is granted, save the password and CA number in the FYI Master Sheet, Client Section']},
+  {t:'Email the Connective Partnership Manager',b:['Request duplication of Ben\u2019s CRM into the client Mercury account','Request confirmation once duplication is complete','Save the email in the client Drive folder']},
+  {t:'Inform Ben and request the OTP',b:['Inform Ben that CRM customisation will now commence','Request the OTP from Ben, which Mercury requires for secure access','Enter the OTP to complete authentication','Confirm successful login and access']},
+  {t:'Customise the CRM Customisation Tracker',b:['Duplicate the CRM Customisation Tracker template','Save under 3. Coaching, 43. Mercury Nexus Pro Upgrade, CRM Tracker, named YYYY.MM.DD_Company Name_CRM','Update the tracker with the client brand colours and logo','Add the client name and program details']},
+  {t:'Prepare infographics',b:['Create three sample infographics in Canva using the client logo and brand colours','Send the samples using the Information Graphics email template','Once the client selects their preferred design, complete the remaining 10 infographic stages']},
+  {t:'Begin customising the client CRM',b:['Once Connective confirms duplication, begin customising per the CRM Customisation Tracker','Update the tracker as each item is completed','Save supporting files or templates in the client folder']},
+  {t:'Final customisation requirements',b:['Email the client requesting their booking link to embed into CRM email templates','Request confirmation of any final details required','Attach the CRM Customisation Tracker for their visibility','Update GHL notes once received']},
+  {t:'CRM customisation complete',b:['Notify Ben the CRM is fully customised and ready for review','Update the CRM Tracker to Completed','Move the client to Activation and Handover Preparation in GHL']},
+  {t:'Schedule the Activation and Handover meeting',b:['Wait for Ben\u2019s approval before scheduling','Book a 30-minute session titled Mercury Pro Upgrade - Activation and Handover','Send the calendar invite to the client','Save the meeting details in the client Drive folder','This call also highlights the possibility of moving forward with the Optimisation Momentum Program']},
+  {t:'After the Activation and Handover session',b:['Email the client the Loom Presentation sample','Email the JotForm template with the SOP on how to integrate it into their business']}
+ ],
+ check:['Your Next Steps email sent','Mercury Admin Access saved in the FYI Master Sheet','Connective Partnership Manager contacted','Ben informed and OTP collected','CRM Tracker duplicated and customised','Infographics created and approved','CRM customisation completed','Booking link received','Activation and Handover meeting scheduled','Loom Presentation sample sent','JotForm template with SOP sent'],
+ notes:['Customisation cannot begin until Mercury admin access is granted and the OTP is received from Ben','Connective may take several days to duplicate the CRM, follow up as needed','Infographics and branding cannot proceed without the client logo or brand colours','CRM email templates cannot be finalised until the client provides their booking link','Save all correspondence in the client Drive folder for transparency','Update GHL at every major step for team visibility','Activation and Handover must not be scheduled until Ben confirms customisation is complete','If delays occur, follow up every 48 hours']},
+
+{id:'s17',g:'Business Optimisation Program',n:'Optimisation Momentum Program, Onboarding and Setup',
+ purpose:'To ensure all Optimisation Momentum Program clients are managed consistently and professionally from program acceptance through to ongoing strategic advisory delivery.',
+ scope:'All clients entering the FYI Optimisation Momentum Program. Covers Mentor and Admin responsibilities during onboarding and ongoing delivery.',
+ inputs:['FYIBC Mastersheet','Optimisation Momentum Program Participation Agreement','Discovery Questionnaire','DISC Profiles','Program Scope Outline','Investment Structure','GoHighLevel','Client folder in Google Drive','Email templates: onboarding, scheduling, follow-up','JotForm template and SOP','Mercury Admin Access to Ben'],
+ steps:[
+  {t:'Program accepted',b:['Triggers: client confirms they wish to proceed, registers via the OMP link, payment confirmed','Add or update the client in the OMP pipeline in GHL','Save the confirmation email in Drive, Client Correspondence','Update the FYIBC Master Sheet with program details']},
+  {t:'Onboarding email sent',b:['Welcome to the Optimisation Momentum Program','Program objectives and expectations','Overview of the advisory structure, fortnightly strategic sessions','Request availability for the first session','Confirmation of any outstanding documents','Save a PDF copy in Client Correspondence and update GHL notes']},
+  {t:'First session scheduled',b:['Confirm client availability','Schedule the first Optimisation Momentum session on Zoom','Send the calendar invite with the Zoom link']},
+  {t:'Send Mercury admin access and JotForm template',b:['Email instructions to grant Mercury Admin Access to Ben','Email the JotForm template with the SOP on how to integrate it into their business']},
+  {t:'Create meeting summary',b:['Create the summary immediately after each session','Name it Optimisation Momentum Program - LAST NAME, First Name','Use the BOP Post-Meeting SOP as the standard for structure, formatting and delivery','Save the summary in the client Google Drive','Email the summary to the client after every session to maintain clarity, accountability and momentum']},
+  {t:'Schedule the bi-monthly meetings',b:['Coordinate with Ben to confirm availability for the next several months','Schedule the bi-monthly Optimisation Momentum sessions in advance','Send calendar invites via GHL and inform the client by email']}
+ ],
+ check:['Mercury Admin Access granted','JotForm template sent','Client added to GHL with complete details','Onboarding email sent','First session scheduled','All documents saved in Google Drive','Pipeline updated at each stage','Session notes saved and tracked','Bi-monthly meetings scheduled'],
+ notes:['If a client becomes unresponsive, follow the standard FYI follow-up sequence','Any delays in scheduling must be documented in GHL','All unusual circumstances must be recorded for team visibility','Any additional client requests or questions must be logged in GHL','If the client expresses interest in additional support such as hiring, systems or CRM, document it for potential upsell or integration with other FYI programs']},
+
+{id:'s19',g:'Mortgage Broker Foundation Program',n:'Coach Leave and Absence',
+ purpose:'To ensure that when a coach takes leave, every mentee is told before it happens, sessions are '+
+   'covered or rescheduled, and the response times promised in the Participation Agreement are honoured '+
+   'rather than quietly stretched.',
+ scope:'All FYI coaches taking planned leave. Applies to Ben and to any contractor coach, including Helen. '+
+   'Unplanned absence follows the same steps compressed into whatever notice exists.',
+ inputs:['The coach\u2019s leave dates, first and last day away',
+   'The Coach Leave panel on Future Events in The Bridge',
+   'The mentee list for that coach, from the Clients tab',
+   'Response times as written in the Participation Agreement',
+   'Access to the coach\u2019s calendar and Delenta availability'],
+ steps:[
+  {t:'Record it the day you are told',b:[
+    'Future Events, Coach Leave, Add coach leave',
+    'Enter coach, first day away, last day away',
+    'Do this however far out it is. The countdown and the reminders work off this record and nothing else',
+    'A coach giving three months\u2019 notice is the easiest case to get wrong, because there is no urgency to act']},
+  {t:'30 days out, agree the cover',b:[
+    'Decide who picks up sessions, or whether they are deferred',
+    'Enter that person in Covered by, because it goes into every mentee email',
+    'If nothing is being covered, say so explicitly rather than leaving it blank',
+    'Check the leave against the Wednesday Group Chat calendar and the season rule',
+    'Check whether any mentee is inside their First 30 Days, since those weeks are hardest to move']},
+  {t:'14 days out, tell the mentees',b:[
+    'Open the leave record. Every mentee coached by that person is listed with an email ready',
+    'Copy each one, check it reads right for that person, send it',
+    'The email carries the dates, who is covering, the normal response time, the response time while away, and what to do if it is urgent',
+    'Do not send one message to everyone. Each mentee gets their own, addressed to them']},
+  {t:'14 days out, move the sessions',b:[
+    'Reschedule anything booked inside the window',
+    'Close the coach\u2019s Delenta availability for those dates so nothing new lands in them',
+    'Update the calendar so the leave is visible to Darrel']},
+  {t:'7 days out, send the reminder',b:[
+    'Second, shorter email from the same panel',
+    'Confirms the dates and repeats the response times',
+    'This is the one that gets read. The first one is filed and forgotten']},
+  {t:'2 days out, hand over',b:[
+    'Anything live goes to whoever is covering: deals mid-flight, mentees on a PIP, anyone flagged Red',
+    'Post-meeting summaries up to date so the cover has context',
+    'Out of office on the coach\u2019s email, naming who to contact']},
+  {t:'On return',b:[
+    'Coach reviews what came in while away before the first session back',
+    'Anything the cover handled is written into the client file, not left in someone\u2019s head',
+    'First session back opens with what has banked up']}
+ ],
+ check:['Leave recorded in The Bridge the day it was notified','Cover agreed and named',
+   'Wednesday Group Chat checked against the dates','First 30 Days mentees identified',
+   '14 day email sent to every affected mentee','Sessions inside the window rescheduled',
+   'Delenta availability closed for the dates','7 day reminder sent',
+   'Handover completed for anything live','Out of office set',
+   'Client files updated on return'],
+ notes:['The commitment that matters is the response time. A mentee who knows their coach is away and '+
+   'knows it will be two days rather than one is fine. A mentee who hears nothing and waits is not.',
+  'For contractor coaches, leave does not change the RCTI. Their mentees are still on the book and '+
+   'still paying, so the coverage has to be real.',
+  'If leave is unplanned, run the same steps in whatever order the notice allows. The 14 and 7 day '+
+   'emails become one email sent immediately.']},
+
+{id:'s18',g:'Business Optimisation Program',n:'Post-Meeting Process for BOP Clients',
+ purpose:'To outline the standardised process for preparing, saving and sending post-meeting documentation for Business Optimisation Program clients, ensuring accurate record-keeping, consistent communication and timely delivery.',
+ scope:'Authorised FYI Admin Team members handling post-meeting documentation for BOP clients after each coaching session with Ben.',
+ inputs:['Zoom recording, video file only','Zoom auto-generated summary','ChatGPT','Google Drive client folder','FYI Post-Meeting Template'],
+ steps:[
+  {t:'Download the Zoom recording',b:['Download the video file only','Save in the client Google Drive under Zoom Meetings','Name it YYYY.MM.DD - LAST NAME, First Name']},
+  {t:'Copy the Zoom summary notes',b:['Locate the auto-generated Zoom Summary','Copy the full text for use in ChatGPT']},
+  {t:'Generate the meeting record in ChatGPT',b:['Load the saved post-meeting file format used in MBFP','Prompt: please save this file for creating future post-meetings','Paste the Zoom Summary notes','Prompt: create a meeting record below using the format above, use Australian English','Review for accuracy, clarity and tone']},
+  {t:'Create the Google Doc',b:['Create a new Google Doc in the client folder','Title it Optimisation Momentum Program Session - LAST NAME, First Name','Paste the meeting summary in','Apply standard FYI formatting']},
+  {t:'Send the post-meeting summary to the client',b:['Email the client the completed summary','Include today\u2019s session post-meeting','Ensure the tone is warm, professional and aligned with FYI standards']}
+ ],
+ check:['Zoom recording saved in Google Drive','Zoom summary copied','Meeting record generated in ChatGPT','Google Doc created and formatted','Post-meeting summary emailed to client','All files saved in the correct client folders'],
+ notes:['Each BOP client operates a different type of business, so their post-meeting notes may vary depending on their specific needs']}
+];
+
+const TRAIN_MODULES=[
+ {id:'m1', n:'01', t:'The FYI Method',
+  why:'Before anything else, a new coach needs to know what we actually sell: a structured programme, not ad hoc advice. The First 30 Days is the spine of it.',
+  res:[
+   {t:'The First 30 Days, full programme',k:'tab',tab:'clients',theme:'theme-clients',
+    d:'Rendered in full inside any client file. All five stages, every prompt, the timed agendas and the scripts.'},
+   {t:'The First 30 Days source document',k:'drive',
+    u:'https://drive.google.com/drive/folders/1fLyvjd0-yBtaahmMRCItjEa1XsUcTQef',
+    d:'The original PDF in the Drive folder.'},
+   {t:'Navigating the Finance Maze',k:'read',d:'Ben\u2019s book. Read it before coaching anyone.'}
+  ],
+  check:['Read the First 30 Days end to end',
+    'Sit in on one live onboarding meeting as an observer',
+    'Run one onboarding meeting with Ben observing',
+    'Can explain the eight core areas without notes',
+    'Can explain why implementation beats information']},
+
+ {id:'m2', n:'02', t:'The 20-Stage Workflow',
+  why:'Every mentee runs deals through the same twenty stages. It is the backbone the whole programme measures against, and a coach who does not know it cannot read a pipeline.',
+  res:[
+   {t:'The 20-stage workflow reference',k:'tab',tab:'clients',theme:'theme-clients',
+    d:'Open any client file, then The First 30 Days, then the workflow button.'},
+   {t:'Mercury Nexus',k:'ext',u:'https://www.connective.com.au/',
+    d:'The three swim lanes live here. Blue stages are the broker, green are the team.'}
+  ],
+  check:['Name all twenty stages in order',
+    'Explain which stages the broker owns and which the team owns',
+    'Walk a live Kanban with a mentee and identify the weak lane',
+    'Install the twenty statuses in a mentee Mercury']},
+
+ {id:'m3', n:'03', t:'Standard Operating Procedures',
+  why:'The SOPs are how the business runs when Ben is not in the room. A coach follows them rather than inventing their own way.',
+  res:[
+   {t:'All procedures, rendered',k:'tab',tab:'sop',theme:'theme-sop',
+    d:'Six procedures with steps, checklists and a change-request form.'},
+   {t:'FYIBC SOP master document',k:'drive',
+    u:'https://docs.google.com/document/d/13rzl3dQNuAbCp_nIbYg51dYs1Xarfb5zUhNugM2Kmrk/edit',
+    d:'Darrel\u2019s working document.'},
+   {t:'SOP folder in Drive',k:'drive',
+    u:'https://drive.google.com/drive/folders/1Vwzn9u8iI6l_ygwhpu_8ObWHyqgiKdYr',
+    d:'Including archived versions.'}
+  ],
+  check:['Read all six procedures',
+    'Complete one Post-Meeting record start to finish',
+    'Run the Wednesday Group Chat protocol once',
+    'Know what to do when a payment fails',
+    'Raise one change request where a step was unclear']},
+
+ {id:'m4', n:'04', t:'The Tools',
+  why:'The tools are the visible difference between us and the other twenty-two and a half thousand brokers. A coach who cannot demonstrate them cannot sell the programme.',
+  res:[
+   {t:'BID Snippet Builder',k:'tool',d:'Compliant objectives, requirements and disclosure notes. Reported 100% approval rate.'},
+   {t:'Tax Return Navigator',k:'tool',d:'Company tax returns, trusts and add-backs.'},
+   {t:'Commercial Loan Triage Tool',k:'tool',d:'Structuring commercial deals and lender presentations.'},
+   {t:'Broker Scale Matrix',k:'tool',d:'VA and employee scaling decisions.'},
+   {t:'Purchase Range Reckoner',k:'tool',d:'Branded per broker. Handed over in Week 2.'},
+   {t:'Partner Value Pack',k:'tool',d:'Referral partner pack. Handed over in Week 3.'}
+  ],
+  check:['Demonstrate every tool without preparation',
+    'Brand a Purchase Range Reckoner for a mentee',
+    'Explain which tool solves which mentee problem',
+    'Know which tools are already covered by an episode']},
+
+ {id:'m5', n:'05', t:'The Systems',
+  why:'Five systems carry the business. A coach needs enough of each to work without asking, and to know which one owns which piece of data.',
+  res:[
+   {t:'The Bridge, this hub',k:'tab',tab:'fyi',theme:'theme-fyi',
+    d:'Clients, prospects, statistics, guests, events, SOPs, calendar.'},
+   {t:'Airtable, FYI Business Coaching base',k:'ext',u:'https://airtable.com/',
+    d:'The source of truth for clients, prospects and Argo. Coaches, Clients, Revenue Events, Prospects, Relationships, Argo Clients.'},
+   {t:'Mercury Nexus',k:'ext',u:'https://www.connective.com.au/',d:'Mentee CRM and analytics.'},
+   {t:'FYI Tribe, GoHighLevel',k:'ext',u:'https://app.gohighlevel.com/',
+    d:'Client portal, course library, the Wednesday Group Chat back catalogue under 900.'},
+   {t:'Fireflies',k:'ext',u:'https://app.fireflies.ai/',d:'Meeting transcripts and summaries.'}
+  ],
+  check:['Log in to all five',
+    'Find a client record in Airtable and explain every field',
+    'Upload a post-meeting record to GoHighLevel',
+    'Pull a Fireflies transcript and write a session note from it',
+    'Know which system owns which data, and never edit in the wrong one']},
+
+ {id:'m6', n:'06', t:'The Wednesday Group Chat',
+  why:'The weekly group session is the most visible thing we do. A coach will be asked to host or find guests for it.',
+  res:[
+   {t:'Guest schedule and gap radar',k:'tab',tab:'guests',theme:'theme-guests',
+    d:'Who is booked, where the gaps are, and twelve suggested topics.'},
+   {t:'Wednesday Group Chat Protocol',k:'drive',
+    u:'https://docs.google.com/document/d/1AHYzhDhEUF-hIv9ZcYeW06vw3_W0A5JkSN5irecrr6Y/edit',
+    d:'Tuesday promo, guest reconfirmation, Wednesday reminders.'},
+   {t:'Video Library Audit',k:'drive',
+    u:'https://docs.google.com/spreadsheets/d/1PIu33NxgXyiYUJTgZqgf2R-iFzaUikKD7M63PW5NceU/edit',
+    d:'Every episode indexed by number, date, theme and quality score.'}
+  ],
+  check:['Attend four sessions before hosting one',
+    'Run the pre-session protocol solo',
+    'Host one session with Ben present',
+    'Know how to find whether a topic has already been covered']},
+
+ {id:'m7', n:'07', t:'Coaching the Person',
+  why:'The method is fixed, the delivery is not. DISC tells a coach how to teach the person in front of them.',
+  res:[
+   {t:'Client files with DISC profiles',k:'tab',tab:'clients',theme:'theme-clients',
+    d:'Every client carries a DISC profile, engagement rating and lifecycle stage.'},
+   {t:'Profile Me DISC assessment',k:'ext',u:'https://www.profileme.com.au/',d:'Sent to every mentee at onboarding.'}
+  ],
+  check:['Complete your own DISC profile',
+    'Explain how you would coach a Lion differently from an Owl',
+    'Read three client files and predict their weak swim lane',
+    'Understand the coaching versus mentoring distinction']},
+
+ {id:'m8', n:'08', t:'The Commercials',
+  why:'A coach will be asked what things cost and what else we do. Getting this wrong costs revenue or credibility.',
+  res:[
+   {t:'Product set and cross-sell',k:'tab',tab:'clients',theme:'theme-clients',
+    d:'All eight products with pricing, on every client file.'},
+   {t:'Business statistics',k:'tab',tab:'stats',theme:'theme-stats',
+    d:'Revenue, billing calendar, client movement, cross-sell white space.'}
+  ],
+  check:['Quote every programme and price from memory',
+    'Explain the Mercury Pro upgrade and what it includes',
+    'Explain Argo Virtual and what a VA costs',
+    'Know when to hand a cross-sell to Ben rather than pitch it yourself',
+    'Never discount without Ben\u2019s approval']}
+];
+
+boot();
+</script>
+</body>
+</html>
