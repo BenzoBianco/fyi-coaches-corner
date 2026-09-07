@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>FYI Coaches' Corner v1.09.02</title>
+<title>FYI Coaches' Corner v1.09.03</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -138,7 +138,7 @@ main{padding:22px;max-width:1140px;margin:0 auto}
 
 <div id="app">
   <header class="top">
-    <div class="brand">FYI Coaches' Corner<span class="verBadge" id="verBadge" onclick="toggleChangelog()" title="Click for what's new">v1.09.02</span><small id="coachBadge"></small></div>
+    <div class="brand">FYI Coaches' Corner<span class="verBadge" id="verBadge" onclick="toggleChangelog()" title="Click for what's new">v1.09.03</span><small id="coachBadge"></small></div>
     <div class="who">
       <span id="whoEmail"></span>
       <button onclick="doLogout()">Sign out</button>
@@ -219,8 +219,11 @@ async function authedFetch(url, opts){
    Bump APP_VERSION, the <title>, the header badge, and add a RELEASES
    entry, all in the same edit, or the changelog silently falls behind
    the build the way The Bridge's own once did. */
-const APP_VERSION = '1.09.02';
+const APP_VERSION = '1.09.03';
 const RELEASES = [
+  {v:'1.09.03', d:'07/09/2026', t:'Active roster filter was matching nothing', items:[
+    'Fixed: the Status field actually holds Active, Left or Graduated in Airtable, never Current. The Active roster filter was checking for a value that does not exist, so it silently returned zero clients. Filters now match the real values.'
+  ]},
   {v:'1.09.02', d:'07/09/2026', t:'Fireflies and client filters', items:[
     'Meeting intelligence added to the client file: last meeting summary and action items, pulled from Fireflies and matched by name, same title convention as The Bridge. Coach-scoped, a coach only ever sees entries for their own clients.',
     'Client filter chips: Active roster, Everyone, Needs attention, Immersion, Previous clients, Exit date missing. Ben also gets a filter chip per coach.',
@@ -324,12 +327,12 @@ function render(){
 
 /* ================= Clients ================= */
 const CLIENT_FILTERS = [
-  {id:'active', label:'Active roster', test:c => c.clientStatus==='Current'},
+  {id:'active', label:'Active roster', test:c => c.clientStatus==='Active'},
   {id:'everyone', label:'Everyone', test:()=>true},
-  {id:'attention', label:'Needs attention', test:c => c.clientStatus==='Current' && (c.rag==='Amber'||c.rag==='Red')},
+  {id:'attention', label:'Needs attention', test:c => c.clientStatus==='Active' && (c.rag==='Amber'||c.rag==='Red')},
   {id:'immersion', label:'Immersion', test:c => c.st==='1. Immersion'},
-  {id:'previous', label:'Previous clients', test:c => c.clientStatus && c.clientStatus!=='Current'},
-  {id:'exitmissing', label:'Exit date missing', test:c => c.clientStatus && c.clientStatus!=='Current' && !c.exitDate}
+  {id:'previous', label:'Previous clients', test:c => c.clientStatus==='Left' || c.clientStatus==='Graduated'},
+  {id:'exitmissing', label:'Exit date missing', test:c => (c.clientStatus==='Left' || c.clientStatus==='Graduated') && !c.exitDate}
 ];
 
 function ragTag(v){
