@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>FYI Coaches' Corner v1.09.01</title>
+<title>FYI Coaches' Corner v1.09.02</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -54,6 +54,10 @@ main{padding:22px;max-width:1140px;margin:0 auto}
 .banner.ok{background:#EFF7EF;border-color:#7BAE7F;color:#3E7C43}
 .toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;gap:10px;flex-wrap:wrap}
 .toolbar input[type=search]{padding:8px 12px;border:1px solid var(--border,#DFE3EB);border-radius:8px;font-size:13px;min-width:220px;font-family:'Inter',sans-serif;background:var(--card,#fff)}
+.cl-filters{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:12px}
+.cl-filter{padding:6px 12px;border-radius:999px;border:1.5px solid var(--border,#DFE3EB);background:var(--bg,#F4F6F9);color:var(--muted,#69707F);font-size:.75rem;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif}
+.cl-filter:hover{border-color:var(--accent,#4A6FA5);color:var(--primary,#2A3550)}
+.cl-filter.active{background:var(--primary,#2A3550);border-color:var(--primary,#2A3550);color:#fff}
 .btn{padding:7px 13px;border:0;border-radius:7px;background:var(--accent,#4A6FA5);color:#fff;font-size:.78rem;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif}
 .btn:hover{filter:brightness(.94)}
 .btn.secondary{background:transparent;color:var(--primary,#2A3550);border:1px solid var(--accent,#4A6FA5)}
@@ -134,7 +138,7 @@ main{padding:22px;max-width:1140px;margin:0 auto}
 
 <div id="app">
   <header class="top">
-    <div class="brand">FYI Coaches' Corner<span class="verBadge" id="verBadge" onclick="toggleChangelog()" title="Click for what's new">v1.09.01</span><small id="coachBadge"></small></div>
+    <div class="brand">FYI Coaches' Corner<span class="verBadge" id="verBadge" onclick="toggleChangelog()" title="Click for what's new">v1.09.02</span><small id="coachBadge"></small></div>
     <div class="who">
       <span id="whoEmail"></span>
       <button onclick="doLogout()">Sign out</button>
@@ -215,8 +219,13 @@ async function authedFetch(url, opts){
    Bump APP_VERSION, the <title>, the header badge, and add a RELEASES
    entry, all in the same edit, or the changelog silently falls behind
    the build the way The Bridge's own once did. */
-const APP_VERSION = '1.09.01';
+const APP_VERSION = '1.09.02';
 const RELEASES = [
+  {v:'1.09.02', d:'07/09/2026', t:'Fireflies and client filters', items:[
+    'Meeting intelligence added to the client file: last meeting summary and action items, pulled from Fireflies and matched by name, same title convention as The Bridge. Coach-scoped, a coach only ever sees entries for their own clients.',
+    'Client filter chips: Active roster, Everyone, Needs attention, Immersion, Previous clients, Exit date missing. Ben also gets a filter chip per coach.',
+    'Filters requiring Argo or Too Easy Socials data, or fields still pending Airtable migration (contacts confirmed, First 30 Days running), deliberately left out rather than shipped broken.'
+  ]},
   {v:'1.09.01', d:'07/09/2026', t:'First versioned build', items:[
     'Coaches\u2019 Corner split out of The Bridge: Clients, Prospects and Relationships, view and edit, scoped so a coach only ever sees their own.',
     'SOPs and Coach Training duplicated as reference content.',
@@ -252,6 +261,7 @@ async function boot(){
   document.getElementById('whoEmail').textContent = s.email || '';
   await loadRoster();
   await loadTraining();
+  loadFireflies().then(()=>{ if(STATE.tab==='clients') render(); }); /* not awaited: never block first paint on a third-party API */
   setTab('clients');
 }
 
@@ -273,6 +283,14 @@ async function loadRoster(){
     STATE.clients=d.clients||[]; STATE.prospects=d.prospects||[]; STATE.relationships=d.relationships||[];
     document.getElementById('coachBadge').textContent = STATE.principal ? 'all coaches' : STATE.coach;
   }catch(e){ document.getElementById('main').innerHTML='<div class="banner err">Could not reach the server. Check your connection and reload.</div>'; }
+}
+
+async function loadFireflies(){
+  try{
+    const r=await authedFetch('/.netlify/functions/fireflies',{method:'POST'});
+    const d=await r.json();
+    STATE.fireflies = (d.ok && d.byClient) ? d.byClient : {};
+  }catch(e){ STATE.fireflies = {}; }
 }
 
 async function loadTraining(){
@@ -305,6 +323,15 @@ function render(){
 }
 
 /* ================= Clients ================= */
+const CLIENT_FILTERS = [
+  {id:'active', label:'Active roster', test:c => c.clientStatus==='Current'},
+  {id:'everyone', label:'Everyone', test:()=>true},
+  {id:'attention', label:'Needs attention', test:c => c.clientStatus==='Current' && (c.rag==='Amber'||c.rag==='Red')},
+  {id:'immersion', label:'Immersion', test:c => c.st==='1. Immersion'},
+  {id:'previous', label:'Previous clients', test:c => c.clientStatus && c.clientStatus!=='Current'},
+  {id:'exitmissing', label:'Exit date missing', test:c => c.clientStatus && c.clientStatus!=='Current' && !c.exitDate}
+];
+
 function ragTag(v){
   const k=(v||'').toLowerCase();
   if(k==='green') return '<span class="tag green">Green</span>';
@@ -320,12 +347,50 @@ function ragClass(v){
 function renderClients(){
   const m=document.getElementById('main');
   if(STATE.clientOpen) return renderClientDetail();
+  if(!STATE.clientFilter) STATE.clientFilter='active';
   const q=(document.getElementById('cQ')?document.getElementById('cQ').value:'').toLowerCase();
-  const list=STATE.clients.filter(c=>!q || c.n.toLowerCase().includes(q));
+
   const bar=document.createElement('div'); bar.className='toolbar';
   bar.innerHTML='<input type="search" id="cQ" placeholder="Search clients" oninput="render()" value="'+(q?q:'')+'">'+
     '<button class="btn" onclick="openNewClient()">New client</button>';
   m.appendChild(bar);
+
+  /* Filter chips. Coach chips only appear for Ben, since a coach's own
+     view is already scoped to just their name, a filter for it would be
+     a no-op. Options that would need Argo or Too Easy Socials data, or
+     the Airtable fields still pending migration (contacts confirmed,
+     First 30 Days running), are left out rather than shown and left
+     broken. */
+  const chipRow=document.createElement('div'); chipRow.className='cl-filters';
+  CLIENT_FILTERS.forEach(f=>{
+    const b=document.createElement('button'); b.className='cl-filter'+(STATE.clientFilter===f.id?' active':'');
+    b.textContent=f.label; b.onclick=()=>{ STATE.clientFilter=f.id; render(); };
+    chipRow.appendChild(b);
+  });
+  if(STATE.principal){
+    const coaches=[...new Set(STATE.clients.map(c=>c.c).filter(Boolean))].sort();
+    coaches.forEach(name=>{
+      const id='coach:'+name;
+      const b=document.createElement('button'); b.className='cl-filter'+(STATE.clientFilter===id?' active':'');
+      b.textContent=name+"'s"; b.onclick=()=>{ STATE.clientFilter=id; render(); };
+      chipRow.appendChild(b);
+    });
+  }
+  m.appendChild(chipRow);
+
+  const activeFilter = CLIENT_FILTERS.find(f=>f.id===STATE.clientFilter);
+  const coachFilterName = (!activeFilter && STATE.clientFilter && STATE.clientFilter.indexOf('coach:')===0) ? STATE.clientFilter.slice(6) : null;
+  let list = STATE.clients.filter(c=>{
+    if(activeFilter) return activeFilter.test(c);
+    if(coachFilterName) return c.c===coachFilterName;
+    return true;
+  });
+  list = list.filter(c=>!q || c.n.toLowerCase().includes(q));
+
+  const countLine=document.createElement('div'); countLine.style.cssText='font-size:.78rem;color:var(--muted,#69707F);margin:2px 0 12px';
+  countLine.textContent=list.length+' client'+(list.length===1?'':'s');
+  m.appendChild(countLine);
+
   if(!list.length){ m.innerHTML+='<div class="empty">No clients found.</div>'; return; }
   const grid=document.createElement('div'); grid.className='grid';
   list.forEach(c=>{
@@ -376,9 +441,36 @@ function renderClientDetail(){
 
   if(c.d && ANIMALS[c.d]) m.appendChild(discPanel(c.d));
 
+  const mi = meetingIntelligencePanel(c.n);
+  if(mi) m.appendChild(mi);
+
   const p30 = document.createElement('div'); p30.className='detail'; p30.style.marginTop='14px';
   p30.innerHTML = renderP30Reference();
   m.appendChild(p30);
+}
+
+/* ================= Meeting Intelligence ================= */
+function meetingIntelligencePanel(clientName){
+  const entries = (STATE.fireflies||{})[clientName];
+  if(!entries || !entries.length) return null;
+  const wrap=document.createElement('div'); wrap.className='detail'; wrap.style.marginTop='14px';
+  const latest = entries[0];
+  let html='<h2>Meeting intelligence</h2>'+
+    '<a href="'+latest.link+'" target="_blank" style="font-size:.8rem;color:var(--accent,#4A6FA5);font-weight:600">Open in Fireflies &rarr;</a>'+
+    '<div style="margin-top:12px;font-size:.66rem;text-transform:uppercase;letter-spacing:.04em;color:var(--muted,#69707F);font-weight:700">'+
+      'Last meeting, '+(latest.date ? new Date(latest.date).toLocaleDateString('en-AU') : 'undated')+'</div>';
+  if(latest.summary) html+='<p style="font-size:13px;margin:8px 0">'+latest.summary+'</p>';
+  if(latest.actionItems){
+    html+='<div style="font-size:.66rem;text-transform:uppercase;letter-spacing:.04em;color:var(--muted,#69707F);font-weight:700;margin-top:10px">Worth covering next</div>'+
+      '<ul style="margin:6px 0 0;padding-left:18px;font-size:13px">'+
+        String(latest.actionItems).split(/\n+/).filter(Boolean).map(x=>'<li style="margin-bottom:4px">'+x+'</li>').join('')+
+      '</ul>';
+  }
+  if(entries.length>1){
+    html+='<div style="font-size:.7rem;color:var(--muted,#69707F);margin-top:12px">'+(entries.length-1)+' earlier meeting'+(entries.length-1===1?'':'s')+' in the last 30 days.</div>';
+  }
+  wrap.innerHTML=html;
+  return wrap;
 }
 
 /* ================= DISC ================= */
