@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>FYI Coaches' Corner</title>
+<title>FYI Coaches' Corner v1.09.01</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -39,6 +39,8 @@ h1,h2,h3,.brand,nav button,.section-title{font-family:'Montserrat',sans-serif}
 #app.show{display:block}
 header.top{background:#1D4D71;color:#fff;padding:14px 22px;display:flex;align-items:center;justify-content:space-between}
 header.top .brand{font-weight:800;font-size:17px}
+header.top .verBadge{font-family:'Inter',sans-serif;font-size:.62rem;font-weight:600;color:#D9E7F0;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);padding:2px 8px;border-radius:99px;margin-left:8px;cursor:pointer;vertical-align:middle}
+header.top .verBadge:hover{background:rgba(255,255,255,.2)}
 header.top .brand small{font-weight:500;font-family:'Inter',sans-serif;color:#AFC9DC;margin-left:8px;font-size:12px}
 header.top .who{font-size:13px;color:#D9E7F0;display:flex;align-items:center;gap:12px}
 header.top .who button{background:transparent;border:1px solid #3E7098;color:#D9E7F0;padding:6px 12px;border-radius:7px;cursor:pointer;font-size:12px;font-family:'Inter',sans-serif}
@@ -132,12 +134,13 @@ main{padding:22px;max-width:1140px;margin:0 auto}
 
 <div id="app">
   <header class="top">
-    <div class="brand">FYI Coaches' Corner<small id="coachBadge"></small></div>
+    <div class="brand">FYI Coaches' Corner<span class="verBadge" id="verBadge" onclick="toggleChangelog()" title="Click for what's new">v1.09.01</span><small id="coachBadge"></small></div>
     <div class="who">
       <span id="whoEmail"></span>
       <button onclick="doLogout()">Sign out</button>
     </div>
   </header>
+  <div id="changelogPanel" class="hidden" style="background:#fff;border-bottom:1px solid var(--border,#DFE3EB);padding:16px 22px;max-width:1140px;margin:0 auto"></div>
   <nav id="tabs">
     <button data-tab="clients" onclick="setTab('clients')">Clients</button>
     <button data-tab="prospects" onclick="setTab('prospects')">Prospects</button>
@@ -206,6 +209,35 @@ async function authedFetch(url, opts){
   }
   return r;
 }
+
+/* ================= Versioning ================= */
+/* major.month.build, month zero-padded, matching The Bridge's convention.
+   Bump APP_VERSION, the <title>, the header badge, and add a RELEASES
+   entry, all in the same edit, or the changelog silently falls behind
+   the build the way The Bridge's own once did. */
+const APP_VERSION = '1.09.01';
+const RELEASES = [
+  {v:'1.09.01', d:'07/09/2026', t:'First versioned build', items:[
+    'Coaches\u2019 Corner split out of The Bridge: Clients, Prospects and Relationships, view and edit, scoped so a coach only ever sees their own.',
+    'SOPs and Coach Training duplicated as reference content.',
+    'DISC profile chart and the First 30 Days program script added to every client file, First 30 Days as reference only, per-client progress not yet tracked here.',
+    'Visual design matched to The Bridge, per-tab theming, Inter and Montserrat, the same card and pill styling.'
+  ]}
+];
+
+function toggleChangelog(){
+  const p=document.getElementById('changelogPanel');
+  if(!p.classList.contains('hidden')){ p.classList.add('hidden'); return; }
+  let html='<div style="max-width:640px"><h3 style="margin:0 0 10px;font-family:Montserrat,sans-serif">What\'s new</h3>';
+  RELEASES.forEach(r=>{
+    html+='<div style="margin-bottom:14px"><b>v'+r.v+'</b> <span style="color:var(--muted,#69707F);font-size:.78rem">'+r.d+', '+r.t+'</span>'+
+      '<ul style="margin:6px 0 0;padding-left:18px;font-size:13px">'+r.items.map(x=>'<li style="margin-bottom:3px">'+x+'</li>').join('')+'</ul></div>';
+  });
+  html+='</div>';
+  p.innerHTML=html;
+  p.classList.remove('hidden');
+}
+
 
 /* ================= State ================= */
 const STATE = { coach:null, principal:false, clients:[], prospects:[], relationships:[], tab:'clients',
