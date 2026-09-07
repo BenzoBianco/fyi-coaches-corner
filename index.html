@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>FYI Coaches' Corner v1.09.09</title>
+<title>FYI Coaches' Corner v1.09.11</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -141,7 +141,7 @@ main{padding:22px;max-width:1140px;margin:0 auto}
 
 <div id="app">
   <header class="top">
-    <div class="brand">FYI Coaches' Corner<span class="verBadge" id="verBadge" onclick="toggleChangelog()" title="Click for what's new">v1.09.09</span><small id="coachBadge"></small></div>
+    <div class="brand">FYI Coaches' Corner<span class="verBadge" id="verBadge" onclick="toggleChangelog()" title="Click for what's new">v1.09.11</span><small id="coachBadge"></small></div>
     <div class="who">
       <span id="whoEmail"></span>
       <button onclick="doLogout()">Sign out</button>
@@ -280,8 +280,20 @@ function copySupervisionEmail(clientId){
   } else { fallback(); }
 }
 
-const APP_VERSION = '1.09.09';
+const APP_VERSION = '1.09.11';
 const RELEASES = [
+  {v:'1.09.11', d:'07/09/2026', t:'Calendar, First 30 Days tracking, immersion countdown', items:[
+    'New calendar.js function, ported from The Bridge, reads the same GCAL_ICS secret address. Next and last session now show on the client card and in the detail view, coach-scoped: a coach only ever sees session matches against their own clients.',
+    'First 30 Days is now tracked per client, not just reference content. A Running toggle and all 36 mentee and mentor tasks, grouped by stage, save straight to the two new Airtable fields, First 30 Days Running and First 30 Days Progress.',
+    'Immersion countdown added: 12 weeks from the start date, confirmed directly with Ben rather than assumed. Shown as a negative day count while time remains, crossing positive if the client runs past the window still in Immersion.'
+  ]},
+  {v:'1.09.10', d:'07/09/2026', t:'Client card matched to The Bridge, partially', items:[
+    'Contacts count now shown, wired to the three checkbox fields that already existed in Airtable but were never displayed here.',
+    'Birthday countdown added, shows only within 30 days, same threshold as The Bridge.',
+    'Days to graduation added, start date plus mandated months, per the standing decision.',
+    'DISC pill now carries the same mini bar icon as The Bridge, not just the animal name.',
+    'Not included yet, each needs a decision or new data before it can be built honestly rather than guessed: next and last session date (needs a Google Calendar connection this app does not have), the First 30 Days 0/36 progress pill (needs two new Airtable fields), and the immersion countdown (needs Ben to confirm what the countdown is actually counting down from, no definition of it exists anywhere in The Bridge\u2019s own source).'
+  ]},
   {v:'1.09.09', d:'07/09/2026', t:'Supervision milestone email', items:[
     'When all 12 supervision entries are marked complete, a "Copy email for [name]" button appears. Content transcribed verbatim from The Bridge, the congratulations note and the six audit findings, unchanged.',
     'Same mechanism as The Bridge: copies rich text to the clipboard, ready to paste into a new Gmail compose window. This does not create a Gmail draft through any API or OAuth connection, nothing in this app talks to Gmail directly.'
@@ -343,7 +355,7 @@ function toggleChangelog(){
 
 /* ================= State ================= */
 const STATE = { coach:null, principal:false, clients:[], prospects:[], relationships:[], tab:'clients',
-  clientOpen:null, prospectOpen:null, relOpen:null, sopOpen:null, trainProgress:{} };
+  clientOpen:null, prospectOpen:null, relOpen:null, sopOpen:null, trainProgress:{}, sessions:{}, lastSessions:{} };
 
 async function boot(){
   const s=getSession();
@@ -355,6 +367,7 @@ async function boot(){
   await loadRoster();
   await loadTraining();
   loadFireflies().then(()=>{ if(STATE.tab==='clients') render(); }); /* not awaited: never block first paint on a third-party API */
+  loadCalendar().then(()=>{ if(STATE.tab==='clients') render(); });
   setTab('clients');
 }
 
@@ -384,6 +397,15 @@ async function loadFireflies(){
     const d=await r.json();
     STATE.fireflies = (d.ok && d.byClient) ? d.byClient : {};
   }catch(e){ STATE.fireflies = {}; }
+}
+
+async function loadCalendar(){
+  try{
+    const r=await authedFetch('/.netlify/functions/calendar',{method:'POST'});
+    const d=await r.json();
+    STATE.sessions = (d.ok && d.sessions) ? d.sessions : {};
+    STATE.lastSessions = (d.ok && d.lastSessions) ? d.lastSessions : {};
+  }catch(e){ STATE.sessions = {}; STATE.lastSessions = {}; }
 }
 
 async function loadTraining(){
@@ -435,6 +457,47 @@ function ragTag(v){
 function ragClass(v){
   const k=(v||'').toLowerCase();
   return (k==='green'||k==='amber'||k==='red') ? ' rag-'+k : '';
+}
+function daysUntil(dateStr){
+  if(!dateStr) return null;
+  const t=new Date(); t.setHours(0,0,0,0);
+  const d=new Date(dateStr+'T00:00:00');
+  return Math.round((d-t)/86400000);
+}
+function bdayNext(dob){
+  if(!dob) return null;
+  const t=new Date(); t.setHours(0,0,0,0);
+  const p=dob.split('-'); if(p.length<3) return null;
+  let b=new Date(t.getFullYear(), Number(p[1])-1, Number(p[2]));
+  if(b<t) b.setFullYear(b.getFullYear()+1);
+  return Math.round((b-t)/86400000);
+}
+/* Start date plus mandated months, per the standing decision: ten months
+   means ten months, not a fixed 24-month assumption. */
+function daysToGraduation(c){
+  if(!c.startDate || !c.mandatedMonths) return null;
+  const start=new Date(c.startDate+'T00:00:00');
+  const grad=new Date(start); grad.setMonth(grad.getMonth()+Number(c.mandatedMonths));
+  const t=new Date(); t.setHours(0,0,0,0);
+  return Math.round((grad-t)/86400000);
+}
+function discMiniBars(animal){
+  const lv=discLevels(animal); if(!lv) return '';
+  return '<span style="display:inline-flex;align-items:flex-end;gap:2px;height:14px;margin-right:5px">'+
+    lv.map(b=>'<span style="display:inline-block;width:4px;height:'+(b.v/4*14)+'px;background:currentColor;border-radius:1px"></span>').join('')+
+  '</span>';
+}
+
+/* Immersion is the first 12 weeks from the start date, confirmed directly
+   rather than assumed, since nothing in The Bridge's own source defines
+   it. Shown as a countdown, negative while days remain, crossing to
+   positive if the client runs past the 12 weeks without moving stage. */
+function immersionCountdown(c){
+  if(!c.startDate || !/1\.\s*immersion/i.test(c.st||'')) return null;
+  const start=new Date(c.startDate+'T00:00:00');
+  const t=new Date(); t.setHours(0,0,0,0);
+  const daysSince=Math.round((t-start)/86400000);
+  return daysSince-84;
 }
 
 function renderClients(){
@@ -489,10 +552,41 @@ function renderClients(){
   list.forEach(c=>{
     const card=document.createElement('div'); card.className='card'+ragClass(c.rag);
     card.onclick=()=>{ STATE.clientOpen=c.airtableId; render(); };
-    card.innerHTML='<h3>'+c.n+'</h3>'+
-      '<div class="meta">'+ragTag(c.rag)+'<span class="tag grey">'+(c.p||'No program')+'</span>'+
-      (STATE.principal?'<span class="tag grey">'+(c.c||'Unassigned')+'</span>':'')+'</div>'+
-      '<div class="meta">'+(c.st||'')+(c.f?' &middot; $'+Number(c.f).toLocaleString()+'/mo':'')+'</div>';
+
+    const contactsCount = [c.mobileInContacts, c.emailInContacts, c.addressInContacts].filter(Boolean).length;
+    const bn = bdayNext(c.dob);
+    const grad = daysToGraduation(c);
+    const immCd = immersionCountdown(c);
+    const nextSession = (STATE.sessions||{})[c.n.split(' ')[0]];
+    const lastSession = (STATE.lastSessions||{})[c.n.split(' ')[0]];
+
+    let html = '<h3>'+c.n+'</h3>';
+    if(nextSession){
+      const dIn = daysUntil(nextSession);
+      html += '<div style="font-size:.76rem;font-weight:700;color:#8A671B;margin-top:2px">Next session '+new Date(nextSession).toLocaleDateString('en-AU')+' &middot; '+(dIn===0?'today':dIn===1?'in 1 day':'in '+dIn+' days')+'</div>';
+    }
+    html += '<div class="meta" style="margin-top:2px">'+[c.c, c.s, c.st?c.st+(immCd!==null?' ('+(immCd<0?'-':'+')+Math.abs(immCd)+'d)':''):null].filter(Boolean).join(' &middot; ')+'</div>';
+    html += '<div class="meta" style="margin-top:8px">';
+    if(c.p) html += '<span class="tag" style="background:#E9F0F8;border-color:#C3D6EA;color:#33587F">'+c.p+'</span>';
+    if(c.d) html += '<span class="tag" style="background:#F4EFE3;border-color:#DCCFAF;color:#7A6224">'+discMiniBars(c.d)+c.d+'</span>';
+    html += '<span class="tag" style="background:'+(contactsCount<3?'#FBEBEA;border-color:#D98782;color:#A8382F':'#EFF7EF;border-color:#7BAE7F;color:#3E7C43')+'">Contacts '+contactsCount+'/3</span>';
+    html += '</div>';
+    if(c.p30running){
+      const p30done = p30StateFor(c).filter(Boolean).length;
+      if(p30done<36) html += '<div class="meta" style="margin-top:6px"><span class="tag" style="background:#F4EFE3;border-color:#DCCFAF;color:#7A6224">30 Days '+p30done+'/36</span></div>';
+    }
+    if(bn!==null && bn<=30) html += '<div class="meta" style="margin-top:6px"><span class="tag" style="background:#F7E9F0;border-color:#E2C0D2;color:#8C3B63">Birthday in '+bn+'d</span></div>';
+    html += '<div style="margin-top:10px;font-size:.78rem;display:flex;flex-direction:column;gap:3px">';
+    if(lastSession){
+      const dAgo = -daysUntil(lastSession);
+      html += '<div style="display:flex;justify-content:space-between"><span style="color:var(--muted,#69707F)">Last session</span><b>'+new Date(lastSession).toLocaleDateString('en-AU')+' ('+dAgo+'d ago)</b></div>';
+    }
+    if(c.startDate) html += '<div style="display:flex;justify-content:space-between"><span style="color:var(--muted,#69707F)">Started</span><b>'+new Date(c.startDate).toLocaleDateString('en-AU')+'</b></div>';
+    if(c.f) html += '<div style="display:flex;justify-content:space-between"><span style="color:var(--muted,#69707F)">Monthly fee</span><b>AUD $'+Number(c.f).toLocaleString()+'</b></div>';
+    if(grad!==null) html += '<div style="display:flex;justify-content:space-between"><span style="color:var(--muted,#69707F)">To graduation</span><b>'+grad+'d</b></div>';
+    html += '</div>';
+    html += '<div class="cl-open" style="font-size:.68rem;color:var(--accent,#4A6FA5);font-weight:700;margin-top:8px">Open client file &rarr;</div>';
+    card.innerHTML = html;
     grid.appendChild(card);
   });
   m.appendChild(grid);
@@ -545,9 +639,84 @@ function renderClientDetail(){
   const mi = meetingIntelligencePanel(c.n);
   if(mi) m.appendChild(mi);
 
-  const p30 = document.createElement('div'); p30.className='detail'; p30.style.marginTop='14px';
-  p30.innerHTML = renderP30Reference();
-  m.appendChild(p30);
+  m.appendChild(p30Panel(c));
+}
+
+/* ================= First 30 Days, tracked ================= */
+/* 36 tasks total, mentee and mentor combined across all five stages,
+   counted directly from The Bridge's own PROGRAM_30 script, not
+   estimated. Flat list built once so the storage index and the
+   rendered order always agree. */
+function p30TaskList(){
+  const out=[];
+  PROGRAM_30.stages.forEach(st=>{
+    (st.mentee||[]).forEach(t=>out.push({stage:st.n, title:st.t, who:'Mentee', text:t}));
+    (st.mentor||[]).forEach(t=>out.push({stage:st.n, title:st.t, who:'Mentor', text:t}));
+  });
+  return out;
+}
+function p30StateFor(c){
+  try{ const v=JSON.parse(c.p30||'[]'); if(Array.isArray(v) && v.length===36) return v; }catch(e){}
+  return new Array(36).fill(false);
+}
+
+function p30Panel(c){
+  const wrap=document.createElement('div'); wrap.className='detail'; wrap.style.marginTop='14px';
+  let html='<h2>'+PROGRAM_30.title+'</h2><p style="color:var(--muted,#69707F);font-size:13px;margin-top:-8px">'+PROGRAM_30.sub+'</p>'+
+    '<label style="display:flex;align-items:center;gap:8px;font-size:13px;margin:14px 0;cursor:pointer">'+
+      '<input type="checkbox" style="width:18px;height:18px;accent-color:var(--accent,#4A6FA5)" '+(c.p30running?'checked':'')+' onchange="toggleP30Running(\''+c.airtableId+'\',this.checked)">'+
+      '<span>Running for this client</span></label>';
+
+  if(!c.p30running){
+    html+='<div class="grid" style="margin-top:4px">';
+    PROGRAM_30.glance.forEach(g=>{
+      html+='<div class="card" style="cursor:default"><h3>'+g[0]+', '+g[1]+'</h3><div class="meta" style="margin-top:6px">'+g[2]+'</div></div>';
+    });
+    html+='</div>';
+    wrap.innerHTML=html;
+    return wrap;
+  }
+
+  const tasks=p30TaskList();
+  const state=p30StateFor(c);
+  const done=state.filter(Boolean).length;
+  html+='<p style="font-size:13px;color:var(--muted,#69707F)">'+done+' of 36 tasks complete.</p>'+
+    '<div class="progressBar"><div class="fill" style="width:'+Math.round(done/36*100)+'%;background:var(--accent,#4A6FA5)"></div></div>';
+
+  let lastStage=null, lastWho=null;
+  tasks.forEach((t,i)=>{
+    if(t.stage!==lastStage){ html+='<div class="sopGroup" style="margin-top:16px">'+t.stage+', '+t.title+'</div>'; lastStage=t.stage; lastWho=null; }
+    if(t.who!==lastWho){ html+='<div style="font-size:.66rem;text-transform:uppercase;letter-spacing:.04em;color:var(--muted,#69707F);font-weight:700;margin:8px 0 4px">'+t.who+'</div>'; lastWho=t.who; }
+    html+='<label style="display:flex;gap:8px;align-items:flex-start;padding:4px 0;font-size:13px;cursor:pointer">'+
+      '<input type="checkbox" style="margin-top:2px" '+(state[i]?'checked':'')+' onchange="toggleP30Task(\''+c.airtableId+'\','+i+',this.checked)">'+
+      '<span>'+t.text+'</span></label>';
+  });
+  html+='<div class="savedNote" id="p30SaveNote" style="margin-top:10px"></div>';
+  wrap.innerHTML=html;
+  return wrap;
+}
+
+async function saveP30(clientId, fields){
+  const c=STATE.clients.find(x=>x.airtableId===clientId);
+  const note=document.getElementById('p30SaveNote'); if(note) note.textContent='Saving...';
+  try{
+    const r=await authedFetch('/.netlify/functions/client-update',{method:'POST', body:JSON.stringify({recordId:clientId, name:c.n, fields})});
+    const d=await r.json();
+    if(note) note.textContent = (!r.ok || d.ok===false) ? (d.message||'Save failed.') : 'Saved '+new Date().toLocaleTimeString();
+  }catch(e){ if(note) note.textContent='Could not reach the server.'; }
+}
+function toggleP30Running(clientId, val){
+  const c=STATE.clients.find(x=>x.airtableId===clientId);
+  c.p30running=val;
+  saveP30(clientId, {p30running:val});
+  if(STATE.clientOpen===clientId) render();
+}
+function toggleP30Task(clientId, idx, val){
+  const c=STATE.clients.find(x=>x.airtableId===clientId);
+  const state=p30StateFor(c);
+  state[idx]=val;
+  c.p30=JSON.stringify(state);
+  saveP30(clientId, {p30:c.p30});
 }
 
 /* ================= Supervision ================= */
@@ -669,24 +838,6 @@ function discPanel(animal){
       '<div class="field full"><label>Coaching them</label><div>'+COACH[hi.l]+'</div></div>'+
     '</div>';
   return wrap;
-}
-
-/* ================= First 30 Days, reference only =================
-   The program script is static, transcribed from The Bridge, and safe to
-   duplicate. Whether THIS client is running it, which tasks are ticked,
-   and the onboarding meeting date are per-client facts that only exist
-   in The Bridge's own local state right now, not in Airtable, so they
-   can't be shown or edited here yet. That migration is tracked
-   separately, not skipped. */
-function renderP30Reference(){
-  let html='<h2>'+PROGRAM_30.title+'</h2><p style="color:var(--muted,#69707F);font-size:13px">'+PROGRAM_30.sub+'</p>'+
-    '<div class="banner" style="margin:14px 0">Per-client progress on this program, the onboarding date and task sign-off, isn\'t tracked here yet. It still needs its own Airtable columns. This is the reference script only.</div>'+
-    '<div class="grid" style="margin-top:10px">';
-  PROGRAM_30.glance.forEach(g=>{
-    html+='<div class="card" style="cursor:default"><h3>'+g[0]+', '+g[1]+'</h3><div class="meta" style="margin-top:6px">'+g[2]+'</div></div>';
-  });
-  html+='</div>';
-  return html;
 }
 
 async function pushClient(id){
