@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>FYI Coaches' Corner v1.09.05</title>
+<title>FYI Coaches' Corner v1.09.06</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -141,7 +141,7 @@ main{padding:22px;max-width:1140px;margin:0 auto}
 
 <div id="app">
   <header class="top">
-    <div class="brand">FYI Coaches' Corner<span class="verBadge" id="verBadge" onclick="toggleChangelog()" title="Click for what's new">v1.09.05</span><small id="coachBadge"></small></div>
+    <div class="brand">FYI Coaches' Corner<span class="verBadge" id="verBadge" onclick="toggleChangelog()" title="Click for what's new">v1.09.06</span><small id="coachBadge"></small></div>
     <div class="who">
       <span id="whoEmail"></span>
       <button onclick="doLogout()">Sign out</button>
@@ -222,8 +222,13 @@ async function authedFetch(url, opts){
    Bump APP_VERSION, the <title>, the header badge, and add a RELEASES
    entry, all in the same edit, or the changelog silently falls behind
    the build the way The Bridge's own once did. */
-const APP_VERSION = '1.09.05';
+const APP_VERSION = '1.09.06';
 const RELEASES = [
+  {v:'1.09.06', d:'07/09/2026', t:'Supervision tracker and client header detail', items:[
+    'Supervision panel added to every client with mandated months set: 12 applications, one Complete tick each, no borrower name captured, at Ben\u2019s request simplified from The Bridge\u2019s two-stage review. Stored in the new Supervision Progress Airtable field, ticking saves immediately.',
+    'Client header now shows the CA number and mandated months as badges, and a subtitle line: coach, state, lifecycle stage, program, referred by.',
+    'Referred by is now a visible and editable field, reading and writing Referred By Client in Airtable.'
+  ]},
   {v:'1.09.05', d:'07/09/2026', t:'Prospect detail view and editing', items:[
     'Prospects can now be opened and edited, not just created. New prospect-update.js function, same ownership check as clients: a coach can only save changes to their own prospects, verified against Airtable\u2019s current value, not the browser\u2019s copy.',
     'Detail view shows every writable field plus the Airtable-calculated ones, days in pipeline, days since activity, annual value, as read-only.',
@@ -434,8 +439,13 @@ function renderClientDetail(){
   const c=STATE.clients.find(x=>x.airtableId===STATE.clientOpen);
   if(!c){ STATE.clientOpen=null; return renderClients(); }
   const d=document.createElement('div'); d.className='detail';
+  const headerBadges = (c.ca?'<span class="tag grey" style="margin-left:8px;font-size:.68rem;vertical-align:middle">'+c.ca+'</span>':'') +
+    (c.mandatedMonths ? '<span style="display:inline-flex;flex-direction:column;align-items:center;justify-content:center;width:52px;height:52px;border:2px solid var(--accent,#4A6FA5);border-radius:50%;margin-left:8px;vertical-align:middle;font-family:Montserrat,sans-serif"><b style="font-size:1.05rem;line-height:1;color:var(--primary,#2A3550)">'+c.mandatedMonths+'</b><span style="font-size:.55rem;text-transform:uppercase;letter-spacing:.03em;color:var(--muted,#69707F)">mths</span></span>' : '');
+  const subtitleParts = [c.c, c.s, c.st, c.p].filter(Boolean).join(' &middot; ');
+  const referredLine = c.referredBy ? ' &middot; Referred by <b>'+c.referredBy+'</b>' : '';
   d.innerHTML='<button class="back" onclick="STATE.clientOpen=null; render()">&larr; Back to clients</button>'+
-    '<h2>'+c.n+'</h2>'+
+    '<h2 style="display:flex;align-items:center;flex-wrap:wrap;gap:0">'+c.n+headerBadges+'</h2>'+
+    '<div style="font-size:.82rem;color:var(--muted,#69707F);margin:-8px 0 16px">'+subtitleParts+referredLine+'</div>'+
     '<div class="fieldGrid">'+
       fieldRow('Status','fClientStatus',c.clientStatus)+
       fieldRow('Program','fP',c.p)+
@@ -445,6 +455,7 @@ function renderClientDetail(){
       fieldRow('State','fS',c.s)+
       fieldRow('CA number','fCa',c.ca)+
       fieldRow('Referral source','fRefSource',c.refSource)+
+      fieldRow('Referred by','fReferredBy',c.referredBy)+
       fieldRow('DISC','fDisc',c.d)+
       fieldRow('Mobile','fPhone',c.phone)+
       fieldRow('Date of birth','fDob',c.dob,'date')+
@@ -457,6 +468,8 @@ function renderClientDetail(){
     '<span class="savedNote" id="clientSaveNote"></span></div>';
   m.appendChild(d);
 
+  if(c.mandatedMonths) m.appendChild(supervisionPanel(c));
+
   if(c.d && ANIMALS[c.d]) m.appendChild(discPanel(c.d));
 
   const mi = meetingIntelligencePanel(c.n);
@@ -465,6 +478,57 @@ function renderClientDetail(){
   const p30 = document.createElement('div'); p30.className='detail'; p30.style.marginTop='14px';
   p30.innerHTML = renderP30Reference();
   m.appendChild(p30);
+}
+
+/* ================= Supervision ================= */
+/* Twelve applications, each ticked off once, not reviewed twice the way
+   The Bridge's original tracked it. Simplified at Ben's request: one
+   Complete box per application, no borrower name captured. Stored as a
+   JSON array of 12 booleans in the Supervision Progress field, so it
+   round-trips through Airtable rather than living only in this app. */
+function supStateFor(c){
+  try{ const v=JSON.parse(c.sup||'[]'); if(Array.isArray(v) && v.length===12) return v; }catch(e){}
+  return new Array(12).fill(false);
+}
+
+function supervisionPanel(c){
+  const sup = supStateFor(c);
+  const done = sup.filter(Boolean).length;
+  const toRun = Math.max(0, (c.mandatedMonths||0) - done);
+  const wrap=document.createElement('div'); wrap.className='detail'; wrap.style.marginTop='14px';
+  let html='<h2>Supervision</h2>'+
+    '<p style="color:var(--muted,#69707F);font-size:13px;margin-top:-8px">Twelve applications, each ticked off once complete.</p>'+
+    '<div style="display:flex;justify-content:space-between;align-items:center;background:var(--bg,#F4F6F9);border:1px solid var(--border,#DFE3EB);border-radius:10px;padding:14px 18px;margin:14px 0">'+
+      '<div><b style="font-family:Montserrat,sans-serif;font-size:1.6rem;color:var(--primary,#2A3550)">'+done+'</b><div style="font-size:.66rem;text-transform:uppercase;letter-spacing:.04em;color:var(--muted,#69707F);font-weight:700">of 12 complete</div></div>'+
+      '<div style="text-align:right"><b style="font-family:Montserrat,sans-serif;font-size:1.6rem;color:var(--primary,#2A3550)">'+(c.mandatedMonths||0)+'</b><div style="font-size:.66rem;text-transform:uppercase;letter-spacing:.04em;color:var(--muted,#69707F);font-weight:700">mandated months</div></div>'+
+    '</div>'+
+    '<div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(110px,1fr))">';
+  sup.forEach((val,i)=>{
+    html+='<label style="display:flex;flex-direction:column;align-items:center;gap:6px;background:var(--bg,#F4F6F9);border:1px solid var(--border,#DFE3EB);border-radius:10px;padding:12px 8px;cursor:pointer">'+
+      '<b style="font-family:Montserrat,sans-serif;color:var(--muted,#69707F)">'+(i+1)+'</b>'+
+      '<input type="checkbox" style="width:20px;height:20px;accent-color:var(--accent,#4A6FA5)" '+(val?'checked':'')+' onchange="toggleSupervision(\''+c.airtableId+'\','+i+',this.checked)">'+
+      '<span style="font-size:.68rem;color:var(--muted,#69707F)">Complete</span>'+
+    '</label>';
+  });
+  html+='</div><div class="savedNote" id="supSaveNote" style="margin-top:10px"></div>';
+  wrap.innerHTML=html;
+  return wrap;
+}
+
+async function toggleSupervision(clientId, idx, val){
+  const c=STATE.clients.find(x=>x.airtableId===clientId);
+  const sup=supStateFor(c);
+  sup[idx]=val;
+  c.sup=JSON.stringify(sup);
+  const note=document.getElementById('supSaveNote'); if(note) note.textContent='Saving...';
+  try{
+    const r=await authedFetch('/.netlify/functions/client-update',{method:'POST', body:JSON.stringify({recordId:clientId, name:c.n, fields:{sup:c.sup}})});
+    const d=await r.json();
+    if(note) note.textContent = (!r.ok || d.ok===false) ? (d.message||'Save failed.') : 'Saved '+new Date().toLocaleTimeString();
+  }catch(e){ if(note) note.textContent='Could not reach the server.'; }
+  /* Re-render just the summary numbers without losing scroll position on every click. */
+  const openBefore = STATE.clientOpen;
+  if(openBefore===clientId) render();
 }
 
 /* ================= Meeting Intelligence ================= */
@@ -548,8 +612,8 @@ async function pushClient(id){
     s: document.getElementById('fS').value,
     ca: document.getElementById('fCa').value,
     refSource: document.getElementById('fRefSource').value,
-    disc: document.getElementById('fDisc').value,
-    phone: document.getElementById('fPhone').value,
+    referredBy: document.getElementById('fReferredBy').value,
+    disc: document.getElementById('fDisc').value,    phone: document.getElementById('fPhone').value,
     dob: document.getElementById('fDob').value,
     startDate: document.getElementById('fStartDate').value,
     exitDate: document.getElementById('fExitDate').value,
