@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>FYI Coaches' Corner v1.09.08</title>
+<title>FYI Coaches' Corner v1.09.09</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -141,7 +141,7 @@ main{padding:22px;max-width:1140px;margin:0 auto}
 
 <div id="app">
   <header class="top">
-    <div class="brand">FYI Coaches' Corner<span class="verBadge" id="verBadge" onclick="toggleChangelog()" title="Click for what's new">v1.09.08</span><small id="coachBadge"></small></div>
+    <div class="brand">FYI Coaches' Corner<span class="verBadge" id="verBadge" onclick="toggleChangelog()" title="Click for what's new">v1.09.09</span><small id="coachBadge"></small></div>
     <div class="who">
       <span id="whoEmail"></span>
       <button onclick="doLogout()">Sign out</button>
@@ -222,8 +222,70 @@ async function authedFetch(url, opts){
    Bump APP_VERSION, the <title>, the header badge, and add a RELEASES
    entry, all in the same edit, or the changelog silently falls behind
    the build the way The Bridge's own once did. */
-const APP_VERSION = '1.09.08';
+/* Sent once all 12 supervised submissions are marked complete. Content is
+   Ben's own, transcribed verbatim from The Bridge, name swap only. Copies
+   as rich text via ClipboardItem so pasting into a Gmail compose keeps
+   the bold and underlined headers, not plain text like the other copy
+   buttons in this app. */
+function supervisionMilestoneEmail(name){
+  const first=(name||'').trim().split(' ')[0]||'there';
+  const subject='Congratulations, you have reached the milestone of 12 supervised submissions.';
+  const html=
+    'Hi '+first+',<br><br>'+
+    'We\u2019ve now completed the review of over 12 supervised submissions, both at the pre-bank stage and '+
+    'the pre-submission stage, as required under the Connective supervision program. Well done getting through all 12.<br><br>'+
+    '<u>What we\u2019re seeing in the audits</u><br>'+
+    'Six things come up repeatedly across file reviews. These aren\u2019t one-off notes; they\u2019re the pattern, '+
+    'so treat them as your checklist on every submission from here:<br><br>'+
+    '(a) Employment details. Full employment history, plus a named contact to verify it, completed in full, every time.<br>'+
+    '(b) Living expenses. Must sit 7% above the minimum lender HEM figure, not equal to it.<br>'+
+    '(c) Assets. Should be commensurate with the applicant\u2019s age. Check what someone in that age bracket would '+
+    'reasonably have accumulated, and query anything that looks light.<br>'+
+    '(d) Notes. More than 20 entries showing your conversations with the applicant, your observations on assets, '+
+    'liabilities and living expenses, plus any compliance issues or anything unique to the file. If it\u2019s not '+
+    'written down, it didn\u2019t happen.<br>'+
+    '(e) Attachments. Every document carrying a TFN needs redaction. Equifax and all mandatory documents ordered correctly.<br>'+
+    '(f) Calculations. Surplus in the funding position must be sufficient, and living expenses in the financials must '+
+    'match the borrowing capacity figure. If you\u2019ve used Quickli, replicate it in the Connective calculator. If '+
+    'the two don\u2019t match, leave a compliance note explaining why.<br><br>'+
+    '<u>Two standing reminders</u><br>'+
+    '(a) Use the BID snippet builder on every file. It\u2019s your proof you\u2019ve covered every area of the best '+
+    'interests duty, not just a formality.<br>'+
+    '(b) If a complaint is ever made, Connective as licence holder takes over that complaint. What isn\u2019t in the '+
+    'file in writing never existed. Your notes are your protection as much as the client\u2019s.<br><br>'+
+    'Going forward<br>'+
+    'You\u2019re clear of the 12 mandated reviews for this stage, but the standard doesn\u2019t drop off. '+
+    'Keep running every file against these six points before it goes anywhere near submission.<br><br>'+
+    'Any file you want a second set of eyes on before you send it, flick it to me first.';
+  const text=html.replace(/<u>|<\/u>/g,'').replace(/<br><br>/g,'\n\n').replace(/<br>/g,'\n');
+  return {subject:subject, html:html, text:text};
+}
+
+function copySupervisionEmail(clientId){
+  const c=STATE.clients.find(x=>x.airtableId===clientId);
+  const btn=document.getElementById('supEmailBtn');
+  const label=btn.textContent;
+  const em=supervisionMilestoneEmail(c.n);
+  const done2=()=>{ btn.textContent='\u2713 Copied, paste into Gmail'; setTimeout(()=>btn.textContent=label,2200); };
+  const fallback=()=>{ navigator.clipboard.writeText(em.subject+'\n\n'+em.text).then(done2)
+    .catch(()=>alert('Copy failed. Select the text manually.')); };
+  if(window.ClipboardItem){
+    try{
+      const item=new ClipboardItem({
+        'text/html': new Blob([em.html], {type:'text/html'}),
+        'text/plain': new Blob([em.text], {type:'text/plain'})
+      });
+      navigator.clipboard.write([item]).then(done2).catch(fallback);
+    } catch(e){ fallback(); }
+  } else { fallback(); }
+}
+
+const APP_VERSION = '1.09.09';
 const RELEASES = [
+  {v:'1.09.09', d:'07/09/2026', t:'Supervision milestone email', items:[
+    'When all 12 supervision entries are marked complete, a "Copy email for [name]" button appears. Content transcribed verbatim from The Bridge, the congratulations note and the six audit findings, unchanged.',
+    'Same mechanism as The Bridge: copies rich text to the clipboard, ready to paste into a new Gmail compose window. This does not create a Gmail draft through any API or OAuth connection, nothing in this app talks to Gmail directly.'
+  ]},
   {v:'1.09.08', d:'07/09/2026', t:'Supervision back to a compact grid', items:[
     'Reverted the one-row-per-application layout. Back to a grid, four to a row at normal width, each cell holding the number, borrower name, date and Complete tick in a compact stack.'
   ]},
@@ -532,6 +594,13 @@ function supervisionPanel(c){
     '</div>';
   });
   html+='</div><div class="savedNote" id="supSaveNote" style="margin-top:10px"></div>';
+  if(done===12){
+    html+='<div style="margin-top:14px;padding:14px 16px;border-left:3px solid var(--accent,#4A6FA5);background:var(--bg,#F4F6F9);border-radius:0 8px 8px 0">'+
+      '<b style="font-family:Montserrat,sans-serif;font-size:.85rem;color:var(--primary,#2A3550)">Milestone email ready</b>'+
+      '<p style="font-size:12px;color:var(--muted,#69707F);margin:4px 0 8px">Subject: Congratulations, you have reached the milestone of 12 supervised submissions.</p>'+
+      '<button class="btn secondary" id="supEmailBtn" onclick="copySupervisionEmail(\''+c.airtableId+'\')">Copy email for '+(c.n.split(' ')[0]||'them')+'</button>'+
+    '</div>';
+  }
   wrap.innerHTML=html;
   return wrap;
 }
