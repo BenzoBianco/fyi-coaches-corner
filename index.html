@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>FYI Coaches' Corner v1.09.07</title>
+<title>FYI Coaches' Corner v1.09.08</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -141,7 +141,7 @@ main{padding:22px;max-width:1140px;margin:0 auto}
 
 <div id="app">
   <header class="top">
-    <div class="brand">FYI Coaches' Corner<span class="verBadge" id="verBadge" onclick="toggleChangelog()" title="Click for what's new">v1.09.07</span><small id="coachBadge"></small></div>
+    <div class="brand">FYI Coaches' Corner<span class="verBadge" id="verBadge" onclick="toggleChangelog()" title="Click for what's new">v1.09.08</span><small id="coachBadge"></small></div>
     <div class="who">
       <span id="whoEmail"></span>
       <button onclick="doLogout()">Sign out</button>
@@ -222,8 +222,11 @@ async function authedFetch(url, opts){
    Bump APP_VERSION, the <title>, the header badge, and add a RELEASES
    entry, all in the same edit, or the changelog silently falls behind
    the build the way The Bridge's own once did. */
-const APP_VERSION = '1.09.07';
+const APP_VERSION = '1.09.08';
 const RELEASES = [
+  {v:'1.09.08', d:'07/09/2026', t:'Supervision back to a compact grid', items:[
+    'Reverted the one-row-per-application layout. Back to a grid, four to a row at normal width, each cell holding the number, borrower name, date and Complete tick in a compact stack.'
+  ]},
   {v:'1.09.07', d:'07/09/2026', t:'Fixed: Supervision needed a name and date, not just a tick', items:[
     'Correction, not a new request: "Do need to enter the borrower\u2019s name" was read as "don\u2019t need" last build. Each of the 12 supervision entries now has a borrower name field and a date field alongside Complete.',
     'Existing tick-only data upgrades automatically the first time a client\u2019s panel is opened, nothing is lost.',
@@ -511,19 +514,21 @@ function supervisionPanel(c){
     '<div style="display:flex;justify-content:space-between;align-items:center;background:var(--bg,#F4F6F9);border:1px solid var(--border,#DFE3EB);border-radius:10px;padding:14px 18px;margin:14px 0">'+
       '<div><b style="font-family:Montserrat,sans-serif;font-size:1.6rem;color:var(--primary,#2A3550)">'+done+'</b><div style="font-size:.66rem;text-transform:uppercase;letter-spacing:.04em;color:var(--muted,#69707F);font-weight:700">of 12 complete</div></div>'+
       '<div style="text-align:right"><b style="font-family:Montserrat,sans-serif;font-size:1.6rem;color:var(--primary,#2A3550)">'+(c.mandatedMonths||0)+'</b><div style="font-size:.66rem;text-transform:uppercase;letter-spacing:.04em;color:var(--muted,#69707F);font-weight:700">mandated months</div></div>'+
-    '</div><div style="display:flex;flex-direction:column;gap:8px">';
+    '</div><div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px">';
   sup.forEach((row,i)=>{
-    html+='<div style="display:flex;align-items:center;gap:10px;background:var(--bg,#F4F6F9);border:1px solid var(--border,#DFE3EB);border-radius:10px;padding:10px 14px">'+
-      '<b style="font-family:Montserrat,sans-serif;color:var(--muted,#69707F);width:20px">'+(i+1)+'</b>'+
-      '<input type="text" placeholder="Borrower name" value="'+(row.name||'').replace(/"/g,'&quot;')+'" '+
-        'style="flex:1;padding:7px 9px;border:1px solid var(--border,#DFE3EB);border-radius:6px;font-size:13px;font-family:Inter,sans-serif;background:var(--card,#fff)" '+
+    html+='<div style="background:var(--bg,#F4F6F9);border:1px solid var(--border,#DFE3EB);border-radius:10px;padding:10px;display:flex;flex-direction:column;gap:6px">'+
+      '<div style="display:flex;justify-content:space-between;align-items:center">'+
+        '<b style="font-family:Montserrat,sans-serif;color:var(--muted,#69707F);font-size:.85rem">'+(i+1)+'</b>'+
+        '<label style="display:flex;align-items:center;gap:4px;font-size:.66rem;color:var(--muted,#69707F)">'+
+          '<input type="checkbox" style="width:15px;height:15px;accent-color:var(--accent,#4A6FA5)" '+(row.complete?'checked':'')+' '+
+            'onchange="updateSupervisionRow(\''+c.airtableId+'\','+i+',\'complete\',this.checked)"> Done</label>'+
+      '</div>'+
+      '<input type="text" placeholder="Borrower" value="'+(row.name||'').replace(/"/g,'&quot;')+'" '+
+        'style="width:100%;padding:5px 7px;border:1px solid var(--border,#DFE3EB);border-radius:6px;font-size:12px;font-family:Inter,sans-serif;background:var(--card,#fff)" '+
         'onchange="updateSupervisionRow(\''+c.airtableId+'\','+i+',\'name\',this.value)">'+
       '<input type="date" value="'+(row.date||'')+'" '+
-        'style="padding:7px 9px;border:1px solid var(--border,#DFE3EB);border-radius:6px;font-size:13px;font-family:Inter,sans-serif;background:var(--card,#fff)" '+
+        'style="width:100%;padding:5px 7px;border:1px solid var(--border,#DFE3EB);border-radius:6px;font-size:12px;font-family:Inter,sans-serif;background:var(--card,#fff)" '+
         'onchange="updateSupervisionRow(\''+c.airtableId+'\','+i+',\'date\',this.value)">'+
-      '<label style="display:flex;align-items:center;gap:5px;font-size:.75rem;color:var(--muted,#69707F);white-space:nowrap">'+
-        '<input type="checkbox" style="width:18px;height:18px;accent-color:var(--accent,#4A6FA5)" '+(row.complete?'checked':'')+' '+
-          'onchange="updateSupervisionRow(\''+c.airtableId+'\','+i+',\'complete\',this.checked)"> Complete</label>'+
     '</div>';
   });
   html+='</div><div class="savedNote" id="supSaveNote" style="margin-top:10px"></div>';
