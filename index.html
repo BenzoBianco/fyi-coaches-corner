@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>FYI Coaches' Corner v1.09.03</title>
+<title>FYI Coaches' Corner v1.09.05</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -68,6 +68,9 @@ main{padding:22px;max-width:1140px;margin:0 auto}
 .card.rag-green{border-left-color:#57A05C}
 .card.rag-amber{border-left-color:#E0A93C}
 .card.rag-red{border-left-color:#C0453F}
+.card.pr-fresh{border-left-color:#57A05C}
+.card.pr-warm{border-left-color:#E0A93C}
+.card.pr-stale{border-left-color:#C0453F}
 .card h3{margin:0 0 4px;font-family:'Montserrat',sans-serif;font-weight:700;font-size:.94rem;color:var(--primary,#2A3550)}
 .card .meta{font-size:.71rem;color:var(--muted,#69707F);display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
 .tag{display:inline-block;padding:3px 8px;border-radius:999px;font-size:.63rem;font-weight:600;background:var(--card,#fff);border:1px solid var(--border,#DFE3EB);color:var(--muted,#69707F)}
@@ -138,7 +141,7 @@ main{padding:22px;max-width:1140px;margin:0 auto}
 
 <div id="app">
   <header class="top">
-    <div class="brand">FYI Coaches' Corner<span class="verBadge" id="verBadge" onclick="toggleChangelog()" title="Click for what's new">v1.09.03</span><small id="coachBadge"></small></div>
+    <div class="brand">FYI Coaches' Corner<span class="verBadge" id="verBadge" onclick="toggleChangelog()" title="Click for what's new">v1.09.05</span><small id="coachBadge"></small></div>
     <div class="who">
       <span id="whoEmail"></span>
       <button onclick="doLogout()">Sign out</button>
@@ -219,8 +222,20 @@ async function authedFetch(url, opts){
    Bump APP_VERSION, the <title>, the header badge, and add a RELEASES
    entry, all in the same edit, or the changelog silently falls behind
    the build the way The Bridge's own once did. */
-const APP_VERSION = '1.09.03';
+const APP_VERSION = '1.09.05';
 const RELEASES = [
+  {v:'1.09.05', d:'07/09/2026', t:'Prospect detail view and editing', items:[
+    'Prospects can now be opened and edited, not just created. New prospect-update.js function, same ownership check as clients: a coach can only save changes to their own prospects, verified against Airtable\u2019s current value, not the browser\u2019s copy.',
+    'Detail view shows every writable field plus the Airtable-calculated ones, days in pipeline, days since activity, annual value, as read-only.',
+    'Coaches cannot reassign a prospect to another coach from this app, same rule as clients.'
+  ]},
+  {v:'1.09.04', d:'07/09/2026', t:'Prospect cards matched to The Bridge', items:[
+    'Temperature stripe added, green, amber or red by days since last contact, same thresholds as The Bridge.',
+    'Pipeline days, days since contact and monthly fee now shown as stat rows, with the same warn and watch colour coding on days since contact.',
+    'Overdue flag added when the expected close date has passed.',
+    'Coach name shown in the sub-line, visible to Ben only, since a single coach\u2019s own view has no need to repeat it.',
+    'The Bridge\u2019s editable \u201cOur notes\u201d field on each prospect card is not included, it has no Airtable column behind it. Flagged, not silently dropped.'
+  ]},
   {v:'1.09.03', d:'07/09/2026', t:'Active roster filter was matching nothing', items:[
     'Fixed: the Status field actually holds Active, Left or Graduated in Airtable, never Current. The Active roster filter was checking for a value that does not exist, so it silently returned zero clients. Filters now match the real values.'
   ]},
@@ -562,21 +577,105 @@ function openNewClient(){
 }
 
 /* ================= Prospects ================= */
+function prTemp(p){ return p.idle>45?'stale' : p.idle>21?'warm' : 'fresh'; }
+function prOverdue(p){ return p.close && p.close < new Date().toISOString().slice(0,10); }
+
 function renderProspects(){
   const m=document.getElementById('main');
+  if(STATE.prospectOpen) return renderProspectDetail();
   const bar=document.createElement('div'); bar.className='toolbar';
   bar.innerHTML='<div></div><button class="btn" onclick="openNewProspect()">New prospect</button>';
   m.appendChild(bar);
   if(!STATE.prospects.length){ m.innerHTML+='<div class="empty">No prospects found.</div>'; return; }
+
+  const list = STATE.prospects.slice().sort((a,b)=>(b.idle||0)-(a.idle||0));
   const grid=document.createElement('div'); grid.className='grid';
-  STATE.prospects.forEach(p=>{
-    const card=document.createElement('div'); card.className='card';
-    card.innerHTML='<h3>'+p.n+'</h3><div class="meta"><span class="tag grey">'+(p.stage||'No stage')+'</span>'+
-      (p.fee?'<span class="tag grey">$'+Number(p.fee).toLocaleString()+'/mo</span>':'')+'</div>'+
-      '<div class="meta">'+(p.src||'')+(p.close?' &middot; expected '+p.close:'')+'</div>';
+  list.forEach(p=>{
+    const temp = prTemp(p);
+    const idleCls = p.idle>45?'warn':p.idle>21?'watch':'';
+    const card=document.createElement('div'); card.className='card pr-'+temp;
+    card.onclick=()=>{ STATE.prospectOpen=p.airtableId; render(); };
+    let html='<h3>'+p.n+'</h3>'+
+      '<div class="meta" style="margin-top:2px">'+(STATE.principal && p.coach ? p.coach+' &middot; ' : '')+'via '+(p.src||'unknown')+(p.prog?' &middot; '+p.prog:'')+'</div>'+
+      '<div class="meta" style="margin-top:8px"><span class="tag grey">'+(p.stage||'No stage')+'</span></div>'+
+      '<div style="display:flex;gap:14px;margin:10px 0">'+
+        '<div style="flex:1"><div style="font-size:.6rem;text-transform:uppercase;letter-spacing:.04em;color:var(--muted,#69707F);font-weight:700">In pipeline</div>'+
+          '<div style="font-family:Montserrat,sans-serif;font-weight:700;font-size:1rem;color:var(--primary,#3B2F4A)">'+(p.days||0)+'d</div></div>'+
+        '<div style="flex:1"><div style="font-size:.6rem;text-transform:uppercase;letter-spacing:.04em;color:var(--muted,#69707F);font-weight:700">Since contact</div>'+
+          '<div style="font-family:Montserrat,sans-serif;font-weight:700;font-size:1rem;color:'+(idleCls==='warn'?'#B23A33':idleCls==='watch'?'#8A671B':'var(--primary,#3B2F4A)')+'">'+(p.idle||0)+'d</div></div>'+
+        '<div style="flex:1"><div style="font-size:.6rem;text-transform:uppercase;letter-spacing:.04em;color:var(--muted,#69707F);font-weight:700">Monthly</div>'+
+          '<div style="font-family:Montserrat,sans-serif;font-weight:700;font-size:1rem;color:var(--primary,#3B2F4A)">$'+(p.fee||0).toLocaleString()+'</div></div>'+
+      '</div>';
+    if(prOverdue(p)) html+='<div style="font-size:.7rem;font-weight:700;color:#B23A33;margin-top:2px">Expected close was '+new Date(p.close).toLocaleDateString('en-AU')+'. Date has passed.</div>';
+    if(p.note) html+='<div style="font-size:.76rem;color:var(--muted,#69707F);margin-top:8px;line-height:1.4">'+p.note+'</div>';
+    html+='<div class="cl-open" style="font-size:.68rem;color:var(--accent,#7A5C93);font-weight:700;margin-top:8px">Open prospect file &rarr;</div>';
+    card.innerHTML=html;
     grid.appendChild(card);
   });
   m.appendChild(grid);
+}
+
+function renderProspectDetail(){
+  const m=document.getElementById('main');
+  const p=STATE.prospects.find(x=>x.airtableId===STATE.prospectOpen);
+  if(!p){ STATE.prospectOpen=null; return renderProspects(); }
+  const d=document.createElement('div'); d.className='detail';
+  d.innerHTML='<button class="back" onclick="STATE.prospectOpen=null; render()">&larr; Back to prospects</button>'+
+    '<h2>'+p.n+'</h2>'+
+    '<div class="fieldGrid">'+
+      fieldRow('Status','pStage',p.stage)+
+      fieldRow('Source','pSrc',p.src)+
+      fieldRow('Expected program','pProg',p.prog)+
+      fieldRow('Expected monthly fee','pFee',p.fee,'number')+
+      fieldRow('Expected close date','pClose',p.close,'date')+
+      fieldRow('Date entered pipeline','pEntered',p.entered,'date')+
+      fieldRow('Date of last activity','pLastAct',p.lastAct,'date')+
+      fieldRow('Coach','pCoach',p.coach)+
+      fieldRow('Email','pEmail',p.email,'email')+
+      fieldRow('Mobile','pPhone',p.phone)+
+      fieldRow('Business name','pBusiness',p.business)+
+      fieldRow('Mandated months','pMandated',p.mandated)+
+      fieldRow('Notes','pNote',p.note,'textarea')+
+    '</div>'+
+    '<div class="detailActions"><button class="btn" onclick="pushProspect(\''+p.airtableId+'\')">Save to Airtable</button>'+
+    '<span class="savedNote" id="prospectSaveNote"></span></div>';
+  m.appendChild(d);
+
+  const readonly=document.createElement('div'); readonly.className='detail'; readonly.style.marginTop='14px';
+  readonly.innerHTML='<h2 style="font-size:1rem">Calculated by Airtable</h2>'+
+    '<div class="fieldGrid">'+
+      '<div class="field"><label>Days in pipeline</label><div>'+(p.days||0)+'</div></div>'+
+      '<div class="field"><label>Days since activity</label><div>'+(p.idle||0)+'</div></div>'+
+      '<div class="field"><label>Annual value</label><div>$'+(p.annual||0).toLocaleString()+'</div></div>'+
+    '</div>';
+  m.appendChild(readonly);
+}
+
+async function pushProspect(id){
+  const p=STATE.prospects.find(x=>x.airtableId===id);
+  const fields={
+    stage: document.getElementById('pStage').value,
+    src: document.getElementById('pSrc').value,
+    prog: document.getElementById('pProg').value,
+    fee: document.getElementById('pFee').value,
+    close: document.getElementById('pClose').value,
+    entered: document.getElementById('pEntered').value,
+    lastAct: document.getElementById('pLastAct').value,
+    coach: document.getElementById('pCoach').value,
+    email: document.getElementById('pEmail').value,
+    phone: document.getElementById('pPhone').value,
+    business: document.getElementById('pBusiness').value,
+    mandated: document.getElementById('pMandated').value,
+    note: document.getElementById('pNote').value
+  };
+  const note=document.getElementById('prospectSaveNote'); note.textContent='Saving...';
+  try{
+    const r=await authedFetch('/.netlify/functions/prospect-update',{method:'POST', body:JSON.stringify({recordId:id, fields})});
+    const d=await r.json();
+    if(!r.ok || d.ok===false){ note.textContent=d.message||'Save failed.'; return; }
+    note.textContent='Saved '+new Date().toLocaleTimeString();
+    Object.assign(p, fields);
+  }catch(e){ note.textContent='Could not reach the server.'; }
 }
 function openNewProspect(){
   const name=prompt('New prospect name:');
