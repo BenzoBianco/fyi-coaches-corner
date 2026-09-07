@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>FYI Coaches' Corner v1.09.11</title>
+<title>FYI Coaches' Corner v1.09.12</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -141,7 +141,7 @@ main{padding:22px;max-width:1140px;margin:0 auto}
 
 <div id="app">
   <header class="top">
-    <div class="brand">FYI Coaches' Corner<span class="verBadge" id="verBadge" onclick="toggleChangelog()" title="Click for what's new">v1.09.11</span><small id="coachBadge"></small></div>
+    <div class="brand">FYI Coaches' Corner<span class="verBadge" id="verBadge" onclick="toggleChangelog()" title="Click for what's new">v1.09.12</span><small id="coachBadge"></small></div>
     <div class="who">
       <span id="whoEmail"></span>
       <button onclick="doLogout()">Sign out</button>
@@ -280,8 +280,15 @@ function copySupervisionEmail(clientId){
   } else { fallback(); }
 }
 
-const APP_VERSION = '1.09.11';
+const APP_VERSION = '1.09.12';
 const RELEASES = [
+  {v:'1.09.12', d:'07/09/2026', t:'Relationships rebuilt around Ben\u2019s tracker design', items:[
+    'Nine new Airtable fields wired in: Company, Profession, Category, Heat, Birthday, Key Date Label, Key Date Value, Next Action, Contact Log.',
+    'Card list now sorts by cadence urgency, overdue first, with a heat badge, category tag, and next action shown inline, same priority order as the standalone tracker.',
+    'Contact log added to the detail view: every call, email, text or LinkedIn touch logged with direction, inbound or outbound, stored as JSON in the new Contact Log field. Logging an entry also updates Last Contacted automatically.',
+    'Referrals given and received deliberately not included, per Ben\u2019s decision to leave that out.',
+    'This is coach-facing only, same as the rest of Coaches\u2019 Corner. The standalone mentee-facing tracker this was based on is a separate tool and untouched by this change.'
+  ]},
   {v:'1.09.11', d:'07/09/2026', t:'Calendar, First 30 Days tracking, immersion countdown', items:[
     'New calendar.js function, ported from The Bridge, reads the same GCAL_ICS secret address. Next and last session now show on the client card and in the detail view, coach-scoped: a coach only ever sees session matches against their own clients.',
     'First 30 Days is now tracked per client, not just reference content. A Running toggle and all 36 mentee and mentor tasks, grouped by stage, save straight to the two new Airtable fields, First 30 Days Running and First 30 Days Progress.',
@@ -991,6 +998,37 @@ function openNewProspect(){
 }
 
 /* ================= Relationships ================= */
+/* Cadence status, ported from the standalone tracker Ben built: overdue
+   past the cadence window, soon within 3 days of it, ok otherwise.
+   Baseline is the last contact date, or the record's creation if never
+   contacted, same logic, using Airtable's createdTime isn't available
+   here so an uncontacted relationship just reads as overdue from day one
+   of this app knowing about it. */
+const DEFAULT_CADENCE_DAYS = 30;
+function relCadenceStatus(r){
+  const cadence = r.cadence>0 ? r.cadence : DEFAULT_CADENCE_DAYS;
+  if(!r.last) return {cls:'overdue', label:'Never contacted'};
+  const elapsed = -daysUntil(r.last);
+  const remaining = cadence - elapsed;
+  if(remaining<0) return {cls:'overdue', label:Math.abs(remaining)+'d overdue'};
+  if(remaining<=3) return {cls:'soon', label:'Due in '+remaining+'d'};
+  return {cls:'ok', label:remaining+'d left'};
+}
+function heatColor(n){
+  if(n==null) return '#69707F';
+  if(n<5) return '#4A6FA5';
+  if(n<=7) return '#E0873C';
+  return '#B3452C';
+}
+function annualCountdown(dateStr){
+  if(!dateStr) return null;
+  const p=dateStr.split('-'); if(p.length<3) return null;
+  const t=new Date(); t.setHours(0,0,0,0);
+  let next=new Date(t.getFullYear(), Number(p[1])-1, Number(p[2]));
+  if(next<t) next.setFullYear(t.getFullYear()+1);
+  return Math.round((next-t)/86400000);
+}
+
 function renderRelationships(){
   const m=document.getElementById('main');
   if(STATE.relOpen!==null) return renderRelationshipDetail();
@@ -998,27 +1036,55 @@ function renderRelationships(){
   bar.innerHTML='<div></div><button class="btn" onclick="STATE.relOpen=\'new\'; render()">New relationship</button>';
   m.appendChild(bar);
   if(!STATE.relationships.length){ m.innerHTML+='<div class="empty">No relationships found.</div>'; return; }
+
+  const list = STATE.relationships.slice().sort((a,b)=>{
+    const sa=relCadenceStatus(a).cls, sb=relCadenceStatus(b).cls;
+    const order={overdue:0, soon:1, ok:2};
+    return order[sa]-order[sb];
+  });
   const grid=document.createElement('div'); grid.className='grid';
-  STATE.relationships.forEach(r=>{
-    const card=document.createElement('div'); card.className='card';
+  list.forEach(r=>{
+    const cad = relCadenceStatus(r);
+    const card=document.createElement('div'); card.className='card pr-'+(cad.cls==='overdue'?'stale':cad.cls==='soon'?'warm':'fresh');
     card.onclick=()=>{ STATE.relOpen=r.airtableId; render(); };
-    card.innerHTML='<h3>'+r.n+'</h3><div class="meta"><span class="tag grey">'+(r.type||'')+'</span>'+
-      (r.pri?'<span class="tag grey">'+r.pri+'</span>':'')+'</div>'+
-      '<div class="meta">'+(r.status||'')+(r.last?' &middot; last contacted '+r.last:'')+'</div>';
+    let html='<h3>'+r.n+'</h3>';
+    if(r.company || r.profession) html+='<div class="meta" style="margin-top:2px">'+[r.profession, r.company].filter(Boolean).join(' at ')+'</div>';
+    html+='<div class="meta" style="margin-top:8px">';
+    if(r.category) html+='<span class="tag" style="background:#EEF1F7;border-color:#C3D6EA;color:#33587F">'+r.category+'</span>';
+    if(r.heat!=null) html+='<span class="tag" style="background:'+heatColor(r.heat)+';border-color:'+heatColor(r.heat)+';color:#fff">Heat '+r.heat+'</span>';
+    if(r.type) html+='<span class="tag grey">'+r.type+'</span>';
+    html+='</div>';
+    html+='<div class="meta" style="margin-top:8px;font-weight:600;color:'+(cad.cls==='overdue'?'#B23A33':cad.cls==='soon'?'#8A671B':'#3E7C43')+'">'+cad.label+
+      (r.last?' &middot; last '+new Date(r.last).toLocaleDateString('en-AU'):'')+'</div>';
+    if(r.nextAction) html+='<div style="font-size:.76rem;margin-top:8px;padding:7px 10px;background:var(--bg,#F4F7F6);border-left:3px solid var(--accent,#3E8E7E);border-radius:0 6px 6px 0">'+r.nextAction+'</div>';
+    const bdayIn=annualCountdown(r.birthday);
+    if(bdayIn!==null && bdayIn<=30) html+='<div class="meta" style="margin-top:6px"><span class="tag" style="background:#F7E9F0;border-color:#E2C0D2;color:#8C3B63">Birthday in '+bdayIn+'d</span></div>';
+    card.innerHTML=html;
     grid.appendChild(card);
   });
   m.appendChild(grid);
 }
+
+function relLogFor(r){
+  try{ const v=JSON.parse(r.log||'[]'); if(Array.isArray(v)) return v; }catch(e){}
+  return [];
+}
+
 function renderRelationshipDetail(){
   const m=document.getElementById('main');
   const isNew = STATE.relOpen==='new';
-  const r = isNew ? {n:'',type:'',pri:'',status:'',email:'',phone:'',last:'',cadence:'',notes:''} : STATE.relationships.find(x=>x.airtableId===STATE.relOpen);
+  const r = isNew ? {n:'',type:'',pri:'',status:'',email:'',phone:'',last:'',cadence:'',notes:'',company:'',profession:'',category:'',heat:5,birthday:'',keyDateLabel:'',keyDateValue:'',nextAction:'',log:''} : STATE.relationships.find(x=>x.airtableId===STATE.relOpen);
   if(!r){ STATE.relOpen=null; return renderRelationships(); }
   const d=document.createElement('div'); d.className='detail';
   d.innerHTML='<button class="back" onclick="STATE.relOpen=null; render()">&larr; Back to relationships</button>'+
     '<h2>'+(isNew?'New relationship':r.n)+'</h2>'+
     '<div class="fieldGrid">'+
       (isNew?fieldRow('Name','rName',''):'')+
+      fieldRow('Company','rCompany',r.company)+
+      fieldRow('Profession','rProfession',r.profession)+
+      '<div class="field"><label>Category</label><select id="rCategory">'+
+        ['','Top Referrer','Referral Partner','Prospect','Other'].map(o=>'<option value="'+o+'" '+(r.category===o?'selected':'')+'>'+(o||'—')+'</option>').join('')+
+      '</select></div>'+
       fieldRow('Type','rType',r.type)+
       fieldRow('Priority','rPri',r.pri)+
       fieldRow('Status','rStatus',r.status)+
@@ -1026,17 +1092,74 @@ function renderRelationshipDetail(){
       fieldRow('Mobile','rPhone',r.phone)+
       fieldRow('Last contacted','rLast',r.last,'date')+
       fieldRow('Cadence (days)','rCadence',r.cadence,'number')+
+      fieldRow('Birthday','rBirthday',r.birthday,'date')+
+      fieldRow('Key date label','rKeyDateLabel',r.keyDateLabel)+
+      fieldRow('Key date value','rKeyDateValue',r.keyDateValue,'date')+
+      fieldRow('Next action','rNextAction',r.nextAction)+
       fieldRow('Notes','rNotes',r.notes,'textarea')+
     '</div>'+
+    '<div class="field" style="margin-top:14px"><label>Relationship heat, '+(r.heat==null?5:r.heat)+' of 10</label>'+
+      '<input type="range" id="rHeat" min="1" max="10" value="'+(r.heat==null?5:r.heat)+'" '+
+        'style="accent-color:'+heatColor(r.heat==null?5:r.heat)+'" '+
+        'oninput="this.previousElementSibling.textContent=\'Relationship heat, \'+this.value+\' of 10\'"></div>'+
     '<div class="detailActions"><button class="btn" onclick="pushRelationship('+(isNew?'null':'\''+r.airtableId+'\'')+')">Save to Airtable</button>'+
     '<span class="savedNote" id="relSaveNote"></span></div>';
   m.appendChild(d);
+
+  if(!isNew){
+    const log = relLogFor(r);
+    const logPanel=document.createElement('div'); logPanel.className='detail'; logPanel.style.marginTop='14px';
+    let lh='<h2>Contact log</h2>';
+    lh+='<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;align-items:flex-end">'+
+      '<div class="field" style="flex:1;min-width:130px"><label>Date</label><input type="date" id="logDate" value="'+new Date().toISOString().slice(0,10)+'"></div>'+
+      '<div class="field" style="flex:1;min-width:150px"><label>Method</label><select id="logMethod">'+
+        ['Phone call','Email','SMS','LinkedIn','In person','Other'].map(o=>'<option>'+o+'</option>').join('')+'</select></div>'+
+      '<div class="field" style="flex:1;min-width:120px"><label>Direction</label><select id="logDirection"><option value="outbound">Outbound</option><option value="inbound">Inbound</option></select></div>'+
+      '<button class="btn secondary" onclick="addLogEntry(\''+r.airtableId+'\')">Log it</button>'+
+    '</div>';
+    if(!log.length){ lh+='<div class="empty" style="padding:14px">No contact logged yet.</div>'; }
+    else{
+      lh+='<div style="display:flex;flex-direction:column-reverse;gap:6px">';
+      log.forEach(e=>{
+        lh+='<div style="display:flex;justify-content:space-between;font-size:13px;padding:6px 0;border-top:1px solid var(--border,#DCE7E3)">'+
+          '<span>'+new Date(e.date).toLocaleDateString('en-AU')+' &middot; '+e.method+'</span>'+
+          '<span style="text-transform:uppercase;font-size:.66rem;font-weight:700;color:'+(e.direction==='inbound'?'var(--primary,#24413C)':'var(--accent,#3E8E7E)')+'">'+e.direction+'</span>'+
+        '</div>';
+      });
+      lh+='</div>';
+    }
+    logPanel.innerHTML=lh;
+    m.appendChild(logPanel);
+  }
 }
+
+async function addLogEntry(relId){
+  const r=STATE.relationships.find(x=>x.airtableId===relId);
+  const date=document.getElementById('logDate').value;
+  const method=document.getElementById('logMethod').value;
+  const direction=document.getElementById('logDirection').value;
+  if(!date) return;
+  const log=relLogFor(r);
+  log.push({date, method, direction});
+  r.log=JSON.stringify(log);
+  r.last=date; /* logging contact is, by definition, the most recent contact */
+  const note=document.getElementById('relSaveNote');
+  try{
+    const resp=await authedFetch('/.netlify/functions/relationship-update',{method:'POST', body:JSON.stringify({recordId:relId, name:r.n, fields:{log:r.log, last:date}})});
+    const dd=await resp.json();
+    if(!resp.ok || dd.ok===false){ if(note) note.textContent=dd.message||'Save failed.'; return; }
+  }catch(e){ if(note) note.textContent='Could not reach the server.'; return; }
+  render();
+}
+
 async function pushRelationship(id){
   const isNew = id===null;
   const name = isNew ? document.getElementById('rName').value.trim() : STATE.relationships.find(x=>x.airtableId===id).n;
   if(isNew && !name){ document.getElementById('relSaveNote').textContent='A name is required.'; return; }
   const fields={
+    company: document.getElementById('rCompany').value,
+    profession: document.getElementById('rProfession').value,
+    category: document.getElementById('rCategory').value,
     type: document.getElementById('rType').value,
     pri: document.getElementById('rPri').value,
     status: document.getElementById('rStatus').value,
@@ -1044,6 +1167,11 @@ async function pushRelationship(id){
     phone: document.getElementById('rPhone').value,
     last: document.getElementById('rLast').value,
     cadence: document.getElementById('rCadence').value,
+    heat: document.getElementById('rHeat').value,
+    birthday: document.getElementById('rBirthday').value,
+    keyDateLabel: document.getElementById('rKeyDateLabel').value,
+    keyDateValue: document.getElementById('rKeyDateValue').value,
+    nextAction: document.getElementById('rNextAction').value,
     notes: document.getElementById('rNotes').value
   };
   const note=document.getElementById('relSaveNote'); note.textContent='Saving...';
@@ -1054,6 +1182,7 @@ async function pushRelationship(id){
     note.textContent='Saved '+new Date().toLocaleTimeString();
     await loadRoster();
     STATE.relOpen = d.id;
+    render();
   }catch(e){ note.textContent='Could not reach the server.'; }
 }
 
