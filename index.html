@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>FYI Coaches' Corner v1.09.13</title>
+<title>FYI Coaches' Corner v1.09.14</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -194,7 +194,7 @@ main{padding:22px;max-width:1140px;margin:0 auto}
 
 <div id="app">
   <header class="top">
-    <div class="brand">FYI Coaches' Corner<span class="verBadge" id="verBadge" onclick="toggleChangelog()" title="Click for what's new">v1.09.13</span><small id="coachBadge"></small></div>
+    <div class="brand">FYI Coaches' Corner<span class="verBadge" id="verBadge" onclick="toggleChangelog()" title="Click for what's new">v1.09.14</span><small id="coachBadge"></small></div>
     <div class="who">
       <span id="whoEmail"></span>
       <button onclick="doLogout()">Sign out</button>
@@ -333,8 +333,13 @@ function copySupervisionEmail(clientId){
   } else { fallback(); }
 }
 
-const APP_VERSION = '1.09.13';
+const APP_VERSION = '1.09.14';
 const RELEASES = [
+  {v:'1.09.14', d:'07/09/2026', t:'Admin role for Darrel and Samantha', items:[
+    'New role added, separate from coach and from Ben. Admin staff, set by email in a new ADMIN_EMAILS environment variable, get the same full read and write access Ben has: every coach\u2019s clients, prospects and relationships, no ownership check on saves, per Ben\u2019s explicit instruction that administration staff need access to everything.',
+    'Every function that previously required a COACH_MAP entry to let anyone through now also accepts an ADMIN_EMAILS match, so admin staff are never blocked for having no coach identity of their own.',
+    'The header badge now reads \u201cadmin, all coaches\u201d for admin staff, distinct from Ben\u2019s \u201call coaches\u201d, so it\u2019s clear at a glance which role is logged in.'
+  ]},
   {v:'1.09.13', d:'07/09/2026', t:'Relationships tab restyled to match Ben\u2019s tracker', items:[
     'Relationships now uses the tracker\u2019s own visual language: navy, blue and gold, Montserrat throughout, the ring badge showing days remaining on cadence, the four-card dashboard (Overdue, Due within 3 days, On track, Total), status filter chips and hottest-first sorting.',
     'Inline logging added directly on each row, pick a method, click You reached out or They reached out, no need to open the record.',
@@ -451,9 +456,9 @@ async function loadRoster(){
     const r=await authedFetch('/.netlify/functions/sync-roster',{method:'POST'});
     const d=await r.json();
     if(!r.ok || !d.ok){ document.getElementById('main').innerHTML='<div class="banner err">'+(d.message||d.why||'Could not load your roster. Reload, or tell Ben if it keeps happening.')+'</div>'; return; }
-    STATE.coach=d.coach; STATE.principal=d.principal;
+    STATE.coach=d.coach; STATE.principal=d.principal; STATE.admin=d.admin;
     STATE.clients=d.clients||[]; STATE.prospects=d.prospects||[]; STATE.relationships=d.relationships||[];
-    document.getElementById('coachBadge').textContent = STATE.principal ? 'all coaches' : STATE.coach;
+    document.getElementById('coachBadge').textContent = STATE.admin ? 'admin, all coaches' : STATE.principal ? 'all coaches' : STATE.coach;
   }catch(e){ document.getElementById('main').innerHTML='<div class="banner err">Could not reach the server. Check your connection and reload.</div>'; }
 }
 
