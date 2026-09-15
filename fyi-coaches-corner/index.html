@@ -1,0 +1,2266 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FYI Coaches' Corner v1.09.14</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{ --radius:10px; }
+/* Theme palettes, taken directly from The Bridge, one per tab, so Coaches'
+   Corner reads as the same product rather than a lookalike. The body's
+   theme class switches with the active tab, same mechanism The Bridge
+   uses per business. */
+body.theme-clients{ --bg:#F4F6F9;--card:#FFF;--primary:#2A3550;--accent:#4A6FA5;--accent2:#C59C44;--text:#26293A;--muted:#69707F;--border:#DFE3EB; }
+body.theme-prospects{ --bg:#F7F5F9;--card:#FFF;--primary:#3B2F4A;--accent:#7A5C93;--accent2:#C59C44;--text:#312A3A;--muted:#6F6678;--border:#E5DFEA; }
+body.theme-rel{ --bg:#F4F7F6;--card:#FFF;--primary:#24413C;--accent:#3E8E7E;--accent2:#C59C44;--text:#22322E;--muted:#657771;--border:#DCE7E3; }
+body.theme-sop{ --bg:#F7F5F2;--card:#FFF;--primary:#3B3730;--accent:#8A6D3F;--accent2:#6090C9;--text:#332F29;--muted:#726B60;--border:#E6E0D6; }
+body.theme-training{ --bg:#F5F3F8;--card:#FFF;--primary:#3A3252;--accent:#6B5B95;--accent2:#C59C44;--text:#2E2940;--muted:#6E6880;--border:#E4DFEC; }
+
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:var(--bg,#F4F6F9);color:var(--text,#26293A);font-family:'Inter',-apple-system,sans-serif;min-height:100vh;transition:background .25s ease}
+h1,h2,h3,.brand,nav button,.section-title{font-family:'Montserrat',sans-serif}
+.hidden{display:none !important}
+/* ---- Login ---- */
+#loginScreen{min-height:100vh;display:flex;align-items:center;justify-content:center;background:#1D4D71}
+.loginBox{background:#fff;border-radius:12px;padding:36px;width:340px;box-shadow:0 20px 50px rgba(0,0,0,.3)}
+.loginBox h1{font-family:'Montserrat',sans-serif;font-weight:800;font-size:20px;margin:0 0 4px;color:#2A3550}
+.loginBox p.sub{color:#69707F;font-size:13px;margin:0 0 20px}
+.loginBox input{width:100%;padding:10px 12px;border:1px solid #DFE3EB;border-radius:8px;margin-bottom:10px;font-size:14px;font-family:'Inter',sans-serif}
+.loginBox button{width:100%;padding:11px;border:0;border-radius:8px;background:#4A6FA5;color:#fff;font-size:14px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer}
+.loginBox button:hover{filter:brightness(.94)}
+.loginErr{color:#B23A33;font-size:13px;margin:8px 0 0;min-height:16px}
+.loginLinks{margin-top:14px;font-size:12px;color:#69707F;text-align:center}
+.loginLinks a{color:#4A6FA5;cursor:pointer;text-decoration:none;font-weight:600}
+/* ---- App shell ---- */
+#app{display:none}
+#app.show{display:block}
+header.top{background:#1D4D71;color:#fff;padding:14px 22px;display:flex;align-items:center;justify-content:space-between}
+header.top .brand{font-weight:800;font-size:17px}
+header.top .verBadge{font-family:'Inter',sans-serif;font-size:.62rem;font-weight:600;color:#D9E7F0;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);padding:2px 8px;border-radius:99px;margin-left:8px;cursor:pointer;vertical-align:middle}
+header.top .verBadge:hover{background:rgba(255,255,255,.2)}
+header.top .brand small{font-weight:500;font-family:'Inter',sans-serif;color:#AFC9DC;margin-left:8px;font-size:12px}
+header.top .who{font-size:13px;color:#D9E7F0;display:flex;align-items:center;gap:12px}
+header.top .who button{background:transparent;border:1px solid #3E7098;color:#D9E7F0;padding:6px 12px;border-radius:7px;cursor:pointer;font-size:12px;font-family:'Inter',sans-serif}
+nav{display:flex;gap:7px;background:var(--card,#fff);border-bottom:1px solid var(--border,#DFE3EB);padding:12px 22px;overflow-x:auto;flex-wrap:wrap}
+nav button{padding:8px 15px;border-radius:999px;border:1.5px solid var(--border,#DFE3EB);background:var(--bg,#F4F6F9);color:var(--muted,#69707F);cursor:pointer;font-size:.8rem;font-weight:600;white-space:nowrap;transition:all .15s ease}
+nav button:hover{border-color:var(--accent,#4A6FA5);color:var(--primary,#2A3550)}
+nav button.active{background:var(--primary,#2A3550);border-color:var(--primary,#2A3550);color:#fff}
+main{padding:22px;max-width:1140px;margin:0 auto}
+.banner{background:#FBF3E2;border:1px solid #E0B45C;color:#8A671B;padding:10px 14px;border-radius:9px;font-size:13px;margin-bottom:16px}
+.banner.err{background:#FBEBEA;border-color:#D98782;color:#A8382F}
+.banner.ok{background:#EFF7EF;border-color:#7BAE7F;color:#3E7C43}
+.toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;gap:10px;flex-wrap:wrap}
+.toolbar input[type=search]{padding:8px 12px;border:1px solid var(--border,#DFE3EB);border-radius:8px;font-size:13px;min-width:220px;font-family:'Inter',sans-serif;background:var(--card,#fff)}
+.cl-filters{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:12px}
+.cl-filter{padding:6px 12px;border-radius:999px;border:1.5px solid var(--border,#DFE3EB);background:var(--bg,#F4F6F9);color:var(--muted,#69707F);font-size:.75rem;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif}
+.cl-filter:hover{border-color:var(--accent,#4A6FA5);color:var(--primary,#2A3550)}
+.cl-filter.active{background:var(--primary,#2A3550);border-color:var(--primary,#2A3550);color:#fff}
+.btn{padding:7px 13px;border:0;border-radius:7px;background:var(--accent,#4A6FA5);color:#fff;font-size:.78rem;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif}
+.btn:hover{filter:brightness(.94)}
+.btn.secondary{background:transparent;color:var(--primary,#2A3550);border:1px solid var(--accent,#4A6FA5)}
+.btn.ghost{background:transparent;color:var(--muted,#69707F);border:1px solid var(--border,#DFE3EB)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(268px,1fr));gap:12px}
+.card{background:var(--bg,#F4F6F9);border:1px solid var(--border,#DFE3EB);border-radius:var(--radius);padding:13px 14px;border-left:4px solid var(--border,#DFE3EB);cursor:pointer;transition:transform .15s ease,box-shadow .15s ease}
+.card:hover{transform:translateY(-2px);box-shadow:0 4px 14px rgba(0,0,0,.07)}
+.card.rag-green{border-left-color:#57A05C}
+.card.rag-amber{border-left-color:#E0A93C}
+.card.rag-red{border-left-color:#C0453F}
+.card.pr-fresh{border-left-color:#57A05C}
+.card.pr-warm{border-left-color:#E0A93C}
+.card.pr-stale{border-left-color:#C0453F}
+.card h3{margin:0 0 4px;font-family:'Montserrat',sans-serif;font-weight:700;font-size:.94rem;color:var(--primary,#2A3550)}
+.card .meta{font-size:.71rem;color:var(--muted,#69707F);display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.tag{display:inline-block;padding:3px 8px;border-radius:999px;font-size:.63rem;font-weight:600;background:var(--card,#fff);border:1px solid var(--border,#DFE3EB);color:var(--muted,#69707F)}
+.tag.green{background:#EFF7EF;border-color:#7BAE7F;color:#3E7C43}
+.tag.amber{background:#FBF3E2;border-color:#E0B45C;color:#8A671B}
+.tag.red{background:#FBEBEA;border-color:#D98782;color:#A8382F}
+.tag.grey{background:var(--card,#fff);color:var(--muted,#69707F)}
+.empty{color:var(--muted,#69707F);font-size:13px;padding:30px;text-align:center}
+/* ---- Detail panel ---- */
+.detail{background:var(--card,#fff);border:1px solid var(--border,#DFE3EB);border-radius:12px;padding:22px}
+.detail .back{background:none;border:0;color:var(--accent,#4A6FA5);font-weight:700;cursor:pointer;font-size:.8rem;margin-bottom:14px;padding:0;font-family:'Inter',sans-serif}
+.detail h2{margin:0 0 16px;font-family:'Montserrat',sans-serif;font-weight:800;color:var(--primary,#2A3550)}
+.fieldGrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.field{display:flex;flex-direction:column;gap:4px}
+.field label{font-size:.63rem;color:var(--muted,#69707F);font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+.field input,.field select,.field textarea{padding:8px 10px;border:1px solid var(--border,#DFE3EB);border-radius:6px;font-size:13px;font-family:'Inter',sans-serif;background:var(--bg,#F4F6F9)}
+.field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--accent,#4A6FA5);background:var(--card,#fff)}
+.field textarea{grid-column:1/-1;min-height:70px;resize:vertical}
+.field.full{grid-column:1/-1}
+.detailActions{margin-top:18px;display:flex;gap:8px;align-items:center}
+.savedNote{font-size:12px;color:var(--muted,#69707F)}
+/* ---- SOPs ---- */
+.sopList{display:flex;flex-direction:column;gap:6px}
+.sopRow{padding:10px 12px;border:1px solid var(--border,#DFE3EB);border-radius:8px;background:var(--card,#fff);cursor:pointer;display:flex;justify-content:space-between;font-size:13px}
+.sopRow:hover{border-color:var(--accent,#8A6D3F)}
+.sopGroup{font-size:.66rem;text-transform:uppercase;color:var(--muted,#69707F);letter-spacing:.05em;margin:16px 0 6px;font-weight:700}
+.sopDoc{background:var(--card,#fff);border:1px solid var(--border,#DFE3EB);border-radius:12px;padding:22px;line-height:1.55;font-size:14px}
+.sopDoc h2{margin-top:0;font-family:'Montserrat',sans-serif;color:var(--primary,#3B3730)}
+.sopDoc h4{margin:18px 0 6px;font-size:.66rem;text-transform:uppercase;color:var(--muted,#726B60);letter-spacing:.04em}
+/* ---- Training ---- */
+.module{background:var(--card,#fff);border:1px solid var(--border,#E4DFEC);border-radius:12px;padding:16px 18px;margin-bottom:12px}
+.module h3{margin:0 0 6px;font-family:'Montserrat',sans-serif;font-weight:700;font-size:.9rem;color:var(--primary,#3A3252)}
+.module .why{color:var(--muted,#6E6880);font-size:13px;margin-bottom:10px}
+.module ul.checklist{list-style:none;padding:0;margin:0}
+.module ul.checklist li{display:flex;gap:8px;align-items:flex-start;padding:5px 0;font-size:13px}
+.module ul.checklist input{margin-top:3px;accent-color:var(--accent,#6B5B95)}
+.progressBar{height:6px;background:var(--border,#E4DFEC);border-radius:3px;overflow:hidden;margin:10px 0 20px}
+.progressBar .fill{height:100%;background:var(--accent,#6B5B95)}
+
+/* ---- Relationships tab, styled to match Ben's standalone tracker exactly ---- */
+.relTracker{--rt-navy:#333547;--rt-blue:#6090c7;--rt-blue-dark:#4a76ab;--rt-gold:#c59c44;--rt-silver:#d8d8d8;--rt-red:#b3452c;--rt-paper:#f7f7f5;--rt-ink-soft:#6b6d7a;font-family:'Montserrat',sans-serif;color:var(--rt-navy)}
+.relTracker .rt-dash{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}
+.relTracker .rt-dash-card{background:#fff;border-radius:10px;padding:16px 18px;box-shadow:0 1px 2px rgba(51,53,71,.06),0 6px 20px rgba(51,53,71,.06);border-left:4px solid var(--rt-silver)}
+.relTracker .rt-dash-card .num{font-size:28px;font-weight:800;line-height:1}
+.relTracker .rt-dash-card .lbl{font-size:12px;color:var(--rt-ink-soft);font-weight:600;text-transform:uppercase;letter-spacing:.04em;margin-top:6px}
+.relTracker .rt-dash-card.overdue{border-left-color:var(--rt-red)} .relTracker .rt-dash-card.overdue .num{color:var(--rt-red)}
+.relTracker .rt-dash-card.soon{border-left-color:var(--rt-gold)} .relTracker .rt-dash-card.soon .num{color:var(--rt-gold)}
+.relTracker .rt-dash-card.ok{border-left-color:var(--rt-blue)} .relTracker .rt-dash-card.ok .num{color:var(--rt-blue-dark)}
+.relTracker .rt-toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:18px}
+.relTracker .rt-toolbar input[type=text]{flex:1;min-width:180px;padding:10px 14px;border:1px solid var(--rt-silver);border-radius:8px;font-family:inherit;font-size:13px;background:#fff}
+.relTracker .rt-toolbar select{padding:10px 12px;border:1px solid var(--rt-silver);border-radius:8px;font-family:inherit;font-size:13px;background:#fff;color:var(--rt-navy)}
+.relTracker .rt-btn{font-family:inherit;font-size:13px;font-weight:700;border-radius:8px;padding:10px 16px;border:none;cursor:pointer}
+.relTracker .rt-btn-primary{background:var(--rt-navy);color:#fff}
+.relTracker .rt-btn-ghost{background:#fff;color:var(--rt-navy);border:1px solid var(--rt-silver)}
+.relTracker .rt-chips{display:flex;gap:6px}
+.relTracker .rt-chip{padding:8px 12px;border-radius:20px;font-size:12px;font-weight:700;border:1px solid var(--rt-silver);background:#fff;cursor:pointer;color:var(--rt-ink-soft)}
+.relTracker .rt-chip.active{background:var(--rt-navy);color:#fff;border-color:var(--rt-navy)}
+.relTracker .rt-row{background:#fff;border-radius:10px;box-shadow:0 1px 2px rgba(51,53,71,.06),0 6px 20px rgba(51,53,71,.06);padding:14px 16px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:10px}
+.relTracker .rt-ring-wrap{flex:none;position:relative;width:52px;height:52px}
+.relTracker .rt-ring-wrap svg{width:52px;height:52px;transform:rotate(-90deg)}
+.relTracker .rt-ring-bg{fill:none;stroke:#eceef2;stroke-width:5}
+.relTracker .rt-ring-fg{fill:none;stroke-width:5;stroke-linecap:round}
+.relTracker .rt-ring-label{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800}
+.relTracker .rt-main{flex:1;min-width:220px}
+.relTracker .rt-name-line{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.relTracker .rt-name{font-weight:700;font-size:15px;cursor:pointer}
+.relTracker .rt-name:hover{text-decoration:underline}
+.relTracker .rt-tag{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;padding:3px 8px;border-radius:12px;background:#eef1f7;color:var(--rt-blue-dark)}
+.relTracker .rt-heat{font-size:11.5px;font-weight:800;color:#fff;border-radius:12px;padding:3px 10px}
+.relTracker .rt-company{font-size:12.5px;color:var(--rt-ink-soft);margin-top:1px}
+.relTracker .rt-meta{font-size:12.5px;color:var(--rt-ink-soft);margin-top:3px;display:flex;gap:14px;flex-wrap:wrap}
+.relTracker .rt-meta a{color:var(--rt-ink-soft);text-decoration:none}
+.relTracker .rt-last{font-size:12px;color:var(--rt-ink-soft);margin-top:4px}
+.relTracker .rt-last b{color:var(--rt-navy)}
+.relTracker .rt-keydate{font-size:11px;font-weight:700;color:#8a6a1f;background:#fff8e6;border:1px solid #f0dfa8;border-radius:12px;padding:2px 9px}
+.relTracker .rt-next{font-size:12.5px;margin-top:6px;padding:7px 10px;background:#eef1f7;border-left:3px solid var(--rt-blue);border-radius:0 6px 6px 0;color:var(--rt-navy)}
+.relTracker .rt-log-controls{display:flex;align-items:center;gap:8px;flex:none}
+.relTracker .rt-log-controls select{padding:8px 10px;border:1px solid var(--rt-silver);border-radius:7px;font-family:inherit;font-size:12.5px}
+.relTracker .rt-log-btn{background:var(--rt-blue);color:#fff;font-family:inherit;font-weight:700;font-size:12.5px;padding:9px 14px;border:none;border-radius:7px;cursor:pointer}
+.relTracker .rt-log-btn:hover{background:var(--rt-blue-dark)}
+.relTracker .rt-log-btn.inbound{background:var(--rt-navy)}
+.relTracker .rt-log-btn.inbound:hover{background:#22232f}
+.relTracker .rt-icon-btn{background:none;border:none;cursor:pointer;color:var(--rt-ink-soft);padding:6px;border-radius:6px;font-size:12.5px;font-weight:700}
+.relTracker .rt-icon-btn:hover{background:#f1f1f0;color:var(--rt-navy)}
+.relTracker .rt-detail{width:100%;display:none;border-top:1px solid #eee;margin-top:12px;padding-top:12px;font-size:13px}
+.relTracker .rt-detail.open{display:block}
+.relTracker .rt-detail .notes{color:var(--rt-navy);margin-bottom:10px;white-space:pre-wrap}
+.relTracker .rt-history-title{font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--rt-ink-soft);margin:14px 0 6px}
+.relTracker .rt-history-item{display:flex;gap:10px;font-size:12.5px;padding:4px 0;color:var(--rt-ink-soft)}
+.relTracker .rt-history-item b{color:var(--rt-navy);min-width:90px}
+.relTracker .rt-no-history{color:var(--rt-ink-soft);font-size:12.5px;font-style:italic}
+</style>
+</head>
+<body class="theme-clients">
+
+<div id="loginScreen">
+  <div class="loginBox">
+    <h1>FYI Coaches' Corner</h1>
+    <p class="sub">Sign in with the account you were invited on.</p>
+    <input id="liEmail" type="email" placeholder="Email" autocomplete="username">
+    <input id="liPass" type="password" placeholder="Password" autocomplete="current-password">
+    <button id="liBtn" onclick="doLogin()">Sign in</button>
+    <div class="loginErr" id="liErr"></div>
+    <div class="loginLinks"><a onclick="showAccept()">Accepting an invite? Set your password here</a></div>
+  </div>
+</div>
+
+<div id="acceptScreen" class="hidden">
+  <div id="loginScreen" style="display:flex">
+    <div class="loginBox">
+      <h1>Set your password</h1>
+      <p class="sub">Paste the token from your invite email link, then choose a password.</p>
+      <input id="acToken" placeholder="Invite token (from the email link)">
+      <input id="acPass" type="password" placeholder="New password" autocomplete="new-password">
+      <button onclick="doAccept()">Set password and sign in</button>
+      <div class="loginErr" id="acErr"></div>
+      <div class="loginLinks"><a onclick="showLogin()">Back to sign in</a></div>
+    </div>
+  </div>
+</div>
+
+<div id="app">
+  <header class="top">
+    <div class="brand">FYI Coaches' Corner<span class="verBadge" id="verBadge" onclick="toggleChangelog()" title="Click for what's new">v1.09.14</span><small id="coachBadge"></small></div>
+    <div class="who">
+      <span id="whoEmail"></span>
+      <button onclick="doLogout()">Sign out</button>
+    </div>
+  </header>
+  <div id="changelogPanel" class="hidden" style="background:#fff;border-bottom:1px solid var(--border,#DFE3EB);padding:16px 22px;max-width:1140px;margin:0 auto"></div>
+  <nav id="tabs">
+    <button data-tab="clients" onclick="setTab('clients')">Clients</button>
+    <button data-tab="prospects" onclick="setTab('prospects')">Prospects</button>
+    <button data-tab="relationships" onclick="setTab('relationships')">Relationships</button>
+    <button data-tab="sops" onclick="setTab('sops')">SOPs</button>
+    <button data-tab="training" onclick="setTab('training')">Coach Training</button>
+  </nav>
+  <main id="main"></main>
+</div>
+
+
+<script>
+/* ================= Identity (no widget) ================= */
+const IDENTITY = location.origin + '/.netlify/identity';
+function saveSession(s){ localStorage.setItem('cc_session', JSON.stringify(s)); }
+function getSession(){ try{ return JSON.parse(localStorage.getItem('cc_session')||'null'); }catch(e){ return null; } }
+function clearSession(){ localStorage.removeItem('cc_session'); }
+
+async function doLogin(){
+  const email=document.getElementById('liEmail').value.trim();
+  const pass=document.getElementById('liPass').value;
+  const err=document.getElementById('liErr'); err.textContent='';
+  if(!email||!pass){ err.textContent='Enter your email and password.'; return; }
+  try{
+    const r=await fetch(IDENTITY+'/token',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},
+      body:'grant_type=password&username='+encodeURIComponent(email)+'&password='+encodeURIComponent(pass)});
+    const d=await r.json();
+    if(!r.ok){ err.textContent = d.error_description || 'Sign in failed. Check your email and password.'; return; }
+    saveSession({access_token:d.access_token, refresh_token:d.refresh_token, email});
+    boot();
+  }catch(e){ err.textContent='Could not reach the sign-in service.'; }
+}
+
+function showAccept(){ document.getElementById('loginScreen').classList.add('hidden'); document.getElementById('acceptScreen').classList.remove('hidden'); }
+function showLogin(){ document.getElementById('acceptScreen').classList.add('hidden'); document.getElementById('loginScreen').classList.remove('hidden'); }
+
+async function doAccept(){
+  const token=document.getElementById('acToken').value.trim();
+  const pass=document.getElementById('acPass').value;
+  const err=document.getElementById('acErr'); err.textContent='';
+  if(!token||!pass){ err.textContent='Paste the token and choose a password.'; return; }
+  try{
+    /* Password must be included in this single call. A separate verify-then-update
+       pattern fails, and a failed token attempt burns the token, requiring a fresh
+       invite. */
+    const r=await fetch(IDENTITY+'/verify',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({type:'signup', token, password:pass})});
+    const d=await r.json();
+    if(!r.ok){ err.textContent = d.msg || d.error_description || 'That token was not accepted. Ask Ben to resend the invite.'; return; }
+    saveSession({access_token:d.token && d.token.access_token, refresh_token:d.token && d.token.refresh_token, email:d.email});
+    boot();
+  }catch(e){ err.textContent='Could not reach the sign-in service.'; }
+}
+
+function doLogout(){ clearSession(); location.reload(); }
+
+async function authedFetch(url, opts){
+  const s=getSession();
+  opts=opts||{}; opts.headers=Object.assign({'Authorization':'Bearer '+(s?s.access_token:''), 'Content-Type':'application/json'}, opts.headers||{});
+  let r=await fetch(url,opts);
+  if(r.status===401 && s && s.refresh_token){
+    const rr=await fetch(IDENTITY+'/token',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},
+      body:'grant_type=refresh_token&refresh_token='+encodeURIComponent(s.refresh_token)});
+    if(rr.ok){ const d=await rr.json(); saveSession({access_token:d.access_token, refresh_token:d.refresh_token, email:s.email});
+      opts.headers['Authorization']='Bearer '+d.access_token; r=await fetch(url,opts); }
+  }
+  return r;
+}
+
+/* ================= Versioning ================= */
+/* major.month.build, month zero-padded, matching The Bridge's convention.
+   Bump APP_VERSION, the <title>, the header badge, and add a RELEASES
+   entry, all in the same edit, or the changelog silently falls behind
+   the build the way The Bridge's own once did. */
+/* Sent once all 12 supervised submissions are marked complete. Content is
+   Ben's own, transcribed verbatim from The Bridge, name swap only. Copies
+   as rich text via ClipboardItem so pasting into a Gmail compose keeps
+   the bold and underlined headers, not plain text like the other copy
+   buttons in this app. */
+function supervisionMilestoneEmail(name){
+  const first=(name||'').trim().split(' ')[0]||'there';
+  const subject='Congratulations, you have reached the milestone of 12 supervised submissions.';
+  const html=
+    'Hi '+first+',<br><br>'+
+    'We\u2019ve now completed the review of over 12 supervised submissions, both at the pre-bank stage and '+
+    'the pre-submission stage, as required under the Connective supervision program. Well done getting through all 12.<br><br>'+
+    '<u>What we\u2019re seeing in the audits</u><br>'+
+    'Six things come up repeatedly across file reviews. These aren\u2019t one-off notes; they\u2019re the pattern, '+
+    'so treat them as your checklist on every submission from here:<br><br>'+
+    '(a) Employment details. Full employment history, plus a named contact to verify it, completed in full, every time.<br>'+
+    '(b) Living expenses. Must sit 7% above the minimum lender HEM figure, not equal to it.<br>'+
+    '(c) Assets. Should be commensurate with the applicant\u2019s age. Check what someone in that age bracket would '+
+    'reasonably have accumulated, and query anything that looks light.<br>'+
+    '(d) Notes. More than 20 entries showing your conversations with the applicant, your observations on assets, '+
+    'liabilities and living expenses, plus any compliance issues or anything unique to the file. If it\u2019s not '+
+    'written down, it didn\u2019t happen.<br>'+
+    '(e) Attachments. Every document carrying a TFN needs redaction. Equifax and all mandatory documents ordered correctly.<br>'+
+    '(f) Calculations. Surplus in the funding position must be sufficient, and living expenses in the financials must '+
+    'match the borrowing capacity figure. If you\u2019ve used Quickli, replicate it in the Connective calculator. If '+
+    'the two don\u2019t match, leave a compliance note explaining why.<br><br>'+
+    '<u>Two standing reminders</u><br>'+
+    '(a) Use the BID snippet builder on every file. It\u2019s your proof you\u2019ve covered every area of the best '+
+    'interests duty, not just a formality.<br>'+
+    '(b) If a complaint is ever made, Connective as licence holder takes over that complaint. What isn\u2019t in the '+
+    'file in writing never existed. Your notes are your protection as much as the client\u2019s.<br><br>'+
+    'Going forward<br>'+
+    'You\u2019re clear of the 12 mandated reviews for this stage, but the standard doesn\u2019t drop off. '+
+    'Keep running every file against these six points before it goes anywhere near submission.<br><br>'+
+    'Any file you want a second set of eyes on before you send it, flick it to me first.';
+  const text=html.replace(/<u>|<\/u>/g,'').replace(/<br><br>/g,'\n\n').replace(/<br>/g,'\n');
+  return {subject:subject, html:html, text:text};
+}
+
+function copySupervisionEmail(clientId){
+  const c=STATE.clients.find(x=>x.airtableId===clientId);
+  const btn=document.getElementById('supEmailBtn');
+  const label=btn.textContent;
+  const em=supervisionMilestoneEmail(c.n);
+  const done2=()=>{ btn.textContent='\u2713 Copied, paste into Gmail'; setTimeout(()=>btn.textContent=label,2200); };
+  const fallback=()=>{ navigator.clipboard.writeText(em.subject+'\n\n'+em.text).then(done2)
+    .catch(()=>alert('Copy failed. Select the text manually.')); };
+  if(window.ClipboardItem){
+    try{
+      const item=new ClipboardItem({
+        'text/html': new Blob([em.html], {type:'text/html'}),
+        'text/plain': new Blob([em.text], {type:'text/plain'})
+      });
+      navigator.clipboard.write([item]).then(done2).catch(fallback);
+    } catch(e){ fallback(); }
+  } else { fallback(); }
+}
+
+const APP_VERSION = '1.09.14';
+const RELEASES = [
+  {v:'1.09.14', d:'07/09/2026', t:'Admin role for Darrel and Samantha', items:[
+    'New role added, separate from coach and from Ben. Admin staff, set by email in a new ADMIN_EMAILS environment variable, get the same full read and write access Ben has: every coach\u2019s clients, prospects and relationships, no ownership check on saves, per Ben\u2019s explicit instruction that administration staff need access to everything.',
+    'Every function that previously required a COACH_MAP entry to let anyone through now also accepts an ADMIN_EMAILS match, so admin staff are never blocked for having no coach identity of their own.',
+    'The header badge now reads \u201cadmin, all coaches\u201d for admin staff, distinct from Ben\u2019s \u201call coaches\u201d, so it\u2019s clear at a glance which role is logged in.'
+  ]},
+  {v:'1.09.13', d:'07/09/2026', t:'Relationships tab restyled to match Ben\u2019s tracker', items:[
+    'Relationships now uses the tracker\u2019s own visual language: navy, blue and gold, Montserrat throughout, the ring badge showing days remaining on cadence, the four-card dashboard (Overdue, Due within 3 days, On track, Total), status filter chips and hottest-first sorting.',
+    'Inline logging added directly on each row, pick a method, click You reached out or They reached out, no need to open the record.',
+    'This restyle is scoped to Relationships only. Clients, Prospects, SOPs and Coach Training keep the Bridge-matched look from earlier, so the two visual languages don\u2019t mix inside one app.',
+    'The add/edit form itself still uses Coaches\u2019 Corner\u2019s existing field layout, not yet rebuilt to match the tracker\u2019s modal styling. The list and dashboard, the most visually distinctive part, are the ones rebuilt pixel for pixel.'
+  ]},
+  {v:'1.09.12', d:'07/09/2026', t:'Relationships rebuilt around Ben\u2019s tracker design', items:[
+    'Nine new Airtable fields wired in: Company, Profession, Category, Heat, Birthday, Key Date Label, Key Date Value, Next Action, Contact Log.',
+    'Card list now sorts by cadence urgency, overdue first, with a heat badge, category tag, and next action shown inline, same priority order as the standalone tracker.',
+    'Contact log added to the detail view: every call, email, text or LinkedIn touch logged with direction, inbound or outbound, stored as JSON in the new Contact Log field. Logging an entry also updates Last Contacted automatically.',
+    'Referrals given and received deliberately not included, per Ben\u2019s decision to leave that out.',
+    'This is coach-facing only, same as the rest of Coaches\u2019 Corner. The standalone mentee-facing tracker this was based on is a separate tool and untouched by this change.'
+  ]},
+  {v:'1.09.11', d:'07/09/2026', t:'Calendar, First 30 Days tracking, immersion countdown', items:[
+    'New calendar.js function, ported from The Bridge, reads the same GCAL_ICS secret address. Next and last session now show on the client card and in the detail view, coach-scoped: a coach only ever sees session matches against their own clients.',
+    'First 30 Days is now tracked per client, not just reference content. A Running toggle and all 36 mentee and mentor tasks, grouped by stage, save straight to the two new Airtable fields, First 30 Days Running and First 30 Days Progress.',
+    'Immersion countdown added: 12 weeks from the start date, confirmed directly with Ben rather than assumed. Shown as a negative day count while time remains, crossing positive if the client runs past the window still in Immersion.'
+  ]},
+  {v:'1.09.10', d:'07/09/2026', t:'Client card matched to The Bridge, partially', items:[
+    'Contacts count now shown, wired to the three checkbox fields that already existed in Airtable but were never displayed here.',
+    'Birthday countdown added, shows only within 30 days, same threshold as The Bridge.',
+    'Days to graduation added, start date plus mandated months, per the standing decision.',
+    'DISC pill now carries the same mini bar icon as The Bridge, not just the animal name.',
+    'Not included yet, each needs a decision or new data before it can be built honestly rather than guessed: next and last session date (needs a Google Calendar connection this app does not have), the First 30 Days 0/36 progress pill (needs two new Airtable fields), and the immersion countdown (needs Ben to confirm what the countdown is actually counting down from, no definition of it exists anywhere in The Bridge\u2019s own source).'
+  ]},
+  {v:'1.09.09', d:'07/09/2026', t:'Supervision milestone email', items:[
+    'When all 12 supervision entries are marked complete, a "Copy email for [name]" button appears. Content transcribed verbatim from The Bridge, the congratulations note and the six audit findings, unchanged.',
+    'Same mechanism as The Bridge: copies rich text to the clipboard, ready to paste into a new Gmail compose window. This does not create a Gmail draft through any API or OAuth connection, nothing in this app talks to Gmail directly.'
+  ]},
+  {v:'1.09.08', d:'07/09/2026', t:'Supervision back to a compact grid', items:[
+    'Reverted the one-row-per-application layout. Back to a grid, four to a row at normal width, each cell holding the number, borrower name, date and Complete tick in a compact stack.'
+  ]},
+  {v:'1.09.07', d:'07/09/2026', t:'Fixed: Supervision needed a name and date, not just a tick', items:[
+    'Correction, not a new request: "Do need to enter the borrower\u2019s name" was read as "don\u2019t need" last build. Each of the 12 supervision entries now has a borrower name field and a date field alongside Complete.',
+    'Existing tick-only data upgrades automatically the first time a client\u2019s panel is opened, nothing is lost.',
+    'Date fields use the browser\u2019s own date picker, which displays DD/MM/YYYY on an Australian locale. The underlying value Airtable stores is unaffected either way.'
+  ]},
+  {v:'1.09.06', d:'07/09/2026', t:'Supervision tracker and client header detail', items:[
+    'Supervision panel added to every client with mandated months set: 12 applications, one Complete tick each, no borrower name captured, at Ben\u2019s request simplified from The Bridge\u2019s two-stage review. Stored in the new Supervision Progress Airtable field, ticking saves immediately.',
+    'Client header now shows the CA number and mandated months as badges, and a subtitle line: coach, state, lifecycle stage, program, referred by.',
+    'Referred by is now a visible and editable field, reading and writing Referred By Client in Airtable.'
+  ]},
+  {v:'1.09.05', d:'07/09/2026', t:'Prospect detail view and editing', items:[
+    'Prospects can now be opened and edited, not just created. New prospect-update.js function, same ownership check as clients: a coach can only save changes to their own prospects, verified against Airtable\u2019s current value, not the browser\u2019s copy.',
+    'Detail view shows every writable field plus the Airtable-calculated ones, days in pipeline, days since activity, annual value, as read-only.',
+    'Coaches cannot reassign a prospect to another coach from this app, same rule as clients.'
+  ]},
+  {v:'1.09.04', d:'07/09/2026', t:'Prospect cards matched to The Bridge', items:[
+    'Temperature stripe added, green, amber or red by days since last contact, same thresholds as The Bridge.',
+    'Pipeline days, days since contact and monthly fee now shown as stat rows, with the same warn and watch colour coding on days since contact.',
+    'Overdue flag added when the expected close date has passed.',
+    'Coach name shown in the sub-line, visible to Ben only, since a single coach\u2019s own view has no need to repeat it.',
+    'The Bridge\u2019s editable \u201cOur notes\u201d field on each prospect card is not included, it has no Airtable column behind it. Flagged, not silently dropped.'
+  ]},
+  {v:'1.09.03', d:'07/09/2026', t:'Active roster filter was matching nothing', items:[
+    'Fixed: the Status field actually holds Active, Left or Graduated in Airtable, never Current. The Active roster filter was checking for a value that does not exist, so it silently returned zero clients. Filters now match the real values.'
+  ]},
+  {v:'1.09.02', d:'07/09/2026', t:'Fireflies and client filters', items:[
+    'Meeting intelligence added to the client file: last meeting summary and action items, pulled from Fireflies and matched by name, same title convention as The Bridge. Coach-scoped, a coach only ever sees entries for their own clients.',
+    'Client filter chips: Active roster, Everyone, Needs attention, Immersion, Previous clients, Exit date missing. Ben also gets a filter chip per coach.',
+    'Filters requiring Argo or Too Easy Socials data, or fields still pending Airtable migration (contacts confirmed, First 30 Days running), deliberately left out rather than shipped broken.'
+  ]},
+  {v:'1.09.01', d:'07/09/2026', t:'First versioned build', items:[
+    'Coaches\u2019 Corner split out of The Bridge: Clients, Prospects and Relationships, view and edit, scoped so a coach only ever sees their own.',
+    'SOPs and Coach Training duplicated as reference content.',
+    'DISC profile chart and the First 30 Days program script added to every client file, First 30 Days as reference only, per-client progress not yet tracked here.',
+    'Visual design matched to The Bridge, per-tab theming, Inter and Montserrat, the same card and pill styling.'
+  ]}
+];
+
+function toggleChangelog(){
+  const p=document.getElementById('changelogPanel');
+  if(!p.classList.contains('hidden')){ p.classList.add('hidden'); return; }
+  let html='<div style="max-width:640px"><h3 style="margin:0 0 10px;font-family:Montserrat,sans-serif">What\'s new</h3>';
+  RELEASES.forEach(r=>{
+    html+='<div style="margin-bottom:14px"><b>v'+r.v+'</b> <span style="color:var(--muted,#69707F);font-size:.78rem">'+r.d+', '+r.t+'</span>'+
+      '<ul style="margin:6px 0 0;padding-left:18px;font-size:13px">'+r.items.map(x=>'<li style="margin-bottom:3px">'+x+'</li>').join('')+'</ul></div>';
+  });
+  html+='</div>';
+  p.innerHTML=html;
+  p.classList.remove('hidden');
+}
+
+
+/* ================= State ================= */
+const STATE = { coach:null, principal:false, clients:[], prospects:[], relationships:[], tab:'clients',
+  clientOpen:null, prospectOpen:null, relOpen:null, sopOpen:null, trainProgress:{}, sessions:{}, lastSessions:{} };
+
+async function boot(){
+  const s=getSession();
+  if(!s){ return; }
+  document.getElementById('loginScreen').classList.add('hidden');
+  document.getElementById('acceptScreen').classList.add('hidden');
+  document.getElementById('app').classList.add('show');
+  document.getElementById('whoEmail').textContent = s.email || '';
+  await loadRoster();
+  await loadTraining();
+  loadFireflies().then(()=>{ if(STATE.tab==='clients') render(); }); /* not awaited: never block first paint on a third-party API */
+  loadCalendar().then(()=>{ if(STATE.tab==='clients') render(); });
+  setTab('clients');
+}
+
+function banner(msg, kind){
+  const m=document.getElementById('main');
+  const b=document.createElement('div');
+  b.className='banner'+(kind?(' '+kind):'');
+  b.textContent=msg;
+  m.prepend(b);
+  if(kind!=='err') setTimeout(()=>b.remove(), 5000);
+}
+
+async function loadRoster(){
+  try{
+    const r=await authedFetch('/.netlify/functions/sync-roster',{method:'POST'});
+    const d=await r.json();
+    if(!r.ok || !d.ok){ document.getElementById('main').innerHTML='<div class="banner err">'+(d.message||d.why||'Could not load your roster. Reload, or tell Ben if it keeps happening.')+'</div>'; return; }
+    STATE.coach=d.coach; STATE.principal=d.principal; STATE.admin=d.admin;
+    STATE.clients=d.clients||[]; STATE.prospects=d.prospects||[]; STATE.relationships=d.relationships||[];
+    document.getElementById('coachBadge').textContent = STATE.admin ? 'admin, all coaches' : STATE.principal ? 'all coaches' : STATE.coach;
+  }catch(e){ document.getElementById('main').innerHTML='<div class="banner err">Could not reach the server. Check your connection and reload.</div>'; }
+}
+
+async function loadFireflies(){
+  try{
+    const r=await authedFetch('/.netlify/functions/fireflies',{method:'POST'});
+    const d=await r.json();
+    STATE.fireflies = (d.ok && d.byClient) ? d.byClient : {};
+  }catch(e){ STATE.fireflies = {}; }
+}
+
+async function loadCalendar(){
+  try{
+    const r=await authedFetch('/.netlify/functions/calendar',{method:'POST'});
+    const d=await r.json();
+    STATE.sessions = (d.ok && d.sessions) ? d.sessions : {};
+    STATE.lastSessions = (d.ok && d.lastSessions) ? d.lastSessions : {};
+  }catch(e){ STATE.sessions = {}; STATE.lastSessions = {}; }
+}
+
+async function loadTraining(){
+  try{
+    const r=await authedFetch('/.netlify/functions/state',{method:'GET'});
+    const d=await r.json();
+    STATE.trainProgress = d.value ? JSON.parse(d.value) : {};
+  }catch(e){ STATE.trainProgress = {}; }
+}
+async function saveTraining(){
+  try{ await authedFetch('/.netlify/functions/state',{method:'POST', body: JSON.stringify({value: JSON.stringify(STATE.trainProgress)})}); }
+  catch(e){ banner('Progress could not be saved. Try again.', 'err'); }
+}
+
+function setTab(t){
+  STATE.tab=t; STATE.clientOpen=null; STATE.prospectOpen=null; STATE.relOpen=null; STATE.sopOpen=null;
+  document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('active', b.dataset.tab===t));
+  /* Same mechanism The Bridge uses per business: the active tab decides
+     the palette, so Coaches' Corner shifts tone the same way rather than
+     staying one flat colour throughout. */
+  const THEME_CLASS = { clients:'theme-clients', prospects:'theme-prospects', relationships:'theme-rel', sops:'theme-sop', training:'theme-training' };
+  document.body.className = THEME_CLASS[t] || 'theme-clients';
+  render();
+}
+function render(){
+  const fn = { clients:renderClients, prospects:renderProspects, relationships:renderRelationships,
+    sops:renderSOPs, training:renderTraining }[STATE.tab];
+  document.getElementById('main').innerHTML='';
+  fn();
+}
+
+/* ================= Clients ================= */
+const CLIENT_FILTERS = [
+  {id:'active', label:'Active roster', test:c => c.clientStatus==='Active'},
+  {id:'everyone', label:'Everyone', test:()=>true},
+  {id:'attention', label:'Needs attention', test:c => c.clientStatus==='Active' && (c.rag==='Amber'||c.rag==='Red')},
+  {id:'immersion', label:'Immersion', test:c => c.st==='1. Immersion'},
+  {id:'previous', label:'Previous clients', test:c => c.clientStatus==='Left' || c.clientStatus==='Graduated'},
+  {id:'exitmissing', label:'Exit date missing', test:c => (c.clientStatus==='Left' || c.clientStatus==='Graduated') && !c.exitDate}
+];
+
+function ragTag(v){
+  const k=(v||'').toLowerCase();
+  if(k==='green') return '<span class="tag green">Green</span>';
+  if(k==='amber') return '<span class="tag amber">Amber</span>';
+  if(k==='red') return '<span class="tag red">Red</span>';
+  return v ? '<span class="tag grey">'+v+'</span>' : '';
+}
+function ragClass(v){
+  const k=(v||'').toLowerCase();
+  return (k==='green'||k==='amber'||k==='red') ? ' rag-'+k : '';
+}
+function daysUntil(dateStr){
+  if(!dateStr) return null;
+  const t=new Date(); t.setHours(0,0,0,0);
+  const d=new Date(dateStr+'T00:00:00');
+  return Math.round((d-t)/86400000);
+}
+function bdayNext(dob){
+  if(!dob) return null;
+  const t=new Date(); t.setHours(0,0,0,0);
+  const p=dob.split('-'); if(p.length<3) return null;
+  let b=new Date(t.getFullYear(), Number(p[1])-1, Number(p[2]));
+  if(b<t) b.setFullYear(b.getFullYear()+1);
+  return Math.round((b-t)/86400000);
+}
+/* Start date plus mandated months, per the standing decision: ten months
+   means ten months, not a fixed 24-month assumption. */
+function daysToGraduation(c){
+  if(!c.startDate || !c.mandatedMonths) return null;
+  const start=new Date(c.startDate+'T00:00:00');
+  const grad=new Date(start); grad.setMonth(grad.getMonth()+Number(c.mandatedMonths));
+  const t=new Date(); t.setHours(0,0,0,0);
+  return Math.round((grad-t)/86400000);
+}
+function discMiniBars(animal){
+  const lv=discLevels(animal); if(!lv) return '';
+  return '<span style="display:inline-flex;align-items:flex-end;gap:2px;height:14px;margin-right:5px">'+
+    lv.map(b=>'<span style="display:inline-block;width:4px;height:'+(b.v/4*14)+'px;background:currentColor;border-radius:1px"></span>').join('')+
+  '</span>';
+}
+
+/* Immersion is the first 12 weeks from the start date, confirmed directly
+   rather than assumed, since nothing in The Bridge's own source defines
+   it. Shown as a countdown, negative while days remain, crossing to
+   positive if the client runs past the 12 weeks without moving stage. */
+function immersionCountdown(c){
+  if(!c.startDate || !/1\.\s*immersion/i.test(c.st||'')) return null;
+  const start=new Date(c.startDate+'T00:00:00');
+  const t=new Date(); t.setHours(0,0,0,0);
+  const daysSince=Math.round((t-start)/86400000);
+  return daysSince-84;
+}
+
+function renderClients(){
+  const m=document.getElementById('main');
+  if(STATE.clientOpen) return renderClientDetail();
+  if(!STATE.clientFilter) STATE.clientFilter='active';
+  const q=(document.getElementById('cQ')?document.getElementById('cQ').value:'').toLowerCase();
+
+  const bar=document.createElement('div'); bar.className='toolbar';
+  bar.innerHTML='<input type="search" id="cQ" placeholder="Search clients" oninput="render()" value="'+(q?q:'')+'">'+
+    '<button class="btn" onclick="openNewClient()">New client</button>';
+  m.appendChild(bar);
+
+  /* Filter chips. Coach chips only appear for Ben, since a coach's own
+     view is already scoped to just their name, a filter for it would be
+     a no-op. Options that would need Argo or Too Easy Socials data, or
+     the Airtable fields still pending migration (contacts confirmed,
+     First 30 Days running), are left out rather than shown and left
+     broken. */
+  const chipRow=document.createElement('div'); chipRow.className='cl-filters';
+  CLIENT_FILTERS.forEach(f=>{
+    const b=document.createElement('button'); b.className='cl-filter'+(STATE.clientFilter===f.id?' active':'');
+    b.textContent=f.label; b.onclick=()=>{ STATE.clientFilter=f.id; render(); };
+    chipRow.appendChild(b);
+  });
+  if(STATE.principal){
+    const coaches=[...new Set(STATE.clients.map(c=>c.c).filter(Boolean))].sort();
+    coaches.forEach(name=>{
+      const id='coach:'+name;
+      const b=document.createElement('button'); b.className='cl-filter'+(STATE.clientFilter===id?' active':'');
+      b.textContent=name+"'s"; b.onclick=()=>{ STATE.clientFilter=id; render(); };
+      chipRow.appendChild(b);
+    });
+  }
+  m.appendChild(chipRow);
+
+  const activeFilter = CLIENT_FILTERS.find(f=>f.id===STATE.clientFilter);
+  const coachFilterName = (!activeFilter && STATE.clientFilter && STATE.clientFilter.indexOf('coach:')===0) ? STATE.clientFilter.slice(6) : null;
+  let list = STATE.clients.filter(c=>{
+    if(activeFilter) return activeFilter.test(c);
+    if(coachFilterName) return c.c===coachFilterName;
+    return true;
+  });
+  list = list.filter(c=>!q || c.n.toLowerCase().includes(q));
+
+  const countLine=document.createElement('div'); countLine.style.cssText='font-size:.78rem;color:var(--muted,#69707F);margin:2px 0 12px';
+  countLine.textContent=list.length+' client'+(list.length===1?'':'s');
+  m.appendChild(countLine);
+
+  if(!list.length){ m.innerHTML+='<div class="empty">No clients found.</div>'; return; }
+  const grid=document.createElement('div'); grid.className='grid';
+  list.forEach(c=>{
+    const card=document.createElement('div'); card.className='card'+ragClass(c.rag);
+    card.onclick=()=>{ STATE.clientOpen=c.airtableId; render(); };
+
+    const contactsCount = [c.mobileInContacts, c.emailInContacts, c.addressInContacts].filter(Boolean).length;
+    const bn = bdayNext(c.dob);
+    const grad = daysToGraduation(c);
+    const immCd = immersionCountdown(c);
+    const nextSession = (STATE.sessions||{})[c.n.split(' ')[0]];
+    const lastSession = (STATE.lastSessions||{})[c.n.split(' ')[0]];
+
+    let html = '<h3>'+c.n+'</h3>';
+    if(nextSession){
+      const dIn = daysUntil(nextSession);
+      html += '<div style="font-size:.76rem;font-weight:700;color:#8A671B;margin-top:2px">Next session '+new Date(nextSession).toLocaleDateString('en-AU')+' &middot; '+(dIn===0?'today':dIn===1?'in 1 day':'in '+dIn+' days')+'</div>';
+    }
+    html += '<div class="meta" style="margin-top:2px">'+[c.c, c.s, c.st?c.st+(immCd!==null?' ('+(immCd<0?'-':'+')+Math.abs(immCd)+'d)':''):null].filter(Boolean).join(' &middot; ')+'</div>';
+    html += '<div class="meta" style="margin-top:8px">';
+    if(c.p) html += '<span class="tag" style="background:#E9F0F8;border-color:#C3D6EA;color:#33587F">'+c.p+'</span>';
+    if(c.d) html += '<span class="tag" style="background:#F4EFE3;border-color:#DCCFAF;color:#7A6224">'+discMiniBars(c.d)+c.d+'</span>';
+    html += '<span class="tag" style="background:'+(contactsCount<3?'#FBEBEA;border-color:#D98782;color:#A8382F':'#EFF7EF;border-color:#7BAE7F;color:#3E7C43')+'">Contacts '+contactsCount+'/3</span>';
+    html += '</div>';
+    if(c.p30running){
+      const p30done = p30StateFor(c).filter(Boolean).length;
+      if(p30done<36) html += '<div class="meta" style="margin-top:6px"><span class="tag" style="background:#F4EFE3;border-color:#DCCFAF;color:#7A6224">30 Days '+p30done+'/36</span></div>';
+    }
+    if(bn!==null && bn<=30) html += '<div class="meta" style="margin-top:6px"><span class="tag" style="background:#F7E9F0;border-color:#E2C0D2;color:#8C3B63">Birthday in '+bn+'d</span></div>';
+    html += '<div style="margin-top:10px;font-size:.78rem;display:flex;flex-direction:column;gap:3px">';
+    if(lastSession){
+      const dAgo = -daysUntil(lastSession);
+      html += '<div style="display:flex;justify-content:space-between"><span style="color:var(--muted,#69707F)">Last session</span><b>'+new Date(lastSession).toLocaleDateString('en-AU')+' ('+dAgo+'d ago)</b></div>';
+    }
+    if(c.startDate) html += '<div style="display:flex;justify-content:space-between"><span style="color:var(--muted,#69707F)">Started</span><b>'+new Date(c.startDate).toLocaleDateString('en-AU')+'</b></div>';
+    if(c.f) html += '<div style="display:flex;justify-content:space-between"><span style="color:var(--muted,#69707F)">Monthly fee</span><b>AUD $'+Number(c.f).toLocaleString()+'</b></div>';
+    if(grad!==null) html += '<div style="display:flex;justify-content:space-between"><span style="color:var(--muted,#69707F)">To graduation</span><b>'+grad+'d</b></div>';
+    html += '</div>';
+    html += '<div class="cl-open" style="font-size:.68rem;color:var(--accent,#4A6FA5);font-weight:700;margin-top:8px">Open client file &rarr;</div>';
+    card.innerHTML = html;
+    grid.appendChild(card);
+  });
+  m.appendChild(grid);
+}
+
+function fieldRow(label, id, value, type){
+  type=type||'text';
+  if(type==='textarea') return '<div class="field full"><label>'+label+'</label><textarea id="'+id+'">'+(value||'')+'</textarea></div>';
+  return '<div class="field"><label>'+label+'</label><input id="'+id+'" type="'+type+'" value="'+(value==null?'':String(value).replace(/"/g,'&quot;'))+'"></div>';
+}
+
+function renderClientDetail(){
+  const m=document.getElementById('main');
+  const c=STATE.clients.find(x=>x.airtableId===STATE.clientOpen);
+  if(!c){ STATE.clientOpen=null; return renderClients(); }
+  const d=document.createElement('div'); d.className='detail';
+  const headerBadges = (c.ca?'<span class="tag grey" style="margin-left:8px;font-size:.68rem;vertical-align:middle">'+c.ca+'</span>':'') +
+    (c.mandatedMonths ? '<span style="display:inline-flex;flex-direction:column;align-items:center;justify-content:center;width:52px;height:52px;border:2px solid var(--accent,#4A6FA5);border-radius:50%;margin-left:8px;vertical-align:middle;font-family:Montserrat,sans-serif"><b style="font-size:1.05rem;line-height:1;color:var(--primary,#2A3550)">'+c.mandatedMonths+'</b><span style="font-size:.55rem;text-transform:uppercase;letter-spacing:.03em;color:var(--muted,#69707F)">mths</span></span>' : '');
+  const subtitleParts = [c.c, c.s, c.st, c.p].filter(Boolean).join(' &middot; ');
+  const referredLine = c.referredBy ? ' &middot; Referred by <b>'+c.referredBy+'</b>' : '';
+  d.innerHTML='<button class="back" onclick="STATE.clientOpen=null; render()">&larr; Back to clients</button>'+
+    '<h2 style="display:flex;align-items:center;flex-wrap:wrap;gap:0">'+c.n+headerBadges+'</h2>'+
+    '<div style="font-size:.82rem;color:var(--muted,#69707F);margin:-8px 0 16px">'+subtitleParts+referredLine+'</div>'+
+    '<div class="fieldGrid">'+
+      fieldRow('Status','fClientStatus',c.clientStatus)+
+      fieldRow('Program','fP',c.p)+
+      fieldRow('Lifecycle stage','fSt',c.st)+
+      fieldRow('Engagement (Green/Amber/Red)','fEng',c.rag)+
+      fieldRow('Monthly fee','fF',c.f,'number')+
+      fieldRow('State','fS',c.s)+
+      fieldRow('CA number','fCa',c.ca)+
+      fieldRow('Referral source','fRefSource',c.refSource)+
+      fieldRow('Referred by','fReferredBy',c.referredBy)+
+      fieldRow('DISC','fDisc',c.d)+
+      fieldRow('Mobile','fPhone',c.phone)+
+      fieldRow('Date of birth','fDob',c.dob,'date')+
+      fieldRow('Start date','fStartDate',c.startDate,'date')+
+      fieldRow('Exit date','fExitDate',c.exitDate,'date')+
+      fieldRow('Mandated months','fMandatedMonths',c.mandatedMonths,'number')+
+      fieldRow('Notes','fNotes',c.notes,'textarea')+
+    '</div>'+
+    '<div class="detailActions"><button class="btn" onclick="pushClient(\''+c.airtableId+'\')">Save to Airtable</button>'+
+    '<span class="savedNote" id="clientSaveNote"></span></div>';
+  m.appendChild(d);
+
+  if(c.mandatedMonths) m.appendChild(supervisionPanel(c));
+
+  if(c.d && ANIMALS[c.d]) m.appendChild(discPanel(c.d));
+
+  const mi = meetingIntelligencePanel(c.n);
+  if(mi) m.appendChild(mi);
+
+  m.appendChild(p30Panel(c));
+}
+
+/* ================= First 30 Days, tracked ================= */
+/* 36 tasks total, mentee and mentor combined across all five stages,
+   counted directly from The Bridge's own PROGRAM_30 script, not
+   estimated. Flat list built once so the storage index and the
+   rendered order always agree. */
+function p30TaskList(){
+  const out=[];
+  PROGRAM_30.stages.forEach(st=>{
+    (st.mentee||[]).forEach(t=>out.push({stage:st.n, title:st.t, who:'Mentee', text:t}));
+    (st.mentor||[]).forEach(t=>out.push({stage:st.n, title:st.t, who:'Mentor', text:t}));
+  });
+  return out;
+}
+function p30StateFor(c){
+  try{ const v=JSON.parse(c.p30||'[]'); if(Array.isArray(v) && v.length===36) return v; }catch(e){}
+  return new Array(36).fill(false);
+}
+
+function p30Panel(c){
+  const wrap=document.createElement('div'); wrap.className='detail'; wrap.style.marginTop='14px';
+  let html='<h2>'+PROGRAM_30.title+'</h2><p style="color:var(--muted,#69707F);font-size:13px;margin-top:-8px">'+PROGRAM_30.sub+'</p>'+
+    '<label style="display:flex;align-items:center;gap:8px;font-size:13px;margin:14px 0;cursor:pointer">'+
+      '<input type="checkbox" style="width:18px;height:18px;accent-color:var(--accent,#4A6FA5)" '+(c.p30running?'checked':'')+' onchange="toggleP30Running(\''+c.airtableId+'\',this.checked)">'+
+      '<span>Running for this client</span></label>';
+
+  if(!c.p30running){
+    html+='<div class="grid" style="margin-top:4px">';
+    PROGRAM_30.glance.forEach(g=>{
+      html+='<div class="card" style="cursor:default"><h3>'+g[0]+', '+g[1]+'</h3><div class="meta" style="margin-top:6px">'+g[2]+'</div></div>';
+    });
+    html+='</div>';
+    wrap.innerHTML=html;
+    return wrap;
+  }
+
+  const tasks=p30TaskList();
+  const state=p30StateFor(c);
+  const done=state.filter(Boolean).length;
+  html+='<p style="font-size:13px;color:var(--muted,#69707F)">'+done+' of 36 tasks complete.</p>'+
+    '<div class="progressBar"><div class="fill" style="width:'+Math.round(done/36*100)+'%;background:var(--accent,#4A6FA5)"></div></div>';
+
+  let lastStage=null, lastWho=null;
+  tasks.forEach((t,i)=>{
+    if(t.stage!==lastStage){ html+='<div class="sopGroup" style="margin-top:16px">'+t.stage+', '+t.title+'</div>'; lastStage=t.stage; lastWho=null; }
+    if(t.who!==lastWho){ html+='<div style="font-size:.66rem;text-transform:uppercase;letter-spacing:.04em;color:var(--muted,#69707F);font-weight:700;margin:8px 0 4px">'+t.who+'</div>'; lastWho=t.who; }
+    html+='<label style="display:flex;gap:8px;align-items:flex-start;padding:4px 0;font-size:13px;cursor:pointer">'+
+      '<input type="checkbox" style="margin-top:2px" '+(state[i]?'checked':'')+' onchange="toggleP30Task(\''+c.airtableId+'\','+i+',this.checked)">'+
+      '<span>'+t.text+'</span></label>';
+  });
+  html+='<div class="savedNote" id="p30SaveNote" style="margin-top:10px"></div>';
+  wrap.innerHTML=html;
+  return wrap;
+}
+
+async function saveP30(clientId, fields){
+  const c=STATE.clients.find(x=>x.airtableId===clientId);
+  const note=document.getElementById('p30SaveNote'); if(note) note.textContent='Saving...';
+  try{
+    const r=await authedFetch('/.netlify/functions/client-update',{method:'POST', body:JSON.stringify({recordId:clientId, name:c.n, fields})});
+    const d=await r.json();
+    if(note) note.textContent = (!r.ok || d.ok===false) ? (d.message||'Save failed.') : 'Saved '+new Date().toLocaleTimeString();
+  }catch(e){ if(note) note.textContent='Could not reach the server.'; }
+}
+function toggleP30Running(clientId, val){
+  const c=STATE.clients.find(x=>x.airtableId===clientId);
+  c.p30running=val;
+  saveP30(clientId, {p30running:val});
+  if(STATE.clientOpen===clientId) render();
+}
+function toggleP30Task(clientId, idx, val){
+  const c=STATE.clients.find(x=>x.airtableId===clientId);
+  const state=p30StateFor(c);
+  state[idx]=val;
+  c.p30=JSON.stringify(state);
+  saveP30(clientId, {p30:c.p30});
+}
+
+/* ================= Supervision ================= */
+/* Twelve applications, each with a borrower name, the date, and a
+   Complete tick. Simplified from The Bridge's two-stage review at Ben's
+   request, but the name and date are real fields, not decoration.
+   Stored as a JSON array of 12 objects in Supervision Progress. */
+function supStateFor(c){
+  try{
+    const v=JSON.parse(c.sup||'[]');
+    if(Array.isArray(v) && v.length===12){
+      /* Heals the earlier tick-only format automatically, no data lost,
+         just upgraded the first time this client's panel is opened. */
+      return v.map(x => (x && typeof x === 'object') ? x : {name:'', date:'', complete:!!x});
+    }
+  }catch(e){}
+  return Array.from({length:12}, () => ({name:'', date:'', complete:false}));
+}
+
+function supervisionPanel(c){
+  const sup = supStateFor(c);
+  const done = sup.filter(x=>x.complete).length;
+  const wrap=document.createElement('div'); wrap.className='detail'; wrap.style.marginTop='14px';
+  let html='<h2>Supervision</h2>'+
+    '<p style="color:var(--muted,#69707F);font-size:13px;margin-top:-8px">Twelve applications, borrower, date, and complete when signed off.</p>'+
+    '<div style="display:flex;justify-content:space-between;align-items:center;background:var(--bg,#F4F6F9);border:1px solid var(--border,#DFE3EB);border-radius:10px;padding:14px 18px;margin:14px 0">'+
+      '<div><b style="font-family:Montserrat,sans-serif;font-size:1.6rem;color:var(--primary,#2A3550)">'+done+'</b><div style="font-size:.66rem;text-transform:uppercase;letter-spacing:.04em;color:var(--muted,#69707F);font-weight:700">of 12 complete</div></div>'+
+      '<div style="text-align:right"><b style="font-family:Montserrat,sans-serif;font-size:1.6rem;color:var(--primary,#2A3550)">'+(c.mandatedMonths||0)+'</b><div style="font-size:.66rem;text-transform:uppercase;letter-spacing:.04em;color:var(--muted,#69707F);font-weight:700">mandated months</div></div>'+
+    '</div><div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px">';
+  sup.forEach((row,i)=>{
+    html+='<div style="background:var(--bg,#F4F6F9);border:1px solid var(--border,#DFE3EB);border-radius:10px;padding:10px;display:flex;flex-direction:column;gap:6px">'+
+      '<div style="display:flex;justify-content:space-between;align-items:center">'+
+        '<b style="font-family:Montserrat,sans-serif;color:var(--muted,#69707F);font-size:.85rem">'+(i+1)+'</b>'+
+        '<label style="display:flex;align-items:center;gap:4px;font-size:.66rem;color:var(--muted,#69707F)">'+
+          '<input type="checkbox" style="width:15px;height:15px;accent-color:var(--accent,#4A6FA5)" '+(row.complete?'checked':'')+' '+
+            'onchange="updateSupervisionRow(\''+c.airtableId+'\','+i+',\'complete\',this.checked)"> Done</label>'+
+      '</div>'+
+      '<input type="text" placeholder="Borrower" value="'+(row.name||'').replace(/"/g,'&quot;')+'" '+
+        'style="width:100%;padding:5px 7px;border:1px solid var(--border,#DFE3EB);border-radius:6px;font-size:12px;font-family:Inter,sans-serif;background:var(--card,#fff)" '+
+        'onchange="updateSupervisionRow(\''+c.airtableId+'\','+i+',\'name\',this.value)">'+
+      '<input type="date" value="'+(row.date||'')+'" '+
+        'style="width:100%;padding:5px 7px;border:1px solid var(--border,#DFE3EB);border-radius:6px;font-size:12px;font-family:Inter,sans-serif;background:var(--card,#fff)" '+
+        'onchange="updateSupervisionRow(\''+c.airtableId+'\','+i+',\'date\',this.value)">'+
+    '</div>';
+  });
+  html+='</div><div class="savedNote" id="supSaveNote" style="margin-top:10px"></div>';
+  if(done===12){
+    html+='<div style="margin-top:14px;padding:14px 16px;border-left:3px solid var(--accent,#4A6FA5);background:var(--bg,#F4F6F9);border-radius:0 8px 8px 0">'+
+      '<b style="font-family:Montserrat,sans-serif;font-size:.85rem;color:var(--primary,#2A3550)">Milestone email ready</b>'+
+      '<p style="font-size:12px;color:var(--muted,#69707F);margin:4px 0 8px">Subject: Congratulations, you have reached the milestone of 12 supervised submissions.</p>'+
+      '<button class="btn secondary" id="supEmailBtn" onclick="copySupervisionEmail(\''+c.airtableId+'\')">Copy email for '+(c.n.split(' ')[0]||'them')+'</button>'+
+    '</div>';
+  }
+  wrap.innerHTML=html;
+  return wrap;
+}
+
+async function updateSupervisionRow(clientId, idx, key, val){
+  const c=STATE.clients.find(x=>x.airtableId===clientId);
+  const sup=supStateFor(c);
+  sup[idx][key]=val;
+  c.sup=JSON.stringify(sup);
+  const note=document.getElementById('supSaveNote'); if(note) note.textContent='Saving...';
+  try{
+    const r=await authedFetch('/.netlify/functions/client-update',{method:'POST', body:JSON.stringify({recordId:clientId, name:c.n, fields:{sup:c.sup}})});
+    const d=await r.json();
+    if(note) note.textContent = (!r.ok || d.ok===false) ? (d.message||'Save failed.') : 'Saved '+new Date().toLocaleTimeString();
+  }catch(e){ if(note) note.textContent='Could not reach the server.'; }
+  if(key==='complete' && STATE.clientOpen===clientId) render();
+}
+
+/* ================= Meeting Intelligence ================= */
+function meetingIntelligencePanel(clientName){
+  const entries = (STATE.fireflies||{})[clientName];
+  if(!entries || !entries.length) return null;
+  const wrap=document.createElement('div'); wrap.className='detail'; wrap.style.marginTop='14px';
+  const latest = entries[0];
+  let html='<h2>Meeting intelligence</h2>'+
+    '<a href="'+latest.link+'" target="_blank" style="font-size:.8rem;color:var(--accent,#4A6FA5);font-weight:600">Open in Fireflies &rarr;</a>'+
+    '<div style="margin-top:12px;font-size:.66rem;text-transform:uppercase;letter-spacing:.04em;color:var(--muted,#69707F);font-weight:700">'+
+      'Last meeting, '+(latest.date ? new Date(latest.date).toLocaleDateString('en-AU') : 'undated')+'</div>';
+  if(latest.summary) html+='<p style="font-size:13px;margin:8px 0">'+latest.summary+'</p>';
+  if(latest.actionItems){
+    html+='<div style="font-size:.66rem;text-transform:uppercase;letter-spacing:.04em;color:var(--muted,#69707F);font-weight:700;margin-top:10px">Worth covering next</div>'+
+      '<ul style="margin:6px 0 0;padding-left:18px;font-size:13px">'+
+        String(latest.actionItems).split(/\n+/).filter(Boolean).map(x=>'<li style="margin-bottom:4px">'+x+'</li>').join('')+
+      '</ul>';
+  }
+  if(entries.length>1){
+    html+='<div style="font-size:.7rem;color:var(--muted,#69707F);margin-top:12px">'+(entries.length-1)+' earlier meeting'+(entries.length-1===1?'':'s')+' in the last 30 days.</div>';
+  }
+  wrap.innerHTML=html;
+  return wrap;
+}
+
+/* ================= DISC ================= */
+function discPanel(animal){
+  const a=ANIMALS[animal]; if(!a) return document.createElement('div');
+  const lv=discLevels(animal);
+  const hi=lv.slice().sort((x,y)=>y.v-x.v)[0];
+  const lo=lv.slice().sort((x,y)=>x.v-y.v)[0];
+  const wrap=document.createElement('div'); wrap.className='detail'; wrap.style.marginTop='14px';
+  let bars='<div style="display:flex;gap:18px;align-items:flex-end;height:120px;margin:14px 0">';
+  lv.forEach(b=>{
+    const h=(b.v/4*100);
+    const color = b.v===4 ? 'var(--accent,#4A6FA5)' : b.v===1 ? 'var(--border,#DFE3EB)' : '#C59C44';
+    bars+='<div style="display:flex;flex-direction:column;align-items:center;gap:6px;flex:1">'+
+      '<div style="width:100%;max-width:44px;height:'+h+'%;background:'+color+';border-radius:6px 6px 0 0;align-self:flex-end"></div>'+
+      '<b style="font-family:Montserrat,sans-serif">'+b.l+'</b><span style="font-size:.68rem;color:var(--muted,#69707F)">'+DISC_LEVELS[b.v]+'</span>'+
+    '</div>';
+  });
+  bars+='</div>';
+  wrap.innerHTML='<h2>DISC profile, '+animal+' ('+a.p+' '+a.n+')</h2>'+bars+
+    '<div class="fieldGrid" style="margin-top:6px">'+
+      '<div class="field"><label>Highest</label><div>'+hi.l+', '+TRAIT[hi.l]+'</div></div>'+
+      '<div class="field"><label>Lowest</label><div>'+lo.l+', '+TRAIT[lo.l]+'</div></div>'+
+      '<div class="field"><label>Suits</label><div>'+a.role+'</div></div>'+
+      '<div class="field"><label>Pace</label><div>'+a.pace+'</div></div>'+
+      '<div class="field full"><label>Coaching them</label><div>'+COACH[hi.l]+'</div></div>'+
+    '</div>';
+  return wrap;
+}
+
+async function pushClient(id){
+  const c=STATE.clients.find(x=>x.airtableId===id);
+  const fields={
+    clientStatus: document.getElementById('fClientStatus').value,
+    p: document.getElementById('fP').value,
+    st: document.getElementById('fSt').value,
+    eng: document.getElementById('fEng').value,
+    f: document.getElementById('fF').value,
+    s: document.getElementById('fS').value,
+    ca: document.getElementById('fCa').value,
+    refSource: document.getElementById('fRefSource').value,
+    referredBy: document.getElementById('fReferredBy').value,
+    disc: document.getElementById('fDisc').value,    phone: document.getElementById('fPhone').value,
+    dob: document.getElementById('fDob').value,
+    startDate: document.getElementById('fStartDate').value,
+    exitDate: document.getElementById('fExitDate').value,
+    mandatedMonths: document.getElementById('fMandatedMonths').value,
+    notes: document.getElementById('fNotes').value
+  };
+  const note=document.getElementById('clientSaveNote'); note.textContent='Saving...';
+  try{
+    const r=await authedFetch('/.netlify/functions/client-update',{method:'POST', body:JSON.stringify({recordId:id, name:c.n, fields})});
+    const d=await r.json();
+    if(!r.ok || d.ok===false){ note.textContent = d.message || 'Save failed.'; return; }
+    note.textContent='Saved '+new Date().toLocaleTimeString();
+    Object.assign(c, fields, {rag:fields.eng});
+  }catch(e){ note.textContent='Could not reach the server.'; }
+}
+
+function openNewClient(){
+  const name=prompt('New client name:');
+  if(!name) return;
+  authedFetch('/.netlify/functions/client',{method:'POST', body:JSON.stringify({name})})
+    .then(r=>r.json()).then(async d=>{
+      if(!d.ok){ banner(d.message||'Could not create the client.', 'err'); return; }
+      await loadRoster(); render();
+    });
+}
+
+/* ================= Prospects ================= */
+function prTemp(p){ return p.idle>45?'stale' : p.idle>21?'warm' : 'fresh'; }
+function prOverdue(p){ return p.close && p.close < new Date().toISOString().slice(0,10); }
+
+function renderProspects(){
+  const m=document.getElementById('main');
+  if(STATE.prospectOpen) return renderProspectDetail();
+  const bar=document.createElement('div'); bar.className='toolbar';
+  bar.innerHTML='<div></div><button class="btn" onclick="openNewProspect()">New prospect</button>';
+  m.appendChild(bar);
+  if(!STATE.prospects.length){ m.innerHTML+='<div class="empty">No prospects found.</div>'; return; }
+
+  const list = STATE.prospects.slice().sort((a,b)=>(b.idle||0)-(a.idle||0));
+  const grid=document.createElement('div'); grid.className='grid';
+  list.forEach(p=>{
+    const temp = prTemp(p);
+    const idleCls = p.idle>45?'warn':p.idle>21?'watch':'';
+    const card=document.createElement('div'); card.className='card pr-'+temp;
+    card.onclick=()=>{ STATE.prospectOpen=p.airtableId; render(); };
+    let html='<h3>'+p.n+'</h3>'+
+      '<div class="meta" style="margin-top:2px">'+(STATE.principal && p.coach ? p.coach+' &middot; ' : '')+'via '+(p.src||'unknown')+(p.prog?' &middot; '+p.prog:'')+'</div>'+
+      '<div class="meta" style="margin-top:8px"><span class="tag grey">'+(p.stage||'No stage')+'</span></div>'+
+      '<div style="display:flex;gap:14px;margin:10px 0">'+
+        '<div style="flex:1"><div style="font-size:.6rem;text-transform:uppercase;letter-spacing:.04em;color:var(--muted,#69707F);font-weight:700">In pipeline</div>'+
+          '<div style="font-family:Montserrat,sans-serif;font-weight:700;font-size:1rem;color:var(--primary,#3B2F4A)">'+(p.days||0)+'d</div></div>'+
+        '<div style="flex:1"><div style="font-size:.6rem;text-transform:uppercase;letter-spacing:.04em;color:var(--muted,#69707F);font-weight:700">Since contact</div>'+
+          '<div style="font-family:Montserrat,sans-serif;font-weight:700;font-size:1rem;color:'+(idleCls==='warn'?'#B23A33':idleCls==='watch'?'#8A671B':'var(--primary,#3B2F4A)')+'">'+(p.idle||0)+'d</div></div>'+
+        '<div style="flex:1"><div style="font-size:.6rem;text-transform:uppercase;letter-spacing:.04em;color:var(--muted,#69707F);font-weight:700">Monthly</div>'+
+          '<div style="font-family:Montserrat,sans-serif;font-weight:700;font-size:1rem;color:var(--primary,#3B2F4A)">$'+(p.fee||0).toLocaleString()+'</div></div>'+
+      '</div>';
+    if(prOverdue(p)) html+='<div style="font-size:.7rem;font-weight:700;color:#B23A33;margin-top:2px">Expected close was '+new Date(p.close).toLocaleDateString('en-AU')+'. Date has passed.</div>';
+    if(p.note) html+='<div style="font-size:.76rem;color:var(--muted,#69707F);margin-top:8px;line-height:1.4">'+p.note+'</div>';
+    html+='<div class="cl-open" style="font-size:.68rem;color:var(--accent,#7A5C93);font-weight:700;margin-top:8px">Open prospect file &rarr;</div>';
+    card.innerHTML=html;
+    grid.appendChild(card);
+  });
+  m.appendChild(grid);
+}
+
+function renderProspectDetail(){
+  const m=document.getElementById('main');
+  const p=STATE.prospects.find(x=>x.airtableId===STATE.prospectOpen);
+  if(!p){ STATE.prospectOpen=null; return renderProspects(); }
+  const d=document.createElement('div'); d.className='detail';
+  d.innerHTML='<button class="back" onclick="STATE.prospectOpen=null; render()">&larr; Back to prospects</button>'+
+    '<h2>'+p.n+'</h2>'+
+    '<div class="fieldGrid">'+
+      fieldRow('Status','pStage',p.stage)+
+      fieldRow('Source','pSrc',p.src)+
+      fieldRow('Expected program','pProg',p.prog)+
+      fieldRow('Expected monthly fee','pFee',p.fee,'number')+
+      fieldRow('Expected close date','pClose',p.close,'date')+
+      fieldRow('Date entered pipeline','pEntered',p.entered,'date')+
+      fieldRow('Date of last activity','pLastAct',p.lastAct,'date')+
+      fieldRow('Coach','pCoach',p.coach)+
+      fieldRow('Email','pEmail',p.email,'email')+
+      fieldRow('Mobile','pPhone',p.phone)+
+      fieldRow('Business name','pBusiness',p.business)+
+      fieldRow('Mandated months','pMandated',p.mandated)+
+      fieldRow('Notes','pNote',p.note,'textarea')+
+    '</div>'+
+    '<div class="detailActions"><button class="btn" onclick="pushProspect(\''+p.airtableId+'\')">Save to Airtable</button>'+
+    '<span class="savedNote" id="prospectSaveNote"></span></div>';
+  m.appendChild(d);
+
+  const readonly=document.createElement('div'); readonly.className='detail'; readonly.style.marginTop='14px';
+  readonly.innerHTML='<h2 style="font-size:1rem">Calculated by Airtable</h2>'+
+    '<div class="fieldGrid">'+
+      '<div class="field"><label>Days in pipeline</label><div>'+(p.days||0)+'</div></div>'+
+      '<div class="field"><label>Days since activity</label><div>'+(p.idle||0)+'</div></div>'+
+      '<div class="field"><label>Annual value</label><div>$'+(p.annual||0).toLocaleString()+'</div></div>'+
+    '</div>';
+  m.appendChild(readonly);
+}
+
+async function pushProspect(id){
+  const p=STATE.prospects.find(x=>x.airtableId===id);
+  const fields={
+    stage: document.getElementById('pStage').value,
+    src: document.getElementById('pSrc').value,
+    prog: document.getElementById('pProg').value,
+    fee: document.getElementById('pFee').value,
+    close: document.getElementById('pClose').value,
+    entered: document.getElementById('pEntered').value,
+    lastAct: document.getElementById('pLastAct').value,
+    coach: document.getElementById('pCoach').value,
+    email: document.getElementById('pEmail').value,
+    phone: document.getElementById('pPhone').value,
+    business: document.getElementById('pBusiness').value,
+    mandated: document.getElementById('pMandated').value,
+    note: document.getElementById('pNote').value
+  };
+  const note=document.getElementById('prospectSaveNote'); note.textContent='Saving...';
+  try{
+    const r=await authedFetch('/.netlify/functions/prospect-update',{method:'POST', body:JSON.stringify({recordId:id, fields})});
+    const d=await r.json();
+    if(!r.ok || d.ok===false){ note.textContent=d.message||'Save failed.'; return; }
+    note.textContent='Saved '+new Date().toLocaleTimeString();
+    Object.assign(p, fields);
+  }catch(e){ note.textContent='Could not reach the server.'; }
+}
+function openNewProspect(){
+  const name=prompt('New prospect name:');
+  if(!name) return;
+  authedFetch('/.netlify/functions/prospect',{method:'POST', body:JSON.stringify({name})})
+    .then(r=>r.json()).then(async d=>{
+      if(!d.ok){ banner(d.message||'Could not create the prospect.', 'err'); return; }
+      await loadRoster(); render();
+    });
+}
+
+/* ================= Relationships ================= */
+/* Cadence status, ported from the standalone tracker Ben built: overdue
+   past the cadence window, soon within 3 days of it, ok otherwise.
+   Baseline is the last contact date, or the record's creation if never
+   contacted, same logic, using Airtable's createdTime isn't available
+   here so an uncontacted relationship just reads as overdue from day one
+   of this app knowing about it. */
+const DEFAULT_CADENCE_DAYS = 11;
+function relCadenceStatus(r){
+  const cadence = r.cadence>0 ? r.cadence : DEFAULT_CADENCE_DAYS;
+  if(!r.last) return {cls:'overdue', daysRemaining:-999, elapsed:cadence, cadence:cadence};
+  const elapsed = -daysUntil(r.last);
+  const remaining = cadence - elapsed;
+  const cls = remaining<0 ? 'overdue' : remaining<=3 ? 'soon' : 'ok';
+  return {cls, daysRemaining:remaining, elapsed, cadence};
+}
+function heatColor(n){
+  if(n==null) return '#69707F';
+  if(n<5) return '#6090c7';
+  if(n<=7) return '#e0873c';
+  return '#b3452c';
+}
+function annualCountdown(dateStr){
+  if(!dateStr) return null;
+  const p=dateStr.split('-'); if(p.length<3) return null;
+  const t=new Date(); t.setHours(0,0,0,0);
+  let next=new Date(t.getFullYear(), Number(p[1])-1, Number(p[2]));
+  if(next<t) next.setFullYear(t.getFullYear()+1);
+  return Math.round((next-t)/86400000);
+}
+function relRingSVG(status){
+  const r=21, circ=2*Math.PI*r;
+  const progress=Math.max(0, Math.min(1, status.elapsed/status.cadence));
+  const offset=circ*(1-progress);
+  const color = status.cls==='overdue'?'#b3452c':status.cls==='soon'?'#c59c44':'#6090c7';
+  const label = status.daysRemaining<0 ? Math.abs(status.daysRemaining)+'d' : status.daysRemaining+'d';
+  return '<div class="rt-ring-wrap"><svg viewBox="0 0 52 52">'+
+      '<circle class="rt-ring-bg" cx="26" cy="26" r="'+r+'"/>'+
+      '<circle class="rt-ring-fg" cx="26" cy="26" r="'+r+'" stroke="'+color+'" stroke-dasharray="'+circ+'" stroke-dashoffset="'+offset+'"/>'+
+    '</svg><div class="rt-ring-label" style="color:'+color+'">'+label+'</div></div>';
+}
+
+if(!STATE.relFilter) STATE.relFilter='';
+if(!STATE.relSort) STATE.relSort='urgency';
+
+function renderRelationships(){
+  const m=document.getElementById('main');
+  if(STATE.relOpen!==null) return renderRelationshipDetail();
+
+  const wrap=document.createElement('div'); wrap.className='relTracker';
+
+  const statuses = STATE.relationships.map(relCadenceStatus);
+  const counts = {overdue:0, soon:0, ok:0};
+  statuses.forEach(s=>counts[s.cls]++);
+  wrap.innerHTML = '<div class="rt-dash">'+
+      '<div class="rt-dash-card overdue"><div class="num">'+counts.overdue+'</div><div class="lbl">Overdue</div></div>'+
+      '<div class="rt-dash-card soon"><div class="num">'+counts.soon+'</div><div class="lbl">Due within 3 days</div></div>'+
+      '<div class="rt-dash-card ok"><div class="num">'+counts.ok+'</div><div class="lbl">On track</div></div>'+
+      '<div class="rt-dash-card total"><div class="num">'+STATE.relationships.length+'</div><div class="lbl">Total contacts</div></div>'+
+    '</div>';
+
+  const q=(STATE.relSearch||'').toLowerCase();
+  const toolbar=document.createElement('div'); toolbar.className='rt-toolbar';
+  toolbar.innerHTML='<input type="text" id="rtSearch" placeholder="Search by name, email or mobile..." value="'+(STATE.relSearch||'')+'">'+
+    '<select id="rtCategory"><option value="">All categories</option>'+
+      ['Top Referrer','Referral Partner','Prospect','Other'].map(o=>'<option '+(STATE.relCategoryFilter===o?'selected':'')+'>'+o+'</option>').join('')+
+    '</select>'+
+    '<div class="rt-chips">'+
+      ['', 'overdue','soon','ok'].map(s=>'<button class="rt-chip'+(STATE.relFilter===s?' active':'')+'" data-status="'+s+'">'+(s||'All')+'</button>').join('')+
+    '</div>'+
+    '<select id="rtSort"><option value="urgency" '+(STATE.relSort==='urgency'?'selected':'')+'>Sort: Due date</option><option value="heat" '+(STATE.relSort==='heat'?'selected':'')+'>Sort: Hottest first</option></select>'+
+    '<button class="rt-btn rt-btn-primary" onclick="STATE.relOpen=\'new\'; render()">+ Add contact</button>';
+  wrap.appendChild(toolbar);
+
+  let visible = STATE.relationships.filter(r=>{
+    if(STATE.relCategoryFilter && r.category!==STATE.relCategoryFilter) return false;
+    if(q){
+      const hay=(r.n+' '+(r.email||'')+' '+(r.phone||'')+' '+(r.company||'')+' '+(r.profession||'')).toLowerCase();
+      if(hay.indexOf(q)===-1) return false;
+    }
+    if(STATE.relFilter && relCadenceStatus(r).cls!==STATE.relFilter) return false;
+    return true;
+  });
+  visible = visible.slice().sort((a,b)=>{
+    if(STATE.relSort==='heat') return (b.heat==null?-1:b.heat)-(a.heat==null?-1:a.heat);
+    return relCadenceStatus(a).daysRemaining - relCadenceStatus(b).daysRemaining;
+  });
+
+  const list=document.createElement('div');
+  if(!visible.length){
+    list.innerHTML='<div class="empty">No contacts match this filter.</div>';
+  } else {
+    visible.forEach(r=>{
+      const status=relCadenceStatus(r);
+      const bDays=annualCountdown(r.birthday), kDays=annualCountdown(r.keyDateValue);
+      let keyBadges='';
+      if(bDays!==null && bDays<=14) keyBadges+='<span class="rt-keydate">Birthday in '+(bDays===0?'today':bDays+'d')+'</span>';
+      if(kDays!==null && kDays<=14 && r.keyDateLabel) keyBadges+='<span class="rt-keydate">'+r.keyDateLabel+' in '+(kDays===0?'today':kDays+'d')+'</span>';
+      const heatBadge = r.heat!=null ? '<span class="rt-heat" style="background:'+heatColor(r.heat)+'">Heat '+r.heat+'</span>' : '';
+      const companyLine = (r.company||r.profession) ? '<div class="rt-company">'+[r.company,r.profession].filter(Boolean).join(' &middot; ')+'</div>' : '';
+      const lastLine = r.last ? 'Last contact: <b>'+new Date(r.last).toLocaleDateString('en-AU')+'</b>' : 'Never contacted yet';
+      const nextHtml = r.nextAction ? '<div class="rt-next"><b>Next:</b> '+r.nextAction+'</div>' : '';
+      const log=relLogFor(r);
+      const historyHtml = log.length ? log.slice().reverse().map(h=>
+        '<div class="rt-history-item"><b>'+new Date(h.date).toLocaleDateString('en-AU')+'</b><span>'+h.method+', '+(h.direction==='inbound'?'them':'you')+'</span></div>'
+      ).join('') : '<div class="rt-no-history">No contact logged yet.</div>';
+
+      const row=document.createElement('div'); row.className='rt-row';
+      row.innerHTML = relRingSVG(status)+
+        '<div class="rt-main">'+
+          '<div class="rt-name-line"><span class="rt-name" onclick="STATE.relOpen=\''+r.airtableId+'\'; render()">'+r.n+'</span>'+heatBadge+(r.category?'<span class="rt-tag">'+r.category+'</span>':'')+keyBadges+'</div>'+
+          companyLine+
+          '<div class="rt-meta">'+(r.email?'<a href="mailto:'+r.email+'">'+r.email+'</a>':'')+(r.phone?'<a href="tel:'+r.phone+'">'+r.phone+'</a>':'')+'</div>'+
+          '<div class="rt-last">'+lastLine+'</div>'+
+          nextHtml+
+        '</div>'+
+        '<div class="rt-log-controls">'+
+          '<select class="rtMethod">'+['Phone call','SMS','Email','In person','LinkedIn','Other'].map(o=>'<option>'+o+'</option>').join('')+'</select>'+
+          '<button type="button" class="rt-log-btn" data-log="outbound">You reached out</button>'+
+          '<button type="button" class="rt-log-btn inbound" data-log="inbound">They reached out</button>'+
+          '<button type="button" class="rt-icon-btn" data-toggle>Notes</button>'+
+        '</div>'+
+        '<div class="rt-detail" data-detail>'+
+          (r.notes?'<div class="notes">'+r.notes+'</div>':'<div class="notes" style="color:#a9abb5">No notes added yet.</div>')+
+          '<div class="rt-history-title">Check-in history</div>'+historyHtml+
+        '</div>';
+      row.querySelector('[data-log="outbound"]').onclick=()=>quickLog(r.airtableId, row.querySelector('.rtMethod').value, 'outbound');
+      row.querySelector('[data-log="inbound"]').onclick=()=>quickLog(r.airtableId, row.querySelector('.rtMethod').value, 'inbound');
+      row.querySelector('[data-toggle]').onclick=()=>row.querySelector('[data-detail]').classList.toggle('open');
+      list.appendChild(row);
+    });
+  }
+  wrap.appendChild(list);
+
+  const m2=document.getElementById('main'); m2.innerHTML=''; m2.appendChild(wrap);
+
+  document.getElementById('rtSearch').oninput=e=>{ STATE.relSearch=e.target.value; render(); };
+  document.getElementById('rtCategory').onchange=e=>{ STATE.relCategoryFilter=e.target.value; render(); };
+  document.getElementById('rtSort').onchange=e=>{ STATE.relSort=e.target.value; render(); };
+  wrap.querySelectorAll('.rt-chip').forEach(b=>{ b.onclick=()=>{ STATE.relFilter=b.dataset.status; render(); }; });
+}
+
+async function quickLog(relId, method, direction){
+  const r=STATE.relationships.find(x=>x.airtableId===relId);
+  const date=new Date().toISOString().slice(0,10);
+  const log=relLogFor(r);
+  log.push({date, method, direction});
+  r.log=JSON.stringify(log);
+  r.last=date;
+  try{
+    await authedFetch('/.netlify/functions/relationship-update',{method:'POST', body:JSON.stringify({recordId:relId, name:r.n, fields:{log:r.log, last:date}})});
+  }catch(e){}
+  render();
+}
+
+function relLogFor(r){
+  try{ const v=JSON.parse(r.log||'[]'); if(Array.isArray(v)) return v; }catch(e){}
+  return [];
+}
+
+function renderRelationshipDetail(){
+  const m=document.getElementById('main');
+  const isNew = STATE.relOpen==='new';
+  const r = isNew ? {n:'',type:'',pri:'',status:'',email:'',phone:'',last:'',cadence:'',notes:'',company:'',profession:'',category:'',heat:5,birthday:'',keyDateLabel:'',keyDateValue:'',nextAction:'',log:''} : STATE.relationships.find(x=>x.airtableId===STATE.relOpen);
+  if(!r){ STATE.relOpen=null; return renderRelationships(); }
+  const d=document.createElement('div'); d.className='detail';
+  d.innerHTML='<button class="back" onclick="STATE.relOpen=null; render()">&larr; Back to relationships</button>'+
+    '<h2>'+(isNew?'New relationship':r.n)+'</h2>'+
+    '<div class="fieldGrid">'+
+      (isNew?fieldRow('Name','rName',''):'')+
+      fieldRow('Company','rCompany',r.company)+
+      fieldRow('Profession','rProfession',r.profession)+
+      '<div class="field"><label>Category</label><select id="rCategory">'+
+        ['','Top Referrer','Referral Partner','Prospect','Other'].map(o=>'<option value="'+o+'" '+(r.category===o?'selected':'')+'>'+(o||'—')+'</option>').join('')+
+      '</select></div>'+
+      fieldRow('Type','rType',r.type)+
+      fieldRow('Priority','rPri',r.pri)+
+      fieldRow('Status','rStatus',r.status)+
+      fieldRow('Email','rEmail',r.email,'email')+
+      fieldRow('Mobile','rPhone',r.phone)+
+      fieldRow('Last contacted','rLast',r.last,'date')+
+      fieldRow('Cadence (days)','rCadence',r.cadence,'number')+
+      fieldRow('Birthday','rBirthday',r.birthday,'date')+
+      fieldRow('Key date label','rKeyDateLabel',r.keyDateLabel)+
+      fieldRow('Key date value','rKeyDateValue',r.keyDateValue,'date')+
+      fieldRow('Next action','rNextAction',r.nextAction)+
+      fieldRow('Notes','rNotes',r.notes,'textarea')+
+    '</div>'+
+    '<div class="field" style="margin-top:14px"><label>Relationship heat, '+(r.heat==null?5:r.heat)+' of 10</label>'+
+      '<input type="range" id="rHeat" min="1" max="10" value="'+(r.heat==null?5:r.heat)+'" '+
+        'style="accent-color:'+heatColor(r.heat==null?5:r.heat)+'" '+
+        'oninput="this.previousElementSibling.textContent=\'Relationship heat, \'+this.value+\' of 10\'"></div>'+
+    '<div class="detailActions"><button class="btn" onclick="pushRelationship('+(isNew?'null':'\''+r.airtableId+'\'')+')">Save to Airtable</button>'+
+    '<span class="savedNote" id="relSaveNote"></span></div>';
+  m.appendChild(d);
+
+  if(!isNew){
+    const log = relLogFor(r);
+    const logPanel=document.createElement('div'); logPanel.className='detail'; logPanel.style.marginTop='14px';
+    let lh='<h2>Contact log</h2>';
+    lh+='<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;align-items:flex-end">'+
+      '<div class="field" style="flex:1;min-width:130px"><label>Date</label><input type="date" id="logDate" value="'+new Date().toISOString().slice(0,10)+'"></div>'+
+      '<div class="field" style="flex:1;min-width:150px"><label>Method</label><select id="logMethod">'+
+        ['Phone call','Email','SMS','LinkedIn','In person','Other'].map(o=>'<option>'+o+'</option>').join('')+'</select></div>'+
+      '<div class="field" style="flex:1;min-width:120px"><label>Direction</label><select id="logDirection"><option value="outbound">Outbound</option><option value="inbound">Inbound</option></select></div>'+
+      '<button class="btn secondary" onclick="addLogEntry(\''+r.airtableId+'\')">Log it</button>'+
+    '</div>';
+    if(!log.length){ lh+='<div class="empty" style="padding:14px">No contact logged yet.</div>'; }
+    else{
+      lh+='<div style="display:flex;flex-direction:column-reverse;gap:6px">';
+      log.forEach(e=>{
+        lh+='<div style="display:flex;justify-content:space-between;font-size:13px;padding:6px 0;border-top:1px solid var(--border,#DCE7E3)">'+
+          '<span>'+new Date(e.date).toLocaleDateString('en-AU')+' &middot; '+e.method+'</span>'+
+          '<span style="text-transform:uppercase;font-size:.66rem;font-weight:700;color:'+(e.direction==='inbound'?'var(--primary,#24413C)':'var(--accent,#3E8E7E)')+'">'+e.direction+'</span>'+
+        '</div>';
+      });
+      lh+='</div>';
+    }
+    logPanel.innerHTML=lh;
+    m.appendChild(logPanel);
+  }
+}
+
+async function addLogEntry(relId){
+  const r=STATE.relationships.find(x=>x.airtableId===relId);
+  const date=document.getElementById('logDate').value;
+  const method=document.getElementById('logMethod').value;
+  const direction=document.getElementById('logDirection').value;
+  if(!date) return;
+  const log=relLogFor(r);
+  log.push({date, method, direction});
+  r.log=JSON.stringify(log);
+  r.last=date; /* logging contact is, by definition, the most recent contact */
+  const note=document.getElementById('relSaveNote');
+  try{
+    const resp=await authedFetch('/.netlify/functions/relationship-update',{method:'POST', body:JSON.stringify({recordId:relId, name:r.n, fields:{log:r.log, last:date}})});
+    const dd=await resp.json();
+    if(!resp.ok || dd.ok===false){ if(note) note.textContent=dd.message||'Save failed.'; return; }
+  }catch(e){ if(note) note.textContent='Could not reach the server.'; return; }
+  render();
+}
+
+async function pushRelationship(id){
+  const isNew = id===null;
+  const name = isNew ? document.getElementById('rName').value.trim() : STATE.relationships.find(x=>x.airtableId===id).n;
+  if(isNew && !name){ document.getElementById('relSaveNote').textContent='A name is required.'; return; }
+  const fields={
+    company: document.getElementById('rCompany').value,
+    profession: document.getElementById('rProfession').value,
+    category: document.getElementById('rCategory').value,
+    type: document.getElementById('rType').value,
+    pri: document.getElementById('rPri').value,
+    status: document.getElementById('rStatus').value,
+    email: document.getElementById('rEmail').value,
+    phone: document.getElementById('rPhone').value,
+    last: document.getElementById('rLast').value,
+    cadence: document.getElementById('rCadence').value,
+    heat: document.getElementById('rHeat').value,
+    birthday: document.getElementById('rBirthday').value,
+    keyDateLabel: document.getElementById('rKeyDateLabel').value,
+    keyDateValue: document.getElementById('rKeyDateValue').value,
+    nextAction: document.getElementById('rNextAction').value,
+    notes: document.getElementById('rNotes').value
+  };
+  const note=document.getElementById('relSaveNote'); note.textContent='Saving...';
+  try{
+    const r=await authedFetch('/.netlify/functions/relationship-update',{method:'POST', body:JSON.stringify({recordId:id, name, fields})});
+    const d=await r.json();
+    if(!r.ok || d.ok===false){ note.textContent=d.message||'Save failed.'; return; }
+    note.textContent='Saved '+new Date().toLocaleTimeString();
+    await loadRoster();
+    STATE.relOpen = d.id;
+    render();
+  }catch(e){ note.textContent='Could not reach the server.'; }
+}
+
+/* ================= SOPs ================= */
+function renderSOPs(){
+  const m=document.getElementById('main');
+  if(STATE.sopOpen) return renderSopDoc();
+  const q=(document.getElementById('sQ')?document.getElementById('sQ').value:'').toLowerCase();
+  const bar=document.createElement('div'); bar.className='toolbar';
+  bar.innerHTML='<input type="search" id="sQ" placeholder="Search SOPs" oninput="render()" value="'+(q||'')+'">';
+  m.appendChild(bar);
+  const groups={};
+  SOPS.filter(s=>!q || s.n.toLowerCase().includes(q) || (s.g||'').toLowerCase().includes(q)).forEach(s=>{
+    (groups[s.g]=groups[s.g]||[]).push(s);
+  });
+  const wrap=document.createElement('div');
+  Object.entries(groups).forEach(([g,items])=>{
+    wrap.innerHTML+='<div class="sopGroup">'+g+'</div>';
+    const list=document.createElement('div'); list.className='sopList';
+    items.forEach(s=>{
+      const row=document.createElement('div'); row.className='sopRow';
+      row.onclick=()=>{ STATE.sopOpen=s.id; render(); };
+      row.innerHTML='<span>'+s.n+'</span><span>&rarr;</span>';
+      list.appendChild(row);
+    });
+    wrap.appendChild(list);
+  });
+  m.appendChild(wrap);
+}
+function renderSopDoc(){
+  const m=document.getElementById('main');
+  const s=SOPS.find(x=>x.id===STATE.sopOpen);
+  if(!s){ STATE.sopOpen=null; return renderSOPs(); }
+  const d=document.createElement('div'); d.className='detail';
+  let body='<button class="back" onclick="STATE.sopOpen=null; render()">&larr; Back to SOPs</button>';
+  body+='<div class="sopDoc"><h2>'+s.n+'</h2>';
+  if(s.purpose) body+='<h4>Purpose</h4><p>'+s.purpose+'</p>';
+  if(s.scope) body+='<h4>Scope</h4><p>'+s.scope+'</p>';
+  if(Array.isArray(s.inputs) && s.inputs.length){ body+='<h4>What you need</h4><ul>'+s.inputs.map(x=>'<li>'+x+'</li>').join('')+'</ul>'; }
+  if(Array.isArray(s.steps) && s.steps.length){
+    body+='<h4>Steps</h4><ol>';
+    s.steps.forEach(step=>{
+      body+='<li><b>'+step.t+'</b>';
+      if(Array.isArray(step.b) && step.b.length) body+='<ul>'+step.b.map(x=>'<li>'+x+'</li>').join('')+'</ul>';
+      body+='</li>';
+    });
+    body+='</ol>';
+  }
+  if(Array.isArray(s.check) && s.check.length){ body+='<h4>Signed off when</h4><ul>'+s.check.map(x=>'<li>'+x+'</li>').join('')+'</ul>'; }
+  if(Array.isArray(s.notes) && s.notes.length){ body+='<h4>Notes</h4><ul>'+s.notes.map(x=>'<li>'+x+'</li>').join('')+'</ul>'; }
+  body+='</div>';
+  d.innerHTML=body;
+  m.appendChild(d);
+}
+
+/* ================= Coach Training ================= */
+function renderTraining(){
+  const m=document.getElementById('main');
+  const mine = STATE.trainProgress || {};
+  const totalChecks = TRAIN_MODULES.reduce((a,mod)=>a+mod.check.length,0);
+  let done=0;
+  TRAIN_MODULES.forEach(mod=>{ (mine[mod.id]||[]).forEach(v=>{ if(v) done++; }); });
+  const pct = totalChecks ? Math.round(done/totalChecks*100) : 0;
+
+  const head=document.createElement('div');
+  head.innerHTML='<p style="color:var(--muted);font-size:13px">'+done+' of '+totalChecks+' items signed off, '+pct+'%.</p>'+
+    '<div class="progressBar"><div class="fill" style="width:'+pct+'%"></div></div>';
+  m.appendChild(head);
+
+  TRAIN_MODULES.forEach(mod=>{
+    const box=document.createElement('div'); box.className='module';
+    let html='<h3>'+mod.t+'</h3><div class="why">'+mod.why+'</div>';
+    if(Array.isArray(mod.res) && mod.res.length){
+      const links = mod.res.filter(x=>x.k==='drive'||x.k==='read');
+      if(links.length){
+        html+='<div style="font-size:12px;color:var(--muted);margin-bottom:10px">'+
+          links.map(x=> x.k==='drive' ? '<a href="'+x.u+'" target="_blank" style="color:var(--teal-dk)">'+x.t+'</a>' : x.t ).join(' &middot; ')+
+        '</div>';
+      }
+    }
+    html+='<ul class="checklist">';
+    mod.check.forEach((label,i)=>{
+      const checked = (mine[mod.id] && mine[mod.id][i]) ? 'checked' : '';
+      html+='<li><input type="checkbox" '+checked+' onchange="toggleCheck(\''+mod.id+'\','+i+',this.checked)"> <span>'+label+'</span></li>';
+    });
+    html+='</ul>';
+    box.innerHTML=html;
+    m.appendChild(box);
+  });
+}
+function toggleCheck(modId, idx, val){
+  STATE.trainProgress[modId] = STATE.trainProgress[modId] || [];
+  STATE.trainProgress[modId][idx] = val;
+  saveTraining();
+}
+
+/* ================= Content, duplicated from The Bridge ================= */
+const TRAIT={D:'drive and directness',I:'influence and warmth',S:'steadiness and patience',C:'compliance and detail'};
+const COACH={
+  D:'Get to the point. Lead with the outcome, not the process. They will push back, which is engagement, not resistance.',
+  I:'Talk it through out loud. They think by speaking. Give recognition and keep the energy up, then write the actions down for them.',
+  S:'Move at their pace. Change needs warning and a reason. They will agree in the room and stall later if they are not genuinely convinced.',
+  C:'Bring the detail and the evidence. Do not oversell. Give them the material in advance and let them come back with questions.'
+};
+const DISC_LETTERS=['D','I','S','C'];
+const DISC_LEVELS={4:'Very high',3:'High',2:'Low',1:'Very low'};
+function discLevels(animal){
+  const a=ANIMALS[animal]; if(!a) return null;
+  const [hi,lo]=a.p.split('/');
+  const rest=DISC_LETTERS.filter(l=>l!==hi&&l!==lo);
+  const out={};
+  out[hi]=4; out[lo]=1;
+  out[rest[0]] = (a.n===2||a.n===4) ? 3 : 2;
+  out[rest[1]] = (a.n===3||a.n===4) ? 3 : 2;
+  return DISC_LETTERS.map(l=>({l:l,v:out[l]}));
+}
+
+const ANIMALS={
+ 'Black Panther':{p:'D/I',n:1,role:'New Business',pace:'High',det:'Medium'},
+ 'Bear':{p:'D/I',n:2,role:'New Business',pace:'Low',det:'Medium'},
+ 'Jaguar':{p:'D/I',n:3,role:'New Business',pace:'High',det:'High'},
+ 'Polar Bear':{p:'D/I',n:4,role:'New Business',pace:'Low',det:'High'},
+ 'Leopard':{p:'D/S',n:1,role:'New Business',pace:'High',det:'Medium'},
+ 'Lion':{p:'D/S',n:2,role:'New Business & Account Management',pace:'High',det:'Medium'},
+ 'Snow Leopard':{p:'D/S',n:3,role:'New Business',pace:'High',det:'High'},
+ 'Cheetah':{p:'D/S',n:4,role:'New Business & Account Management',pace:'High',det:'High'},
+ 'Siberian Tiger':{p:'D/C',n:1,role:'New Business & Account Management',pace:'High',det:'Low'},
+ 'Puma':{p:'D/C',n:2,role:'New Business & Account Management',pace:'High',det:'Low'},
+ 'Black Bear':{p:'D/C',n:3,role:'New Business',pace:'Low',det:'Low'},
+ 'Grizzly Bear':{p:'D/C',n:4,role:'New Business & Account Management',pace:'Low',det:'Low'},
+ 'Antelope':{p:'I/D',n:1,role:'Account Management',pace:'Medium/High',det:'Medium'},
+ 'Gazelle':{p:'I/D',n:2,role:'Account Management',pace:'Low',det:'Medium'},
+ 'Impala':{p:'I/D',n:3,role:'Account Management',pace:'Medium/High',det:'High'},
+ 'Deer':{p:'I/D',n:4,role:'Account Management',pace:'Low',det:'High'},
+ 'Panther Chameleon':{p:'I/S',n:1,role:'Account Management',pace:'High',det:'Medium'},
+ 'Dolphin':{p:'I/S',n:2,role:'New Business & Account Management',pace:'High',det:'Medium'},
+ 'Chameleon':{p:'I/S',n:3,role:'Account Management',pace:'High',det:'High'},
+ 'Pacific Dolphin':{p:'I/S',n:4,role:'New Business & Account Management',pace:'High',det:'High'},
+ 'Russian Wolf':{p:'I/C',n:1,role:'Account Management',pace:'Medium/High',det:'Low'},
+ 'Wolf':{p:'I/C',n:2,role:'New Business & Account Management',pace:'Medium/High',det:'Low'},
+ 'Artic Fox':{p:'I/C',n:3,role:'Account Management',pace:'Low',det:'Low'},
+ 'Artic Wolf':{p:'I/C',n:4,role:'Account Management',pace:'Low',det:'Low'},
+ 'Koala':{p:'S/D',n:1,role:'Sales Support',pace:'Low',det:'Medium'},
+ 'Ruffed Lemur':{p:'S/D',n:2,role:'Customer Support',pace:'Low',det:'Medium'},
+ 'Loris':{p:'S/D',n:3,role:'Sales Support',pace:'Low',det:'High'},
+ 'Retriever':{p:'S/D',n:4,role:'Customer Support',pace:'Low',det:'Medium'},
+ 'Red Panda':{p:'S/I',n:1,role:'Sales Support',pace:'Low',det:'Medium'},
+ 'Japanese Black Bear':{p:'S/I',n:2,role:'Sales Support',pace:'Low',det:'Low'},
+ 'Panda':{p:'S/I',n:3,role:'Sales Support',pace:'Low',det:'High'},
+ 'Sun Bear':{p:'S/I',n:4,role:'Sales Support',pace:'Low',det:'High'},
+ 'Leopard Seal':{p:'S/C',n:1,role:'Sales Support',pace:'Low',det:'Low'},
+ 'Seal':{p:'S/C',n:2,role:'Customer Support',pace:'Low',det:'Low'},
+ 'Stella Sea Lion':{p:'S/C',n:3,role:'Sales Support',pace:'Low',det:'Low'},
+ 'Sea Lion':{p:'S/C',n:4,role:'Customer Support',pace:'Low',det:'Low'},
+ 'Barn Owl':{p:'C/D',n:1,role:'Technical Sales or Technical Customer Support',pace:'High',det:'High'},
+ 'Barred Owl':{p:'C/D',n:2,role:'Tech Sales Support',pace:'Low',det:'High'},
+ 'Snowy Owl':{p:'C/D',n:3,role:'Technical Sales or Technical Customer Support',pace:'High',det:'High'},
+ 'Owl':{p:'C/D',n:4,role:'Tech Sales Support',pace:'Low',det:'High'},
+ 'Peregrine':{p:'C/I',n:1,role:'Technical Sales or Technical Customer Support',pace:'High',det:'High'},
+ 'Kestrel':{p:'C/I',n:2,role:'Tech Sales Support',pace:'Low',det:'High'},
+ 'Red-tailed Hawk':{p:'C/I',n:3,role:'Technical Sales or Technical Customer Support',pace:'High',det:'High'},
+ 'Sparrow Hawk':{p:'C/I',n:4,role:'Tech Sales Support',pace:'Low',det:'High'},
+ 'Osprey':{p:'C/S',n:1,role:'Technical Sales or Technical Customer Support',pace:'High',det:'High'},
+ 'Peacock':{p:'C/S',n:2,role:'Technical Sales or Technical Customer Support',pace:'High',det:'High'},
+ 'African Eagle':{p:'C/S',n:3,role:'Technical Sales or Technical Customer Support',pace:'High',det:'High'},
+ 'Eagle':{p:'C/S',n:4,role:'Technical Sales or Technical Customer Support',pace:'High',det:'High'}
+};
+
+const PROGRAM_30={
+ title:'The First 30 Days',
+ sub:'The onboarding meeting and your first four weeks, mapped end to end',
+ strap:'WEEK 0 → WEEK 4 · THE FYI METHOD',
+ intro:'This program covers the onboarding meeting and the four weeks that follow it. Onboarding sets the relationship, the rules, and the standards. The four weeks then build the foundation underneath the business: the numbers, the marketing engine, the referral partners, and the operating rhythm. You run one focused meeting each week, and the mentee starts moving toward independence at around the twelve-week mark.',
+ howToRun:[
+  {h:'Thirty minutes, every week, same day and time.',b:'Protect the slot. Standards and accountability from the first meeting set the tone for the whole program.'},
+  {h:'Open every meeting with a three-minute pipeline and deal check.',b:'Time is of the essence in broking, so anything live comes first, before the week\u2019s main topic.'},
+  {h:'Rotate through the eight core areas.',b:'New deals, existing pipeline, current marketing, compliance, current performance, systems and processes, challenges and pain points, and goals. Each week leads with one primary focus. You will rarely cover all eight in half an hour, and that is by design.'},
+  {h:'Everything measures back to the goals set in Week 1.',b:'If a task does not move one of those numbers, question why it is on the list.'},
+  {h:'Set tasks every single week.',b:'Implementation is the whole game. Information without action changes nothing.'}
+ ],
+ coreAreas:['New deals','Existing pipeline','Current marketing','Compliance','Current performance','Systems and processes','Challenges and pain points','Goals'],
+ glance:[
+  ['00','The Onboarding Meeting','The relationship, the rules, and the system tour, ending with a clear bridge into Week 1.'],
+  ['01','Goals & Mercury Nexus Analytics','The target is set and wired into the system so progress is tracked from day one.'],
+  ['02','Marketing & Personal Brand','The biggest driver of the business is switched on: warm database plus a simple, credible brand.'],
+  ['03','Referral Partners & the Value Pack','A pipeline that no longer depends on one finite list of contacts.'],
+  ['04','Systems, Rhythm & 30-Day Review','The operating system is installed and the first thirty days of numbers are reviewed.']
+ ],
+ setNumbers:'The method here is fixed; the targets are not. A brand-new broker working refinances for family and friends gets a realistic, activity-based target for the first ninety days, not a revenue fantasy. Tailor every figure to the person in front of you and to what their DISC profile tells you about how they sell.',
+ principles:[
+  {h:'Implementation beats information.',b:'Tools and knowledge only pay when they are used. Success in this industry comes down to one word: implementation.'},
+  {h:'This is a relationship business, not a finance business.',b:'Emotionally invested clients tell everyone they know. Build the human connection first and the referrals follow.'},
+  {h:'Standards and accountability set the tone from week one.',b:'On time, phone away, tasks done. Hold the line kindly and the results take care of themselves.'},
+  {h:'One list, one channel, one system done well beats a scattered effort spread across five.',b:'Depth first, then breadth.'},
+  {h:'Make the broker different from the field of twenty-two and a half thousand.',b:'Better tools, better communication, and better follow-through are the whole edge.'}
+ ],
+ workflow:{
+  note:'Every mentee runs their deals through the same twenty stages, grouped into three swim lanes. This is the backbone the whole program measures against, and it is what lets the CRM work for a solo broker while still expanding to a full team.',
+  note2:'The nine stages Connective gives you from lead to settlement are not enough to run a real pipeline, so all twenty go into Mercury once admin access is granted. Use this as the reference for the system tour in the onboarding meeting, the swim-lane goals in Week 1, and the Kanban review in Week 4.',
+  legend:'Blue stages are done by the broker. Green stages are done by the team or assistants.',
+  lanes:[
+   {n:'1',t:'Lead to submission',r:'Stages 1 – 9',stages:[
+    ['1','Lead','A potential client enters the CRM through enquiry, referral, or marketing source.','broker'],
+    ['2','Discovery Call Booked','A meeting is scheduled to discuss the client\u2019s loan needs and financial situation.','team'],
+    ['3','Discovery Call Held','The broker gathers information about income, expenses, and property goals.','broker'],
+    ['4','Get Basic Documents','The client provides essential documents such as ID, income proof, and bank statements.','team'],
+    ['5','Preparing Strategy','The broker reviews the client\u2019s financial position and identifies suitable loan options.','team'],
+    ['6','Strategy Ready for Client','The recommended loan strategy and lender options are prepared for the client.','team'],
+    ['7','Awaiting Strategy Acceptance','The client reviews the strategy and confirms whether to proceed.','team'],
+    ['8','Hot / Warm Prospects','The client shows strong interest but is not ready just yet.','team'],
+    ['9','Prepare Submission','All documents and details are compiled to complete the loan application.','team']
+   ]},
+   {n:'2',t:'Submission to approval',r:'Stages 10 – 15',stages:[
+    ['10','Submitted to Lender','The loan application is formally submitted to the lender.','team'],
+    ['11','Pre-Assessment / MIR','The lender performs an initial review of the application.','team'],
+    ['12','Conditional Approval','The lender grants preliminary approval with certain conditions.','team'],
+    ['13','AIP Approved','Approval in Principle confirms the loan can proceed pending final checks.','team'],
+    ['14','Conditions Sent to Lender','Required documents are provided to satisfy lender conditions.','team'],
+    ['15','Unconditional Approval','Final loan approval is granted by the lender.','broker']
+   ]},
+   {n:'3',t:'Approval to settlement',r:'Stages 16 – 20',stages:[
+    ['16','Mortgage Documents Issued','Loan documents are sent to the client for signing.','team'],
+    ['17','Docs Returned / Certification Pending','Signed documents are returned and verified.','team'],
+    ['18','Settlement Ready to Book','All requirements are complete and settlement can be scheduled.','team'],
+    ['19','Settlement Booked','The settlement date is confirmed with all parties.','team'],
+    ['20','Settled','The loan settlement is completed successfully.','broker']
+   ]}
+  ]
+ },
+ stages:[
+  {id:'w0',n:'00',t:'The Onboarding Meeting',
+   focus:'Establish the relationship, set the standards, tour the system, and confirm the mentee is set up correctly, so the first coaching meeting can go straight to work.',
+   whereH:'How this meeting differs',
+   where:'This is not the 30-minute coaching rhythm. It runs longer and covers relationship, ground rules, and a full system tour. You are setting the tone for everything that follows, so hold the standards from the first minute. Work through the eight items in order, and treat the bullets as your live prompts: let each one open the conversation it is meant to.',
+   scriptH:'The eight items, in order',
+   script:[
+    {n:'1',t:'Welcome and introduction',p:[
+     'Brief introduction both ways: tell me about you. This is your first real read on them.',
+     'Share your Transformation Statement and the journey you take a mentee on.',
+     'Set the tone: there are no dumb questions.']},
+    {n:'2',t:'Expectations and ground rules',p:[
+     'My role: educate you and hold you accountable. Your role: listen, learn, and apply.',
+     'This mentoring is for you personally, not your team. I don\u2019t train, coach or mentor your staff, whatever you take from these sessions is yours to pass on.',
+     'Weekly meetings for the first three months, rotating through the eight core areas.',
+     'One meeting a week to get you set up, then two once you are busy.',
+     'Phones on aeroplane mode, both of us, so nothing interrupts.',
+     'Standards matter: I am on time and expect the same. Ten minutes late and we rebook.',
+     'Any questions?']},
+    {n:'3',t:'The FYI Tribe platform and WhatsApp',p:[
+     'How to book extra meetings and calls through FYI Tribe.',
+     'Day-to-day contact runs through WhatsApp, not the portal discussion.',
+     'The sixty-plus videos: watch them, then bring me deal-specific questions.',
+     'Darrel will email you a watchlist of eight videos in the order to watch them. The first two matter before our Week 1 session.',
+     'Tasks are set in the meeting summary in shared files, and I expect them back promptly.',
+     'Any questions?']},
+    {n:'4',t:'Mercury systems and access',p:[
+     'Have you met your partnership manager, and do you know their role?',
+     {t:'Do you know who your partnership manager is?',field:'partnershipManager',placeholder:'Their name'},
+     'Have they given you a Mercury tour and shown you how to get accredited?',
+     'You make my team admin on Mercury, so I can see your deals and install the workflow.',
+     'We walk the 20-stage workflow together. Open the workflow reference above.',
+     'Any questions?']},
+    {n:'5',t:'DISC profile',p:[
+     'Purpose: your personality type. Once I know how you learn, I teach you accordingly.',
+     'You will get an email; it takes five minutes.',
+     'Confirm it is done, or set it now.',
+     'Any questions?']},
+    {n:'6',t:'Goal setting, preview only',p:[
+     'Show the analytics page: Connective uses your goals to populate it.',
+     'Talk goals at a high level today. We build the full goals sheet together in Week 1.',
+     'In Week 1 you email it to goals@connective.com.au for Connective to load.',
+     'Any questions?']},
+    {n:'6b',t:'How long we are together',p:[
+     'Let us talk about time, because there are two clocks running and it helps to know '+
+       'the difference early.',
+     'The first is our program, and it runs for twelve months. I know that sounds like a '+
+       'long time when you are standing at the start of it. In my experience it is about '+
+       'right. The first few months are mostly unlearning habits, the middle is where the '+
+       'work compounds, and the back end is where you start to see it in your numbers. '+
+       'Anything shorter and we would be stopping just as it gets good.',
+     'The second is Connective. They require every new broker to be under mentorship for a '+
+       'set number of months, and yours is on your file. I will tell you what it is today so '+
+       'you have it from the start.',
+     'They are two different things and they do not always finish together. You might complete '+
+       'the Connective period with program still to run, or the other way round. Neither is a '+
+       'problem, it just means we keep an eye on both.',
+     'The main thing is that neither of us is ever guessing. Both dates sit in The Bridge, and '+
+       'any time you want to know where you are against them, just ask.',
+     'Anything you want to ask about that?']},
+
+    {n:'7',t:'How we will work through your applications',p:[
+     'While you are under supervision, I look at every application twice rather than once. '+
+       'That is deliberate, and it is worth explaining why, because it will save you a lot '+
+       'of frustration.',
+     'The first look is before anything goes to a lender. Send it to me once the file is '+
+       'built and the compliance work is done, so your best interest duty objectives are '+
+       'written, the requirements are captured, and the exit strategy is documented. '+
+       'This is the stage where a small thing is still a small thing. Catching it here '+
+       'takes five minutes; catching it after submission can cost you a week and some '+
+       'credibility with the lender.',
+     'The second look is when you are packaged and ready to apply online. That is the last '+
+       'set of eyes before it leaves you, and it is usually quick, because by then the hard '+
+       'thinking is already done.',
+     'One thing that will help us both. It is tempting to send a file early to keep things '+
+       'moving, but a half-built file at the first review means I am guessing at what you '+
+       'meant, and you end up doing the work twice. Send it when it is genuinely ready and '+
+       'we will both go faster.',
+     'Connective sets the number at twelve supervised applications. We track every one on '+
+       'your file, so you will always know exactly where you are without having to count '+
+       'them up yourself. You will be surprised how quickly they go by.',
+     'Anything you want to ask about that?']},
+    {n:'8',t:'Summary and recap',p:[
+     'The monthly feedback form: three minutes, and it helps me sharpen the program while giving you a say.',
+     'Confirm next steps, and the bridge into Week 1.',
+     'Any questions?']}
+   ],
+   bridgeH:'Onboarding into Week 1',
+   bridgeNote:'The onboarding meeting only pays off if it hands over cleanly. Close every onboarding by locking these down, so the mentee arrives at Week 1 already set up and knowing what is coming.',
+   bridge:[
+    {h:'In our next meeting · Week 1',items:[
+     'We set your goals and break them across the three swim lanes.',
+     'We complete the goals sheet together, and you email it to goals@connective.com.au for Connective to load into Mercury Nexus analytics.',
+     'We turn that into a written 90-day activity target you can hold yourself to.',
+     'We confirm the 20-stage workflow is installed in your Mercury.']}
+   ],
+   mentee:['Complete the DISC profile if it is not already done',
+     'Confirm your partnership manager has done the Mercury tour and your accreditations are transferring',
+     'Make the FYI team admin on Mercury, following the instructions Darrel will send',
+     'Start the warm contact list: family, friends, past colleagues, and prior-industry contacts',
+     'Bring rough numbers to Week 1: an income target and the hours per week available',
+     'Save the WhatsApp group to your phone and watch the goal-setting and analytics videos'],
+   mentor:['Send the starter video watchlist, via Darrel',
+     'Send the DISC profile and a short explanation, via Darrel',
+     'Send the Mercury admin-access instructions, via Darrel',
+     'Book the next eight weeks of meetings, via Darrel',
+     'Brand the first tool ready to hand over in Week 2'],
+   done:'The relationship and the rules are clear, the DISC profile is complete, the admin-access instructions are sent, the next eight weeks are booked, and the mentee leaves knowing exactly what to do before Week 1.'},
+
+  {id:'w1',n:'01',t:'Goals & Mercury Nexus Analytics',
+   focus:'Set the numbers everything else measures against, and load them into Mercury Nexus analytics through Connective so progress is tracked from the first deal.',
+   whereH:'Where this sits',
+   where:'You cannot manage what you do not measure. Before any marketing or partner work, the mentee needs a clear target and a system that tracks it. Goals go to Connective, Connective loads them into the analytics, and as deals settle the patterns start to show which of the three swim lanes is strong and which one needs coaching. Set the expectation now: the pattern data is a payoff for later weeks, so this week the job is simply to set the target and switch on the tracking.',
+   prepMentor:'Confirm admin access has been granted on Mercury so the 20-stage workflow can be installed. Review the DISC profile; it tells you how to teach this person and which swim lane is the likely weak point. Have the goals sheet ready to complete live.',
+   prepMentee:'Bring rough numbers: an income target, the hours per week available for the business, and a first pass at the warm contact list of family, friends and past colleagues.',
+   agenda:[
+    ['0 – 3 min','Pipeline and deal check. Anything live, anything blocked. Clear it first.'],
+    ['3 – 8 min','Set the headline goal. Work backwards from the desired income: gross commission, settlement volume, number of settled loans, applications, then discovery calls. Use a sensible average loan size and conversion rate.'],
+    ['8 – 18 min','Break the goal across the three swim lanes so the analytics can track it: lead to submission, submission to approval, approval to settlement. Confirm the goals-sheet fields: settlement target, application target, conversion, average loan size, and run-off assumption.'],
+    ['18 – 25 min','Complete the goals sheet together and confirm the mentee will email it to goals@connective.com.au for loading into Mercury Nexus.'],
+    ['25 – 30 min','Confirm the 20-stage workflow install status, set the tasks below, and recap the single most important action for the week.']
+   ],
+   mentee:['Grant or confirm admin access if not already done, following the instructions from Darrel',
+     'Email the completed goals sheet to goals@connective.com.au so Connective can load it into the analytics',
+     'Build the warm database into one simple sheet: family, friends, past colleagues, and any real estate or finance contacts',
+     'Watch the goal-setting and analytics videos in the FYI Tribe learning library'],
+   mentor:['Confirm the mentee has emailed the goals sheet to goals@connective.com.au',
+     'Install the 20 statuses in Mercury once admin access is confirmed',
+     'Record a short Loom on any specific question that came up and add it to the library'],
+   done:'The goals sheet is complete and emailed to Connective, the target is loaded into analytics, the 20-stage workflow is installed or scheduled, and the mentee holds a written 90-day activity target they can repeat back to you.'},
+
+  {id:'w2',n:'02',t:'Marketing & Personal Brand',
+   focus:'Switch on the single biggest driver of the business by activating the warm database and building a simple, credible personal brand, because this is a relationship business.',
+   whereH:'Where this sits',
+   where:'Marketing is roughly eighty percent of the business. With goals set, this week drives the activity that feeds them. For a new broker the fastest and cheapest pipeline is the warm database, paired with a clean personal brand and real social proof. Keep the website simple: a video, social proof, a booking link, done. Do not let the mentee pour weeks into a beautiful website that almost nobody reads.',
+   prepMentor:'Review the mentee\u2019s current website and social profiles, and flag anything over-built. Have the Purchase Range Reckoner ready, branded in their colours and logo, to hand over.',
+   prepMentee:'Bring the warm database list from Week 1 and links to current social profiles. Note any credibility from a prior career that could serve as early social proof.',
+   agenda:[
+    ['0 – 3 min','Pipeline and deal check.'],
+    ['3 – 10 min','The personal brand. Position around the person, not the company name. The structure that works: a short video, real social proof, a booking link. Identify what social proof this person can show right now, including credibility carried over from any previous career.'],
+    ['10 – 18 min','Warm database activation. The refinance play for family and friends in the first ninety days. Segment the list and pick the first tier to contact. Hand over the outreach script and adapt it to their voice.'],
+    ['18 – 25 min','Content rhythm. One channel done well beats five done badly, and LinkedIn is the FYI default. Set a simple, repeatable posting cadence and a habit of repurposing one idea into several posts.'],
+    ['25 – 30 min','Set the tasks below and recap.']
+   ],
+   scriptBox:{
+    h:'Warm reactivation message · template to adapt per contact',
+    body:'Hi [Name], quick one. As you probably already know, I\u2019ve moved into mortgage broking, and I\u2019ve been helping people close to me take a proper look at their home loan before rates shift again. There\u2019s nothing you need to do today. It might just be worth knowing where you actually stand. And whenever you\u2019re ready to see how much you could be saving, I\u2019ll make the whole thing simple for you.',
+    note:'The wording uses pacing and gentle presupposition, so the reader feels no pressure while a clear next step is planted. Teach the pattern, not the exact words, so every broker still sounds like themselves.'
+   },
+   mentee:['Contact the first tier of the warm database, around ten people, using the adapted script',
+     'Set the personal brand basics: profile photo, a clear headline, and a plan to collect social proof',
+     'Post once on the chosen channel before the next meeting'],
+   mentor:['Deliver the Purchase Range Reckoner, branded in the mentee\u2019s colours and logo',
+     'Provide the outreach script template in writing',
+     'Note who the mentee finds hardest to contact; that resistance is worth coaching'],
+   done:'The first warm outreach batch is sent, the personal brand basics are live, one piece of content is posted, and the branded reckoner is in the mentee\u2019s hands.'},
+
+  {id:'w3',n:'03',t:'Referral Partners & the Partner Value Pack',
+   focus:'Build the first referral partner relationships and put the Partner Value Pack to work, so the pipeline stops depending on one finite list of contacts.',
+   whereH:'Where this sits',
+   where:'The warm database runs out. Referral partners are the engine of a pipeline that lasts and scales. The differentiator is simple: most of the field of twenty-two and a half thousand brokers ask partners for scraps, while the FYI broker shows up with a value pack that makes the partner look good to their own clients. Prior careers are a warm way in: accountants, financial advisers, buyers agents, real estate contacts, and conveyancers. Temper expectations, because this week plants these relationships and the harvest comes later.',
+   prepMentor:'Have the Partner Value Pack ready to brand, and prepare the differentiation angle for this specific mentee based on their background and network.',
+   prepMentee:'List potential partner types and any existing contact inside each one. Prior colleagues and industry relationships count, and often convert fastest.',
+   agenda:[
+    ['0 – 3 min','Pipeline and deal check.'],
+    ['3 – 9 min','Who are the right partners. Quality over quantity. Map existing warm contacts first, since a lukewarm introduction beats a cold approach every time.'],
+    ['9 – 16 min','The value-first approach. What you give before you ask. How the Partner Value Pack works: the partner shares a link, the client fills in a few details, and it comes straight back to the broker. Position the broker as the professional who makes the partner look good.'],
+    ['16 – 24 min','The approach conversation. How to open a partner relationship without sounding needy. Pick two or three partners to approach this week and rehearse the opening line.'],
+    ['24 – 30 min','Set the tasks below and recap.']
+   ],
+   mentee:['Approach two or three target partners with the value-first pitch and the Partner Value Pack link',
+     'Reconnect with prior-career contacts as potential partners',
+     'Log every partner conversation in the pipeline notes'],
+   mentor:['Brand and send the Partner Value Pack',
+     'Provide the partner approach script',
+     'Flag any partner type that suits this mentee\u2019s background especially well'],
+   done:'Two or three partner conversations are open, the Partner Value Pack is live and branded, and a target partner list is documented for the weeks ahead.'},
+
+  {id:'w4',n:'04',t:'Systems, Rhythm & 30-Day Review',
+   focus:'Embed the operating rhythm, review the first deals through the swim lanes, and check goals against actuals before the mentee moves toward independence.',
+   whereH:'Where this sits',
+   where:'By Week 4 there should be live activity. Now you install the discipline that keeps deals moving, read what the analytics are starting to show, and shore up the weak swim lane, which for a natural hunter is usually the admin-heavy middle lane. This becomes the operating system for the rest of the program and beyond.',
+   prepMentor:'Pull the mentee\u2019s Kanban and analytics and note the early patterns. Decide in advance which swim lane you expect to be the weak point, then test it against the data.',
+   prepMentee:'Have every live deal staged correctly in the 20-stage Kanban, so the review is quick and honest.',
+   agenda:[
+    ['0 – 3 min','Pipeline and deal check.'],
+    ['3 – 10 min','Kanban discipline. The 20 stages; green is the team, blue is the broker. Install the weekly pipeline review habit: every deal, every stage, every week, in the spirit of the old Tuesday NINJA meeting.'],
+    ['10 – 18 min','The 30-day review. Goals against actuals in the analytics. Which swim lane is lagging, and why. Keep it factual, not emotional.'],
+    ['18 – 25 min','Shore up the weak lane. Put a system or process around the stage where deals stall, so the time to getting paid shortens.'],
+    ['25 – 30 min','Set the cadence for weeks 5 to 8, remind the mentee about the monthly feedback form, and recap.']
+   ],
+   mentee:['Run one self-led pipeline review before the next meeting',
+     'Confirm every live deal is correctly staged in the Kanban',
+     'Complete the monthly feedback form if it is due'],
+   mentor:['Review the analytics and set the coaching focus for weeks 5 to 8',
+     'Confirm the next eight-week booking block with Darrel',
+     'Decide whether the elite CRM bolt-on is worth raising yet'],
+   done:'All deals are staged, the first 30-day review is complete, the weak swim lane has a fix in place, and weeks 5 to 8 are booked.'}
+ ]
+};
+
+const SOPS=[
+/* ================= FINANCE & ADMIN ================= */
+{id:'s01',g:'Finance & Admin',n:'Manual Reconciliation for Pay.com.au',
+ purpose:'To ensure all Pay.com.au transactions are manually reconciled accurately and consistently, maintaining clean financial records and ensuring the clearing account balances to zero.',
+ scope:'All team members responsible for reconciling Pay.com.au transactions, preparing manual bank statements, and updating Xero.',
+ inputs:['Access to Pay.com.au','Access to Argo Drive, Accounting and Finance, Transactions','CSV import statement template','Access to Xero','Access to CBA bank statement'],
+ steps:[
+  {t:'Extract transactions from Pay.com.au',b:['Log in to Pay.com.au','Download the latest transaction report','Ensure the report covers the full period requiring reconciliation']},
+  {t:'Access the CSV import template',b:['Go to Argo Drive, Accounting and Finance, Transactions','Locate the CSV import statement template','Download a fresh copy for this reconciliation period']},
+  {t:'Populate the CSV template',b:['Open the Pay.com.au transaction report','Fill in date, description, received, spent, reference and notes','Ensure all data matches the Pay.com.au report exactly']},
+  {t:'Compare transactions in Xero',b:['Open Xero and go to the Pay.com.au bank account','Cross-check each transaction against Xero records','Identify any missing, duplicated or mismatched entries']},
+  {t:'Reconcile CBA first',b:['Open the CBA account in Xero','Reconcile all relevant transactions before touching Pay.com.au','CBA feeds are automated and more reliable than manual imports','This ensures the reconciliation aligns with actual cash movement']},
+  {t:'Understand typical transaction flows',b:['Argo Main to Pay.com.au to NBITS, for IT costs','Argo Main to Pay.com.au to Airwallex AU, for Philippines costs','Use these flows to identify and categorise transactions correctly']},
+  {t:'Account for Pay.com.au bank fees',b:['Fees do not appear in any bank transaction report','Calculate using: received minus spent equals bank fees','Create a manual journal entry in the CSV import file','Tag the fee as GST on expenses to ensure GST deductibility']},
+  {t:'Cross-check totals before importing',b:['Sum all transactions in the CSV template','The total must equal zero, because Pay.com.au is a clearing account','If the total is not zero, recheck entries for errors']},
+  {t:'Upload and reconcile in Xero',b:['Upload the completed CSV statement into Xero','Most transfers will auto-match','Invoices and bank fees must be reconciled using Create','Ensure all items are properly coded and accounted for']}
+ ],
+ check:['Pay.com.au transactions extracted','CSV template downloaded and populated','Xero Pay.com.au account cross-checked','CBA account reconciled first','NBITS and Airwallex flows verified','Bank fees calculated and journal entry created','CSV totals confirmed to equal zero','Manual statement uploaded to Xero','All transactions reconciled correctly'],
+ notes:['If totals do not balance to zero, recheck for missing fees or duplicated entries','If CBA transactions do not match Pay.com.au flows, investigate before importing','If Xero rejects the CSV, check formatting: dates, column order, negative values','Always ensure GST coding is correct for fees and expenses']},
+
+{id:'s02',g:'Finance & Admin',n:'Handling a Failed Payment, GHL and Stripe',
+ purpose:'To ensure failed payments are handled promptly, professionally and consistently. This protects revenue, maintains client trust, and ensures accurate financial tracking.',
+ scope:'All team members responsible for monitoring payments, communicating with clients, and managing subscription automations in GoHighLevel and Stripe.',
+ inputs:['Access to Stripe','Access to Gmail, email templates available','Access to GoHighLevel','Permission to send client emails','Ability to take and upload screenshots without exposing sensitive data'],
+ steps:[
+  {t:'Identify the cause of the failed payment',b:['Open Stripe','Check the payment attempt and review the error message','Check the client email notification for additional details','Note the cause: insufficient funds, expired card, bank decline']},
+  {t:'Notify the client within 12 hours',b:['Open Gmail and use the approved failed-payment template','Attach a screenshot of the failed transaction from Stripe','Ensure no sensitive information is visible in the screenshot','Send within 12 hours of the failed payment']},
+  {t:'Confirm subscription automations in GoHighLevel',b:['Go to Payments, Settings, Subscriptions','Check that automatic retry settings are active','Ensure the system is set to retry multiple times','Confirm the automation is linked to the client subscription']},
+  {t:'Escalate after the third failed attempt',b:['If the third retry fails, notify the coach immediately','Prepare and send a manual invoice','Include a clear explanation of the outstanding amount and payment options']}
+ ],
+ check:['Cause of failed payment identified in Stripe','Client notified within 12 hours using the correct template','Screenshot attached with sensitive data hidden','Subscription retry automations checked in GoHighLevel','Coach informed after the third failed attempt','Manual invoice sent'],
+ notes:['If the client responds with updated details, process manually and update the subscription','If the client disputes the charge, escalate to the coach before acting','Always double-check screenshots for sensitive information','If GHL automations appear incorrect or inactive, notify the document owner immediately']},
+
+{id:'s03',g:'Finance & Admin',n:'Mercury Nexus Pro Plus, Customise Client CRM',
+ purpose:'To ensure each client receives a fully customised Mercury CRM that matches their business branding, workflow requirements, and the standard FYI Business Coaching setup.',
+ scope:'All team members responsible for CRM setup, branding, client communication and workflow customisation for Mercury Nexus Pro Plus clients.',
+ inputs:['Access to the client Google Drive folder','Access to the FYI Master Sheet','Access to Mercury CRM','Access to Gmail','Access to Canva','Authentication approval from Ben','Snippets and Doc Request folder'],
+ steps:[
+  {t:'Request CRM duplication from Connective',b:['Ask the authorised admin to email Connective','Request duplication of Ben\u2019s CRM including Status Editor, Auto Actions, Task Templates and Email Templates']},
+  {t:'Prepare the client Google Sheet',b:['Duplicate the CRM Google Sheet template','Save in the client folder as YYYY.MM.DD_Company Name - CRM','Update to reflect the client company name and brand colours','Replace all references to Strider Finance with the client company name','Replace Troy with the client first name']},
+  {t:'Request branding assets from the client',b:['Email the client requesting their company logo and brand colours']},
+  {t:'Create sample infographics',b:['Create three sample infographics matching their branding and company profile','Email the three options and ask which they prefer','Make revisions if requested','Once approved, create the remaining ten infographics']},
+  {t:'Log in to the client CRM',b:['Inform Ben you are starting the customisation','Go to Mercury and enter the client username and password from the FYI Master Sheet, Current Mentees columns T and U','Request authentication from Ben','Tick the Remember Me box','Once logged in, proceed with customisation']},
+  {t:'Complete CRM customisation',b:['Open the client Google Sheet and follow the Task List','Tick each item as you complete it','Under Email Templates, request the client calendar link','Use the Snippets and Doc Request folders as needed','Ensure Status Editor, Auto Actions, Task Templates and Email Templates all match Ben\u2019s CRM']},
+  {t:'Finalise and update templates',b:['Email the client with the completed Task Sheet','Request their booking link if not yet provided','Update all email templates and auto actions that require the booking link','Cross-check the Task Sheet to ensure nothing is missed']},
+  {t:'Confirm completion',b:['Inform the client that CRM customisation is complete','Confirm they have access and everything is functioning correctly']}
+ ],
+ check:['CRM duplication requested from Connective','Google Sheet duplicated and customised','Branding assets received from client','Three sample infographics created and approved','11 final infographics completed','Logged into Mercury CRM with authentication','Full CRM customisation completed','Email templates updated with booking link','Task Sheet sent to client','Client informed that CRM setup is complete'],
+ notes:['If Connective does not duplicate the CRM correctly, request a revision before customisation begins','Always double-check that all templates match Ben\u2019s CRM before finalising']},
+
+{id:'s04',g:'Finance & Admin',n:'Changing Card Details for Mentees',
+ purpose:'To outline the process for assisting mentees who need to update their payment card details, ensuring billing continuity and accurate subscription management.',
+ scope:'The FYI Admin Team when supporting mentees with updating or replacing card details for active subscriptions in the FYI Client Portal.',
+ inputs:['GoHighLevel Payment section','Client access to their FYI Client Portal','Client login credentials','New card details','Active subscription in the system'],
+ steps:[
+  {t:'Receive the request from the mentee',b:['Confirm the mentee is requesting to update their card details','Provide the standard instructions: log in, Manage Your Account, Billing and Subscription, Update Card or Modify Payment Method','Ask the mentee to notify you once they have attempted the update']},
+  {t:'Check if the mentee can update their card',b:['If the Update Card option is visible, ask them to complete it and confirm','If the option is not visible, proceed to the next step']},
+  {t:'Issue a new subscription link, admin action',b:['First verify the current subscription coverage in the GHL Payments section','Pause the existing subscription: Payments, Subscriptions, Client Name, three dots, Pause','Inform the mentee a new link will be issued before their due date to avoid double payments','Explain the link must be completed promptly to avoid disruption','Generate and send the new subscription link','If on Mercury Nexus Pro, issue both required links','Instruct them to set up using their preferred card as soon as they receive it','Once they confirm the new subscription is active, cancel the old one','Notify the mentee the payment method has been updated and no further action is required']}
+ ],
+ check:['Provided the mentee with instructions to update the card','Confirmed whether the mentee could update the card themselves','Issued new subscription link if required','Cancelled old subscription if a new one was created','Confirmed successful billing update with the mentee'],
+ notes:['If the mentee is overdue on payment, prioritise issuing a new link to avoid service interruption','Always document unusual issues or repeated failed attempts in GHL for team visibility','If multiple failed payments occur, escalate to the support group for review']},
+
+/* ================= MBFP ================= */
+{id:'s05',g:'Mortgage Broker Foundation Program',n:'Discovery and Decision Pipeline',
+ purpose:'To move a new enquiry through to a signed agreement in a consistent, tracked sequence.',
+ scope:'All leads entering the FYI ecosystem. Ten pipeline stages.',
+ inputs:['GoHighLevel','FYI Info Pack, correct version','Discovery Questionnaire','FYI Participation Agreement','Client folder in Google Drive'],
+ steps:[
+  {t:'1.1 New Enquiry',b:['New leads enter the pipeline','Admin: ensure the lead is correctly added to GHL']},
+  {t:'1.2 Contacted, Awaiting Reply',b:['Mentor has made initial contact and is awaiting a response','Admin: monitor for replies and update the pipeline']},
+  {t:'1.3 Discovery Call Booked',b:['The discovery call has been scheduled','Admin: add to the mentor calendar and confirm with the lead']},
+  {t:'1.4 Discovery Call Completed',b:['The discovery call has taken place','Mentor: update notes in GHL','Admin: move the lead to the next stage']},
+  {t:'1.5 Info Pack Sent',b:['Send the correct FYI Info Pack, mentor will specify the version, with the Discovery Questionnaire','While in this stage an automated follow-up email sends every 2 days','The automation stops on Day 6, or as soon as the mentee leaves this stage, whichever comes first','Admin must monitor responses and update GHL notes']},
+  {t:'1.6 Follow Up Required',b:['If no response after 6 days they move here automatically','An internal notification email is sent to the mentor prompting direct contact','Admin must confirm the pipeline movement and record all communication in GHL']},
+  {t:'1.7 Decision Made, Yes',b:['This stage is for hot leads','Admin: prepare agreement and onboarding steps']},
+  {t:'1.8 Contract or Agreement Sent',b:['Email the FYI Participation Agreement to the prospect mentee','Admin: track signature status']},
+  {t:'1.9 Contract or Agreement Signed',b:['The agreement has been signed','Admin: save the contract in the client Google Drive folder and update GHL']},
+  {t:'1.10 Decision Made, No or Not Now',b:['The lead has decided not to proceed or has deferred','Admin: update GHL and close the lead']}
+ ],
+ check:['Lead added to GHL','Info pack and questionnaire sent','Follow-up automation running','Agreement sent and signature tracked','Signed contract saved in the client Drive folder'],
+ notes:['The follow-up cadence changed from three days to every two days stopping at Day 6. The older standalone PDF still shows the three-day rule.']},
+
+{id:'s06',g:'Mortgage Broker Foundation Program',n:'Mentee Onboarding',
+ purpose:'To ensure every new mentee is onboarded consistently and professionally, with all required documents, systems and communication in place before their program begins.',
+ scope:'All FYI Business Coaching mentees entering the Mortgage Broker Foundation Program or any FYI coaching stream.',
+ inputs:['Connective Mentoring Agreement','FYIBC Participation Agreement','Payment Links','Profile Me DISC Assessment Result','FYIBC Onboarding Session, the FYI First 30 Days','FYIBC Mentee Meeting Template','FYIBC Post-Meeting Record','FYIBC Airtable Client Section','Mercury Admin Access Instructions','JotForm Discovery Form Questionnaire Template'],
+ steps:[
+  {t:'2.1 Pending Client Start Date',b:['Add mentee to the Pending Start Date pipeline','A sequence of ten automated emails sends while they await their start date','When removing them from this pipeline, click Done in Enrolment History to stop further emails']},
+  {t:'2.2 Payment Links Sent, pre-onboarding requirements',b:['Within 48 hours before the start date send payment links, both if subscribing to Mercury Nexus Pro','Profile Me DISC Assessment for behavioural profiling','Mortgage Broker Foundation Program Participation Agreement if not yet completed']},
+  {t:'2.3 Payment Received',b:['Invite the mentee to the GHL FYI Tribe Community','Invite the mentee to the FYI Tribe WhatsApp Group','Send a Loom walkthrough of the client portal: where documents are stored, how to book sessions, how to access resources','In Airtable, go to the Prospects tab and change status to Won','Check the Clients tab to confirm they were added automatically','Update program type, start date, DISC traits, contact details and coaching cadence','Once verified, remove the mentee from the Prospects list to keep the database clean']},
+  {t:'2.4 Setup in Progress',b:['Add the mentee character traits to Airtable, Client Section','Save the DISC result in the client Google Drive folder and in GHL Contact Shared Files','Upload the DISC result to the client portal','Invite the mentee to a 30-minute Onboarding Session with Ben','Attach to GHL Contact Documents: FYIBC Onboarding Session, Mentee Meeting Template, Profile Me DISC Result']},
+  {t:'2.6 Orientation Complete',b:['Move the mentee to the Orientation Complete pipeline stage','An automated email sends the Discovery Form Questionnaire and Mercury Admin Access instructions','If the automatic email did not send, send it manually including the DISC result','Schedule and secure the first twelve weekly meetings with Ben, 30 minutes each','Create the first Post-Meeting Record following the Post-Meeting SOP','Add the mentee to ClickSend, MBFP Mentees Group, for SMS reminders']},
+  {t:'2.7 Send the starter video watchlist',b:[
+    'Email the eight starter videos in order, with when each should be watched',
+    'The list is on the Coach Training tab and on every client file under The First 30 Days',
+    'Mention it in the onboarding meeting so the mentee expects it',
+    'This replaces explaining the same ground live in Week 1 and Week 2']},
+  {t:'2.8 Ready for Program to Start',b:['Confirm all documents are saved and the mentee is ready to begin']}
+ ],
+ check:['Starter video watchlist emailed','Connective Mentoring Agreement saved in Drive','FYIBC Participation Agreement saved in Drive','Profile Me DISC Result saved in Drive','First Post-Meeting Record created','DISC Result in GHL Contact Shared Files','Onboarding Session in GHL Contact Shared Files','Mentee Meeting Template in GHL Contact Shared Files','JotForm Discovery Questionnaire sent','Mercury Admin Access Instructions sent','Next 12 weekly session invites sent','Added in Airtable FYIBC Client List','Added to ClickSend, MBFP Mentees','Added to GHL FYI Tribe','Added to FYI Tribe WhatsApp Group'],
+ notes:['Some mentees require a modified onboarding process; variations must be documented in GHL Notes','Team members must always check GHL notes before proceeding','Follow-up is required if DISC, agreements or payments are delayed','This version supersedes the February 2026 PDF, which predates Airtable, ClickSend and the WhatsApp group']},
+
+{id:'s07',g:'Mortgage Broker Foundation Program',n:'Full Mentee Onboarding Process, Discovery to Program Start',
+ purpose:'To ensure every new mentee is onboarded consistently and professionally across the full lifecycle, with responsibilities split between Mentor and Admin.',
+ scope:'All mentees entering the Mortgage Broker Foundation Program or any FYI coaching stream. Combines the Discovery pipeline and the Onboarding pipeline end to end.',
+ inputs:['Connective Mentoring Agreement','FYIBC Participation Agreement','Profile Me DISC Assessment Result','FYIBC Onboarding Session, FYI First 30 Days','FYIBC Mentee Meeting Template','FYIBC Post-Meeting Record','FYIBC Airtable Client Section','Mercury Admin Access Instructions','Discovery Form Questionnaire Template','ClickSend MBFP Mentees Group','Google Drive','GoHighLevel','FYI Tribe Portal','FYI Tribe WhatsApp Group'],
+ steps:[
+  {t:'Stage 1: Discovery and Decision Pipeline',b:['Runs 1.1 through 1.10 as per the Discovery and Decision Pipeline SOP','Each stage carries an explicit admin action alongside the mentor action','Follow-up automation every 2 days, stopping Day 6']},
+  {t:'Stage 2: Mentee Onboarding Pipeline',b:['Runs 2.1 through 2.7 as per the Mentee Onboarding SOP','Admin and Mentor responsibilities are separated at 2.4 and 2.6']},
+  {t:'2.4 Setup in Progress, split responsibilities',b:['Admin: add DISC traits to Airtable, save to Drive and GHL, attach onboarding documents, invite to the 30-minute session','Mentor: review DISC results and onboarding documents, prepare key focus points, conduct the onboarding session']},
+  {t:'2.6 Orientation Complete, split responsibilities',b:['Admin: move pipeline stage, confirm the automated email sent, schedule the first 12 weekly meetings, create the first Post-Meeting Record, add to ClickSend','Mentor: conduct the onboarding call, review the Discovery Form once submitted, prepare for the first coaching session']},
+  {t:'2.7 Ready for Program to Start',b:['Confirm all documents are saved','Move the mentee to Ready for Program to Start','Notify the mentor that onboarding is complete']}
+ ],
+ check:['Connective Mentoring Agreement in Drive','FYIBC Participation Agreement in Drive','Profile Me DISC Result in Drive','First Post-Meeting Record in Drive','DISC Result shared to mentee in GHL','Onboarding Session document in GHL','Mentee Meeting Template in GHL','Discovery Form Questionnaire sent','Mercury Admin Access Instructions sent','Loom walkthrough at GHL FYI Tribe sent','Next 12 weekly session invites sent','Added to Airtable FYIBC Client List','Added to ClickSend MBFP Mentees','Added to GHL FYI Tribe','Added to FYI Tribe WhatsApp Group'],
+ notes:['Any variations must be documented in GHL Notes','Team members must always check GHL before taking action','Follow up every 48 hours if the mentee delays DISC, agreements or payments']},
+
+{id:'s08',g:'Mortgage Broker Foundation Program',n:'Post-Meeting for Mentees',
+ purpose:'To ensure actions are captured, progress is tracked and accountability is maintained after each session with Ben or Helen.',
+ scope:'All mentees attending coaching sessions with Ben or Helen.',
+ inputs:['Zoom recording, Ben or Helen','ChatGPT','Google Drive client folder'],
+ steps:[
+  {t:'Download the Zoom recording',b:['Download the video file only','Save in the client Google Drive under Zoom Meetings','Name it YYYY.MM.DD - LAST NAME, First Name']},
+  {t:'Copy the Zoom summary notes',b:['Locate the auto-generated Zoom Summary','Copy the full text']},
+  {t:'Save and generate the meeting record in ChatGPT',b:['Save the file format using Current Page only','Prompt: please save this file for creating future post-meetings','Paste the Zoom Summary notes','Prompt: create a meeting record below using the format above, use Australian English','Review the generated record for accuracy']},
+  {t:'Create the Google Doc',b:['Create a new Google Doc','Title it Meeting Summary - LAST NAME, First Name','Paste the meeting summary in','Follow the standard formatting']},
+  {t:'Insert the meeting recording link',b:['Copy the Google Drive URL of the Zoom recording','Insert using Ctrl+K','Add the line: you may watch the meeting recording through this LINK']},
+  {t:'Check link visibility',b:['Ensure the recording link is accessible to the client','Adjust sharing permissions if needed']},
+  {t:'Review the meeting summary',b:['Confirm the first page is customised for the client','Ensure the Post-Meeting Notes section links to the current file','Check formatting, clarity and layout']},
+  {t:'Save the first page as a PDF',b:['Export page 1 only as a PDF','Title it Introduction']},
+  {t:'Upload the PDF to GoHighLevel',b:['Go to the client contact record in GHL','Upload the PDF to the Documents section','Click Share to make it visible in the client portal']}
+ ],
+ check:['Post-Meeting Summary is visible in the client FYI Tribe shared documents'],
+ notes:['The master document flags this SOP as "To Update"']},
+
+{id:'s09',g:'Mortgage Broker Foundation Program',n:'Mentee Monthly Scheduling',
+ purpose:'To ensure all mentees are consistently booked for their monthly coaching sessions and promptly reminded when overdue.',
+ scope:'All team members responsible for managing mentee bookings, updating the FYI Master Sheet and sending booking reminders.',
+ inputs:['Access to Google Calendar','Access to the FYI Master Sheet','Permission to email mentees','Understanding of each mentee development stage'],
+ steps:[
+  {t:'Schedule the monthly booking reminder',b:['Create a recurring calendar reminder titled Booking Reminder for Mentees','Set it to repeat on the 2nd of every month']},
+  {t:'Check last session dates in Google Calendar',b:['Open Google Calendar','Search for each mentee name','Check the date of their last session with Ben']},
+  {t:'Update the FYI Master Sheet',b:['Open the Master Sheet, Current Mentees tab','In Column J enter the date of each mentee last Zoom session','The tab turns orange automatically if there has been no session in over a month']},
+  {t:'Confirm Development Stage mentees are booked',b:['Review all mentees in the Development Stage','Ensure each has a confirmed booking at least once per month','If not, prepare to send a reminder']},
+  {t:'Email overdue mentees',b:['Identify all mentees whose Column J has turned orange','Email each to remind them to book their next session','Use the standard reminder email template']}
+ ],
+ check:['Calendar reminder scheduled for the 2nd of each month','Last session dates checked in Google Calendar','Column J updated for all mentees','All orange tabs identified','Development Stage mentees confirmed to have a booking this month','Reminder emails sent to all overdue mentees'],
+ notes:['If a mentee has already booked but it is not yet reflected in the sheet, confirm before sending a reminder']},
+
+{id:'s10',g:'Mortgage Broker Foundation Program',n:'Mortgage Broker Discovery Questionnaire',
+ purpose:'To ensure client discovery meetings are conducted using the Mortgage Broker Discovery Questionnaire for accurate fact finding, and to enable seamless delegation to the loan processor or parabroker for data entry into the aggregator CRM.',
+ scope:'Brokers conducting client discovery and fact-find meetings, and loan processors or parabrokers responsible for receiving the completed questionnaire and entering data into the aggregator CRM.',
+ inputs:['CA Number or aggregator CRM access','Access to the FYI Business Coaching JotForm template','JotForm login credentials','Email access','Access to the client Google Drive folder'],
+ steps:[
+  {t:'Duplicate the JotForm template',b:['FYI Business Coaching will provide the template','Duplicate it into your own JotForm account','Rename appropriately, for example Company Name - Client Discovery Form']},
+  {t:'Update the Finance Strategist dropdown',b:['Go to the Build tab','Locate the Finance Strategist dropdown field','Add all brokers who conduct client discovery meetings','Ensure names are accurate and consistent with internal records']},
+  {t:'Disable the default autoresponder',b:['Go to Settings','Select Emails','Open Autoresponder','Click Disable']},
+  {t:'Add notification email recipients',b:['Go to Settings, Emails, Add Email','Add the loan processor or parabroker','Add the finance strategist conducting the meeting','Confirm email addresses are correct and save']},
+  {t:'Complete the form during the client meeting',b:['The broker completes the JotForm in real time','All required client information must be captured accurately','At the end, choose either "Complete and ready for the team, press SUBMIT" or "INCOMPLETE and not ready for team action yet, press SAVE"']},
+  {t:'Submission and delegation',b:['If Submit: the loan processor or parabroker receives the completed form by email, reviews it, and begins data entry into the aggregator CRM','If Save: the form remains incomplete and no team action is required until submitted']},
+  {t:'Save the completed form',b:['Download the completed form, PDF version if required','Save to the client Google Drive folder','Name it YYYY.MM.DD_LAST NAME, First Name - Discovery Questionnaire']}
+ ],
+ check:['JotForm template duplicated','Finance Strategist dropdown updated','Default autoresponder disabled','Notification emails added correctly','Form completed during client meeting','Form submitted if ready for processing','Loan processor or parabroker received the form','Completed form saved in the client Google Drive folder','Data entered into aggregator CRM'],
+ notes:[]},
+
+{id:'s11',g:'Mortgage Broker Foundation Program',n:'Wednesday Group Chat Protocol',
+ purpose:'To ensure all mentees, coaches and admin staff are properly notified of the weekly Wednesday Group Chat, and that all relevant Zoom links are distributed via both email and GHL Tribe.',
+ scope:'All FYI Business Coaching mentees, coaches and admin team members who participate in or help facilitate the Wednesday Group Chat.',
+ inputs:['Access to GHL Group, FYI Tribe group','Access to Gmail','Contact list of all mentees and coaches','The Zoom meeting link for the 12:30pm Wednesday Group Chat','JPEG promo graphic for weekly reminders'],
+ steps:[
+  {t:'Tuesday 11am, send the promo',b:['Send the JPEG promo to all mentees and coaches via GHL Group and email','Remind them the Wednesday Group Chat is tomorrow']},
+  {t:'Tuesday 12pm, confirm the guest',b:['Check the WGC guest is still on track to feature on Wednesday','If confirmed, send a short confirmation email 48 hours before the session','Reconfirm attendance, topic and any materials needed']},
+  {t:'Wednesday 11am, reminder email',b:['Send a reminder to all mentees, coaches and admin staff','Confirm the Group Chat is on at 12:30pm','Include the Zoom link and meeting details']},
+  {t:'Wednesday 11am, GHL Group message',b:['Post in the FYI Tribe group announcing the Wednesday Group Chat, episode number, starts 12:30pm today','Include the Zoom link']},
+  {t:'Confirm everything sent',b:['Confirm all communications were sent successfully','Confirm the Zoom link is active and working']}
+ ],
+ check:['JPEG promo sent Tuesday 11am','Guest attendance checked and confirmation email sent','Reminder email sent Wednesday 11am','Group message posted Wednesday 11am','Zoom link verified and working','All mentees and coaches notified'],
+ notes:['If the Group Chat is cancelled, this must be decided by Monday close of business','Notify all mentees and coaches of the cancellation as soon as the decision is made','Admin should update the FYI Tribe calendar and internal task tracker','Last updated 16 February 2026 by Darrel. The channel moved from WhatsApp to GHL Group at that revision']},
+
+{id:'s12',g:'Mortgage Broker Foundation Program',n:'Post-Wednesday Group Chat',
+ purpose:'To ensure a consistent and efficient process for managing, preparing and publishing Wednesday Group Chat sessions from Riverside through to final publication in FYI Tribe.',
+ scope:'All team members responsible for video management, content preparation and course updates.',
+ inputs:['Riverside recording and transcript','Edited WGC video file','Google Drive access','Ben Vimeo account access','GoHighLevel access','FYI Tribe access','ChatGPT for summary generation','Canva for thumbnail creation','FYI Business Coaching Course Outline file','Email marketing system'],
+ steps:[
+  {t:'Notify editor and save files',b:['Inform the editor the WGC session is available in Riverside and ready for editing','Editor saves files in Google Drive under 41. Course, The Mortgage Broker Foundation Program, Wednesday Group Chat','Create a folder named YYYY.MM.DD - WGC Title']},
+  {t:'Prepare the WGC summary',b:['Log in to Riverside','Open the relevant WGC session','Scroll to Recordings and download the transcript','Paste the transcript into ChatGPT','Prompt: create a 200-word meeting summary using the video transcript','Save the summary for use in Vimeo and GHL']},
+  {t:'Save transcript and thumbnail to Google Drive',b:['Save the video transcript in the Drive WGC folder','Save the video thumbnail in the same folder','Ensure consistent naming and easy location']},
+  {t:'Upload the edited video to Vimeo',b:['Log in to Ben Vimeo account','Upload to Wednesday Group Coaching','Name it EP # - Episode Title','Paste the ChatGPT summary into the description','Paste the thumbnail created in Canva','Set copyright to Attribution and No Derivatives','Click Share']},
+  {t:'Add the episode to GoHighLevel',b:['Navigate to Memberships, Courses, Products','Select 900. Wednesday Group Chat','Click Videos, Add Content, Add Lesson','Copy the Embed Code from Vimeo','Paste into the Embed URL field in GHL','Add the same description used in Vimeo','Upload the same thumbnail','Click Save and Publish']},
+  {t:'Publish the episode to FYI Tribe',b:['Publish inside FYI Tribe using the standard naming format EP # - Episode Title']},
+  {t:'Update the FYI Business Coaching Course Summary',b:['Add the new WGC to the course outline','Update the course outline file in the FYI Tribe Discussion Section']},
+  {t:'Send email blast to members',b:['Send an email blast to all Wednesday Group Chat recipients','Confirm a new course has been published in FYI Tribe','Include the updated course outline in the email']}
+ ],
+ check:['Riverside recording accessed and processed','Editor notified and files saved in the correct Drive folder','Riverside transcript downloaded and summary created','Video uploaded to Vimeo with description and thumbnail','Episode created and published in GHL','Thumbnail added consistently across platforms','Episode published in FYI Tribe','Course outline updated','Email blast sent to members'],
+ notes:['Ensure the correct transcript is downloaded from Riverside before generating summaries','If the transcript is unavailable, request notes or manually review the recording','Maintain consistent naming across Google Drive, Vimeo and GHL','Any issues or delays must be recorded and communicated to the team','Always ensure the published episode aligns with FYI branding and formatting','This version supersedes the February 2026 PDF, which was Zoom-based and had five steps. Recording moved to Riverside and two steps were added']},
+
+{id:'s13',g:'Mortgage Broker Foundation Program',n:'Mentee Offboarding Process',
+ purpose:'To provide a clear, consistent and professional process for offboarding mentees, ensuring all access is removed, records are properly archived, and internal systems remain accurate and secure.',
+ scope:'All FYI Admin Team members responsible for managing mentee offboarding.',
+ inputs:['Offboarding notice from mentee','FYI Tribe access','FYI Master Sheet','WGC distribution lists','FYI Feedback distribution list','Google Drive client folder','GoHighLevel','Meeting recordings stored in Google Drive'],
+ steps:[
+  {t:'Receive offboarding notice',b:['Confirm receipt of the offboarding request','Update the Offboarding Checklist in Trello to initiate the process','Notify Ben or Helen that offboarding has commenced']},
+  {t:'Send confirmation of termination',b:['Send the Confirmation of Mentorship Termination Notice to the mentee','Save a copy of the email in the mentee Google Drive folder','Update GHL notes to reflect the communication']},
+  {t:'Verify final payment',b:['Check the subscription or invoice status in GHL','Confirm all payments have been finalised','If payment is outstanding, follow the standard payment follow-up process before proceeding']},
+  {t:'Schedule access removal',b:['Schedule removal of all access one day after the mentorship end date, 30 days after receipt of the Offboarding Notice','Set a calendar reminder to complete the removal on the scheduled date']},
+  {t:'Remove mentee access',b:['Remove from the FYI Tribe community','Delete or archive the record from the FYI Mastersheet','Remove from the Wednesday Group Chat events reminder list','Remove from the FYI Feedback distribution list']},
+  {t:'Archive mentee files',b:['Move the Google Drive folder to the Archive directory','Ensure all documents are complete: agreements, meeting summaries, correspondence, recordings']},
+  {t:'Update the GHL record',b:['Move the opportunity stage to Graduated / Exit Interview','Add final notes summarising the offboarding outcome']}
+ ],
+ check:['Offboarding notice received and logged','Confirmation of termination sent and saved','Final payment verified','Access removal scheduled','Removed from FYI Tribe','Removed from FYI Mastersheet','Removed from WGC distribution list','Removed from FYI Feedback distribution list','Mentee folder archived in Google Drive','GHL opportunity updated to Graduated / Exit Interview'],
+ notes:['If the mentee is transitioning to another FYI program, do not remove access until the new program begins','Any unusual circumstances must be clearly documented in GHL','Ensure all removals and updates are completed on time to maintain data security and system accuracy']},
+
+{id:'s14',g:'Mortgage Broker Foundation Program',n:'MBFP Graduate Transition and Offboarding',
+ purpose:'To provide a clear and consistent process for managing MBFP graduate mentees upon completion of mentorship, including offboarding, transition into the Business Optimisation Program, and internal system updates.',
+ scope:'All FYI Admin Team members processing MBFP graduates who are either offboarding or transitioning into the Business Optimisation Program.',
+ inputs:['Connective completion notice','FYI Master Sheet','GoHighLevel','FYI Tribe access','Google Drive client folder','GHL Payment Subscription Access','BOP Participation Agreement','WGC distribution lists','FYI Feedback distribution list','Trello checklist, Offboarding Graduated'],
+ steps:[
+  {t:'Receive completion notice',b:['Confirm receipt of the completion notice from Connective','Update the graduate tracking checklist in Trello','Notify Ben that the mentee has completed the MBFP program']},
+  {t:'Mentor sign-off',b:['Ben completes the final mentor sign-off with Connective','Ensure all final mentoring notes are completed in GHL']},
+  {t:'Pause upcoming subscription payment',b:['Pause the upcoming subscription payment pending their transition decision','Confirm the pause has been successfully processed']},
+  {t:'Send graduate transition email',b:['Send the email titled "You\u2019ve Come a Long Way. What Comes Next is Yours to Decide."','Outline available next steps: offboarding, or transition into Business Coaching / BOP','Save a copy in the client Google Drive folder']},
+  {t:'Confirm graduate decision',b:['Determine whether they will fully offboard or transition into Business Coaching / BOP','Record the decision in GHL and update internal tracking']},
+  {t:'Option A: graduate offboarding',b:['If they choose to offboard, begin the standard offboarding process','Follow the Mentee Offboarding Process SOP']},
+  {t:'Option B: transition to Business Coaching',b:['Begin transition into Business Coaching / BOP','No records, folders or historical information are to be deleted','Maintain continuity of client access and records']},
+  {t:'Option B: update tagging',b:['Update client tagging in GHL and the FYI Master Sheet','Use tags MBFP-Graduate and BOP']},
+  {t:'Option B: update GHL opportunity',b:['Update the opportunity stage to reflect the Business Coaching transition','Add notes on the transition outcome and next steps']},
+  {t:'Option B: update Drive folder structure',b:['Move the client folder from MBFP to BOP / Business Coaching','Ensure all existing files and records remain intact']},
+  {t:'Option B: send BOP Participation Agreement',b:['Send the BOP Participation Agreement for signature','Save the signed agreement in the client Google Drive folder']},
+  {t:'Option B: resume subscription',b:['Resume or update the client subscription once transition onboarding is confirmed','Ensure billing updates are recorded in GHL notes']}
+ ],
+ check:['Completion notice received from Connective','Ben completed mentor sign-off','Upcoming payment paused','Graduate transition email sent','Graduate decision confirmed and documented','GHL updated with proper tagging','Subscription cancelled or resumed appropriately','GHL and Master Sheet tagging updated','GHL opportunity updated','Client folder moved from MBFP to BOP','BOP Participation Agreement sent','Subscription resumed','Records retained with no deletions'],
+ notes:['If the graduate remains within FYI Business Coaching, no records, folders or historical information are to be deleted','Only archive or remove access for graduates who fully exit the FYI ecosystem','Ensure all updates are completed promptly to maintain accurate records and billing continuity','Any unusual circumstances or payment issues must be documented in GHL']},
+
+/* ================= BOP ================= */
+{id:'s15',g:'Business Optimisation Program',n:'BOP Lead Stage to Pre-Onboarding',
+ purpose:'To ensure all Business Optimisation Program leads are managed consistently and professionally from initial capture through to agreement and deposit, enabling a smooth transition into onboarding.',
+ scope:'All BOP leads entering the FYI Business Coaching ecosystem. Covers Mentor and Admin responsibilities during the lead stage.',
+ inputs:['FYIBC Mastersheet','FYI Pre-Session Diagnostic Questionnaire','BOP Discovery Form','Participation Agreement, Optimisation Momentum Program','Profile Me','Program Scope Outline for Mercury Nexus Pro Upgrade, Optimisation Momentum Program, or both','Investment Structure','GoHighLevel','Client folder in Google Drive','Email templates: discovery, proposal, follow-up'],
+ steps:[
+  {t:'Lead captured',b:['Prospect enters via discovery questionnaire, referral, LinkedIn or webinar, or direct enquiry','Admin: add the lead to the BOP Leads Pipeline in GHL and the FYIBC Master Sheet','Record name, email, source and notes','Goal: secure a discovery call booking with Ben']},
+  {t:'Discovery scheduled',b:['Send a calendar invite for the discovery call','Send the Pre-Session Diagnostic Questionnaire','Collect preliminary business data: company website, social media platforms, LinkedIn account']},
+  {t:'Discovery completed',b:['Mentor conducts the business assessment call','Decide: suitable for Mercury Nexus Pro Upgrade, Optimisation Momentum Program, both, or not suitable','Admin: update pipeline stage to Discovery Completed','Tag the lead to the preferred BOP program','Move unsuitable candidates to Disengaged / Cancelled','Record call notes and outcomes in GHL','Create a client folder: 3. Coaching, 43. Business Optimisation Program, Client Folder','Name it Company Name - LASTNAME, Firstname','Create a Client Correspondence subfolder and save all emails as PDF']},
+  {t:'Proposal or program outline sent',b:['Send the Discovery Form, Participation Agreement, Profile Me and Program Scope','Track progress: questions, signature, deposit','Update GHL notes and move to Proposal / Program Outline Sent']},
+  {t:'Agreement signed or deposit paid',b:['Triggers: Discovery Form completed, signed Participation Agreement received, deposit or initial invoice paid','Save the signed agreement and Discovery Form in the client Drive folder','Update GHL to Agreement Signed','Notify Ben the client is ready for onboarding','Prepare onboarding and diagnostic steps','Move the client to the Business Diagnostic Phase']}
+ ],
+ check:['Lead added to GHL with complete details','Discovery call scheduled and forms sent','Discovery outcome recorded in GHL','Proposal package sent','Agreement signed and saved in Google Drive','Deposit confirmed','Pipeline updated at each stage','Ben notified for onboarding','Mentor: discovery call completed','Mentor: suitability decision made','Mentor: program direction confirmed'],
+ notes:['If a lead becomes unresponsive, follow the standard FYI follow-up sequence','If the lead is better suited to another program, document the recommendation in GHL','All unusual circumstances must be recorded in GHL for team visibility','Any additional client requests or questions must be logged and tracked in GHL']},
+
+{id:'s16',g:'Business Optimisation Program',n:'Mercury Nexus Pro Upgrade, Onboarding and Setup',
+ purpose:'To ensure all Mercury Nexus Pro Upgrade clients are onboarded consistently and professionally, with all system access, branding assets and CRM customisation prepared prior to the Activation and Handover session.',
+ scope:'FYI Admin responsible for onboarding and preparing the client Mercury CRM for customisation and activation.',
+ inputs:['FYI Mercury Pro Upgrade, Your Next Steps email template','Connective Partnership Manager details','Company logo','CRM Customisation Tracker template','Canva access','Client folder in Google Drive','GoHighLevel','Mercury Admin Access instructions','Ben CA number and password','OTP from Ben','Connective Mercury access'],
+ steps:[
+  {t:'Send the "Your Next Steps" email',b:['Confirm the client payment has been successfully received first','Include instructions to grant Mercury Admin Access to Ben','Request confirmation of their Connective Partnership Manager','Request their company logo','Save a PDF copy in the client Drive folder under Client Correspondence']},
+  {t:'Save Mercury admin access details',b:['Once admin access is granted, save the password and CA number in the FYI Master Sheet, Client Section']},
+  {t:'Email the Connective Partnership Manager',b:['Request duplication of Ben\u2019s CRM into the client Mercury account','Request confirmation once duplication is complete','Save the email in the client Drive folder']},
+  {t:'Inform Ben and request the OTP',b:['Inform Ben that CRM customisation will now commence','Request the OTP from Ben, which Mercury requires for secure access','Enter the OTP to complete authentication','Confirm successful login and access']},
+  {t:'Customise the CRM Customisation Tracker',b:['Duplicate the CRM Customisation Tracker template','Save under 3. Coaching, 43. Mercury Nexus Pro Upgrade, CRM Tracker, named YYYY.MM.DD_Company Name_CRM','Update the tracker with the client brand colours and logo','Add the client name and program details']},
+  {t:'Prepare infographics',b:['Create three sample infographics in Canva using the client logo and brand colours','Send the samples using the Information Graphics email template','Once the client selects their preferred design, complete the remaining 10 infographic stages']},
+  {t:'Begin customising the client CRM',b:['Once Connective confirms duplication, begin customising per the CRM Customisation Tracker','Update the tracker as each item is completed','Save supporting files or templates in the client folder']},
+  {t:'Final customisation requirements',b:['Email the client requesting their booking link to embed into CRM email templates','Request confirmation of any final details required','Attach the CRM Customisation Tracker for their visibility','Update GHL notes once received']},
+  {t:'CRM customisation complete',b:['Notify Ben the CRM is fully customised and ready for review','Update the CRM Tracker to Completed','Move the client to Activation and Handover Preparation in GHL']},
+  {t:'Schedule the Activation and Handover meeting',b:['Wait for Ben\u2019s approval before scheduling','Book a 30-minute session titled Mercury Pro Upgrade - Activation and Handover','Send the calendar invite to the client','Save the meeting details in the client Drive folder','This call also highlights the possibility of moving forward with the Optimisation Momentum Program']},
+  {t:'After the Activation and Handover session',b:['Email the client the Loom Presentation sample','Email the JotForm template with the SOP on how to integrate it into their business']}
+ ],
+ check:['Your Next Steps email sent','Mercury Admin Access saved in the FYI Master Sheet','Connective Partnership Manager contacted','Ben informed and OTP collected','CRM Tracker duplicated and customised','Infographics created and approved','CRM customisation completed','Booking link received','Activation and Handover meeting scheduled','Loom Presentation sample sent','JotForm template with SOP sent'],
+ notes:['Customisation cannot begin until Mercury admin access is granted and the OTP is received from Ben','Connective may take several days to duplicate the CRM, follow up as needed','Infographics and branding cannot proceed without the client logo or brand colours','CRM email templates cannot be finalised until the client provides their booking link','Save all correspondence in the client Drive folder for transparency','Update GHL at every major step for team visibility','Activation and Handover must not be scheduled until Ben confirms customisation is complete','If delays occur, follow up every 48 hours']},
+
+{id:'s17',g:'Business Optimisation Program',n:'Optimisation Momentum Program, Onboarding and Setup',
+ purpose:'To ensure all Optimisation Momentum Program clients are managed consistently and professionally from program acceptance through to ongoing strategic advisory delivery.',
+ scope:'All clients entering the FYI Optimisation Momentum Program. Covers Mentor and Admin responsibilities during onboarding and ongoing delivery.',
+ inputs:['FYIBC Mastersheet','Optimisation Momentum Program Participation Agreement','Discovery Questionnaire','DISC Profiles','Program Scope Outline','Investment Structure','GoHighLevel','Client folder in Google Drive','Email templates: onboarding, scheduling, follow-up','JotForm template and SOP','Mercury Admin Access to Ben'],
+ steps:[
+  {t:'Program accepted',b:['Triggers: client confirms they wish to proceed, registers via the OMP link, payment confirmed','Add or update the client in the OMP pipeline in GHL','Save the confirmation email in Drive, Client Correspondence','Update the FYIBC Master Sheet with program details']},
+  {t:'Onboarding email sent',b:['Welcome to the Optimisation Momentum Program','Program objectives and expectations','Overview of the advisory structure, fortnightly strategic sessions','Request availability for the first session','Confirmation of any outstanding documents','Save a PDF copy in Client Correspondence and update GHL notes']},
+  {t:'First session scheduled',b:['Confirm client availability','Schedule the first Optimisation Momentum session on Zoom','Send the calendar invite with the Zoom link']},
+  {t:'Send Mercury admin access and JotForm template',b:['Email instructions to grant Mercury Admin Access to Ben','Email the JotForm template with the SOP on how to integrate it into their business']},
+  {t:'Create meeting summary',b:['Create the summary immediately after each session','Name it Optimisation Momentum Program - LAST NAME, First Name','Use the BOP Post-Meeting SOP as the standard for structure, formatting and delivery','Save the summary in the client Google Drive','Email the summary to the client after every session to maintain clarity, accountability and momentum']},
+  {t:'Schedule the bi-monthly meetings',b:['Coordinate with Ben to confirm availability for the next several months','Schedule the bi-monthly Optimisation Momentum sessions in advance','Send calendar invites via GHL and inform the client by email']}
+ ],
+ check:['Mercury Admin Access granted','JotForm template sent','Client added to GHL with complete details','Onboarding email sent','First session scheduled','All documents saved in Google Drive','Pipeline updated at each stage','Session notes saved and tracked','Bi-monthly meetings scheduled'],
+ notes:['If a client becomes unresponsive, follow the standard FYI follow-up sequence','Any delays in scheduling must be documented in GHL','All unusual circumstances must be recorded for team visibility','Any additional client requests or questions must be logged in GHL','If the client expresses interest in additional support such as hiring, systems or CRM, document it for potential upsell or integration with other FYI programs']},
+
+{id:'s19',g:'Mortgage Broker Foundation Program',n:'Coach Leave and Absence',
+ purpose:'To ensure that when a coach takes leave, every mentee is told before it happens, sessions are '+
+   'covered or rescheduled, and the response times promised in the Participation Agreement are honoured '+
+   'rather than quietly stretched.',
+ scope:'All FYI coaches taking planned leave. Applies to Ben and to any contractor coach, including Helen. '+
+   'Unplanned absence follows the same steps compressed into whatever notice exists.',
+ inputs:['The coach\u2019s leave dates, first and last day away',
+   'The Coach Leave panel on Future Events in The Bridge',
+   'The mentee list for that coach, from the Clients tab',
+   'Response times as written in the Participation Agreement',
+   'Access to the coach\u2019s calendar and Delenta availability'],
+ steps:[
+  {t:'Record it the day you are told',b:[
+    'Future Events, Coach Leave, Add coach leave',
+    'Enter coach, first day away, last day away',
+    'Do this however far out it is. The countdown and the reminders work off this record and nothing else',
+    'A coach giving three months\u2019 notice is the easiest case to get wrong, because there is no urgency to act']},
+  {t:'30 days out, agree the cover',b:[
+    'Decide who picks up sessions, or whether they are deferred',
+    'Enter that person in Covered by, because it goes into every mentee email',
+    'If nothing is being covered, say so explicitly rather than leaving it blank',
+    'Check the leave against the Wednesday Group Chat calendar and the season rule',
+    'Check whether any mentee is inside their First 30 Days, since those weeks are hardest to move']},
+  {t:'14 days out, tell the mentees',b:[
+    'Open the leave record. Every mentee coached by that person is listed with an email ready',
+    'Copy each one, check it reads right for that person, send it',
+    'The email carries the dates, who is covering, the normal response time, the response time while away, and what to do if it is urgent',
+    'Do not send one message to everyone. Each mentee gets their own, addressed to them']},
+  {t:'14 days out, move the sessions',b:[
+    'Reschedule anything booked inside the window',
+    'Close the coach\u2019s Delenta availability for those dates so nothing new lands in them',
+    'Update the calendar so the leave is visible to Darrel']},
+  {t:'7 days out, send the reminder',b:[
+    'Second, shorter email from the same panel',
+    'Confirms the dates and repeats the response times',
+    'This is the one that gets read. The first one is filed and forgotten']},
+  {t:'2 days out, hand over',b:[
+    'Anything live goes to whoever is covering: deals mid-flight, mentees on a PIP, anyone flagged Red',
+    'Post-meeting summaries up to date so the cover has context',
+    'Out of office on the coach\u2019s email, naming who to contact']},
+  {t:'On return',b:[
+    'Coach reviews what came in while away before the first session back',
+    'Anything the cover handled is written into the client file, not left in someone\u2019s head',
+    'First session back opens with what has banked up']}
+ ],
+ check:['Leave recorded in The Bridge the day it was notified','Cover agreed and named',
+   'Wednesday Group Chat checked against the dates','First 30 Days mentees identified',
+   '14 day email sent to every affected mentee','Sessions inside the window rescheduled',
+   'Delenta availability closed for the dates','7 day reminder sent',
+   'Handover completed for anything live','Out of office set',
+   'Client files updated on return'],
+ notes:['The commitment that matters is the response time. A mentee who knows their coach is away and '+
+   'knows it will be two days rather than one is fine. A mentee who hears nothing and waits is not.',
+  'For contractor coaches, leave does not change the RCTI. Their mentees are still on the book and '+
+   'still paying, so the coverage has to be real.',
+  'If leave is unplanned, run the same steps in whatever order the notice allows. The 14 and 7 day '+
+   'emails become one email sent immediately.']},
+
+{id:'s18',g:'Business Optimisation Program',n:'Post-Meeting Process for BOP Clients',
+ purpose:'To outline the standardised process for preparing, saving and sending post-meeting documentation for Business Optimisation Program clients, ensuring accurate record-keeping, consistent communication and timely delivery.',
+ scope:'Authorised FYI Admin Team members handling post-meeting documentation for BOP clients after each coaching session with Ben.',
+ inputs:['Zoom recording, video file only','Zoom auto-generated summary','ChatGPT','Google Drive client folder','FYI Post-Meeting Template'],
+ steps:[
+  {t:'Download the Zoom recording',b:['Download the video file only','Save in the client Google Drive under Zoom Meetings','Name it YYYY.MM.DD - LAST NAME, First Name']},
+  {t:'Copy the Zoom summary notes',b:['Locate the auto-generated Zoom Summary','Copy the full text for use in ChatGPT']},
+  {t:'Generate the meeting record in ChatGPT',b:['Load the saved post-meeting file format used in MBFP','Prompt: please save this file for creating future post-meetings','Paste the Zoom Summary notes','Prompt: create a meeting record below using the format above, use Australian English','Review for accuracy, clarity and tone']},
+  {t:'Create the Google Doc',b:['Create a new Google Doc in the client folder','Title it Optimisation Momentum Program Session - LAST NAME, First Name','Paste the meeting summary in','Apply standard FYI formatting']},
+  {t:'Send the post-meeting summary to the client',b:['Email the client the completed summary','Include today\u2019s session post-meeting','Ensure the tone is warm, professional and aligned with FYI standards']}
+ ],
+ check:['Zoom recording saved in Google Drive','Zoom summary copied','Meeting record generated in ChatGPT','Google Doc created and formatted','Post-meeting summary emailed to client','All files saved in the correct client folders'],
+ notes:['Each BOP client operates a different type of business, so their post-meeting notes may vary depending on their specific needs']}
+];
+
+const TRAIN_MODULES=[
+ {id:'m1', n:'01', t:'The FYI Method',
+  why:'Before anything else, a new coach needs to know what we actually sell: a structured programme, not ad hoc advice. The First 30 Days is the spine of it.',
+  res:[
+   {t:'The First 30 Days, full programme',k:'tab',tab:'clients',theme:'theme-clients',
+    d:'Rendered in full inside any client file. All five stages, every prompt, the timed agendas and the scripts.'},
+   {t:'The First 30 Days source document',k:'drive',
+    u:'https://drive.google.com/drive/folders/1fLyvjd0-yBtaahmMRCItjEa1XsUcTQef',
+    d:'The original PDF in the Drive folder.'},
+   {t:'Navigating the Finance Maze',k:'read',d:'Ben\u2019s book. Read it before coaching anyone.'}
+  ],
+  check:['Read the First 30 Days end to end',
+    'Sit in on one live onboarding meeting as an observer',
+    'Run one onboarding meeting with Ben observing',
+    'Can explain the eight core areas without notes',
+    'Can explain why implementation beats information']},
+
+ {id:'m2', n:'02', t:'The 20-Stage Workflow',
+  why:'Every mentee runs deals through the same twenty stages. It is the backbone the whole programme measures against, and a coach who does not know it cannot read a pipeline.',
+  res:[
+   {t:'The 20-stage workflow reference',k:'tab',tab:'clients',theme:'theme-clients',
+    d:'Open any client file, then The First 30 Days, then the workflow button.'},
+   {t:'Mercury Nexus',k:'ext',u:'https://www.connective.com.au/',
+    d:'The three swim lanes live here. Blue stages are the broker, green are the team.'}
+  ],
+  check:['Name all twenty stages in order',
+    'Explain which stages the broker owns and which the team owns',
+    'Walk a live Kanban with a mentee and identify the weak lane',
+    'Install the twenty statuses in a mentee Mercury']},
+
+ {id:'m3', n:'03', t:'Standard Operating Procedures',
+  why:'The SOPs are how the business runs when Ben is not in the room. A coach follows them rather than inventing their own way.',
+  res:[
+   {t:'All procedures, rendered',k:'tab',tab:'sop',theme:'theme-sop',
+    d:'Six procedures with steps, checklists and a change-request form.'},
+   {t:'FYIBC SOP master document',k:'drive',
+    u:'https://docs.google.com/document/d/13rzl3dQNuAbCp_nIbYg51dYs1Xarfb5zUhNugM2Kmrk/edit',
+    d:'Darrel\u2019s working document.'},
+   {t:'SOP folder in Drive',k:'drive',
+    u:'https://drive.google.com/drive/folders/1Vwzn9u8iI6l_ygwhpu_8ObWHyqgiKdYr',
+    d:'Including archived versions.'}
+  ],
+  check:['Read all six procedures',
+    'Complete one Post-Meeting record start to finish',
+    'Run the Wednesday Group Chat protocol once',
+    'Know what to do when a payment fails',
+    'Raise one change request where a step was unclear']},
+
+ {id:'m4', n:'04', t:'The Tools',
+  why:'The tools are the visible difference between us and the other twenty-two and a half thousand brokers. A coach who cannot demonstrate them cannot sell the programme.',
+  res:[
+   {t:'BID Snippet Builder',k:'tool',d:'Compliant objectives, requirements and disclosure notes. Reported 100% approval rate.'},
+   {t:'Tax Return Navigator',k:'tool',d:'Company tax returns, trusts and add-backs.'},
+   {t:'Commercial Loan Triage Tool',k:'tool',d:'Structuring commercial deals and lender presentations.'},
+   {t:'Broker Scale Matrix',k:'tool',d:'VA and employee scaling decisions.'},
+   {t:'Purchase Range Reckoner',k:'tool',d:'Branded per broker. Handed over in Week 2.'},
+   {t:'Partner Value Pack',k:'tool',d:'Referral partner pack. Handed over in Week 3.'}
+  ],
+  check:['Demonstrate every tool without preparation',
+    'Brand a Purchase Range Reckoner for a mentee',
+    'Explain which tool solves which mentee problem',
+    'Know which tools are already covered by an episode']},
+
+ {id:'m5', n:'05', t:'The Systems',
+  why:'Five systems carry the business. A coach needs enough of each to work without asking, and to know which one owns which piece of data.',
+  res:[
+   {t:'The Bridge, this hub',k:'tab',tab:'fyi',theme:'theme-fyi',
+    d:'Clients, prospects, statistics, guests, events, SOPs, calendar.'},
+   {t:'Airtable, FYI Business Coaching base',k:'ext',u:'https://airtable.com/',
+    d:'The source of truth for clients, prospects and Argo. Coaches, Clients, Revenue Events, Prospects, Relationships, Argo Clients.'},
+   {t:'Mercury Nexus',k:'ext',u:'https://www.connective.com.au/',d:'Mentee CRM and analytics.'},
+   {t:'FYI Tribe, GoHighLevel',k:'ext',u:'https://app.gohighlevel.com/',
+    d:'Client portal, course library, the Wednesday Group Chat back catalogue under 900.'},
+   {t:'Fireflies',k:'ext',u:'https://app.fireflies.ai/',d:'Meeting transcripts and summaries.'}
+  ],
+  check:['Log in to all five',
+    'Find a client record in Airtable and explain every field',
+    'Upload a post-meeting record to GoHighLevel',
+    'Pull a Fireflies transcript and write a session note from it',
+    'Know which system owns which data, and never edit in the wrong one']},
+
+ {id:'m6', n:'06', t:'The Wednesday Group Chat',
+  why:'The weekly group session is the most visible thing we do. A coach will be asked to host or find guests for it.',
+  res:[
+   {t:'Guest schedule and gap radar',k:'tab',tab:'guests',theme:'theme-guests',
+    d:'Who is booked, where the gaps are, and twelve suggested topics.'},
+   {t:'Wednesday Group Chat Protocol',k:'drive',
+    u:'https://docs.google.com/document/d/1AHYzhDhEUF-hIv9ZcYeW06vw3_W0A5JkSN5irecrr6Y/edit',
+    d:'Tuesday promo, guest reconfirmation, Wednesday reminders.'},
+   {t:'Video Library Audit',k:'drive',
+    u:'https://docs.google.com/spreadsheets/d/1PIu33NxgXyiYUJTgZqgf2R-iFzaUikKD7M63PW5NceU/edit',
+    d:'Every episode indexed by number, date, theme and quality score.'}
+  ],
+  check:['Attend four sessions before hosting one',
+    'Run the pre-session protocol solo',
+    'Host one session with Ben present',
+    'Know how to find whether a topic has already been covered']},
+
+ {id:'m7', n:'07', t:'Coaching the Person',
+  why:'The method is fixed, the delivery is not. DISC tells a coach how to teach the person in front of them.',
+  res:[
+   {t:'Client files with DISC profiles',k:'tab',tab:'clients',theme:'theme-clients',
+    d:'Every client carries a DISC profile, engagement rating and lifecycle stage.'},
+   {t:'Profile Me DISC assessment',k:'ext',u:'https://www.profileme.com.au/',d:'Sent to every mentee at onboarding.'}
+  ],
+  check:['Complete your own DISC profile',
+    'Explain how you would coach a Lion differently from an Owl',
+    'Read three client files and predict their weak swim lane',
+    'Understand the coaching versus mentoring distinction']},
+
+ {id:'m8', n:'08', t:'The Commercials',
+  why:'A coach will be asked what things cost and what else we do. Getting this wrong costs revenue or credibility.',
+  res:[
+   {t:'Product set and cross-sell',k:'tab',tab:'clients',theme:'theme-clients',
+    d:'All eight products with pricing, on every client file.'},
+   {t:'Business statistics',k:'tab',tab:'stats',theme:'theme-stats',
+    d:'Revenue, billing calendar, client movement, cross-sell white space.'}
+  ],
+  check:['Quote every programme and price from memory',
+    'Explain the Mercury Pro upgrade and what it includes',
+    'Explain Argo Virtual and what a VA costs',
+    'Know when to hand a cross-sell to Ben rather than pitch it yourself',
+    'Never discount without Ben\u2019s approval']}
+];
+
+/* Netlify Identity puts the invite/confirmation token in the URL fragment
+   when someone clicks the link in their invite email, not anywhere the
+   old manual-paste flow could see without being told. This reads it
+   straight off the address bar, drops it into the accept screen, and
+   scrubs it from the visible URL and history so it doesn't linger there
+   after the password is set. */
+(function initFromInviteLink(){
+  const hash = location.hash || '';
+  const m = hash.match(/invite_token=([^&]+)/) || hash.match(/confirmation_token=([^&]+)/);
+  if(m){
+    showAccept();
+    document.getElementById('acToken').value = decodeURIComponent(m[1]);
+    history.replaceState(null, '', location.pathname);
+  }
+})();
+
+boot();
+</script>
+</body>
+</html>
