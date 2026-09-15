@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>FYI Coaches' Corner v1.09.14</title>
+<title>FYI Coaches' Corner v1.09.15</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -194,7 +194,7 @@ main{padding:22px;max-width:1140px;margin:0 auto}
 
 <div id="app">
   <header class="top">
-    <div class="brand">FYI Coaches' Corner<span class="verBadge" id="verBadge" onclick="toggleChangelog()" title="Click for what's new">v1.09.14</span><small id="coachBadge"></small></div>
+    <div class="brand">FYI Coaches' Corner<span class="verBadge" id="verBadge" onclick="toggleChangelog()" title="Click for what's new">v1.09.15</span><small id="coachBadge"></small></div>
     <div class="who">
       <span id="whoEmail"></span>
       <button onclick="doLogout()">Sign out</button>
@@ -333,8 +333,13 @@ function copySupervisionEmail(clientId){
   } else { fallback(); }
 }
 
-const APP_VERSION = '1.09.14';
+const APP_VERSION = '1.09.15';
 const RELEASES = [
+  {v:'1.09.15', d:'15/09/2026', t:'Client sort added, matching The Bridge', items:[
+    'Sort dropdown added beside the client filters: Newest first, Longest standing, Quietest first, Next session, Highest fee, Name. Same six options and the same tie-breaking rules as The Bridge.',
+    'Quietest first and Next session both use real data already syncing in this app, calendar sessions and Fireflies, not a new concept invented for sorting.',
+    'Client count line now also shows how many have no start date, same as The Bridge.'
+  ]},
   {v:'1.09.14', d:'07/09/2026', t:'Admin role for Darrel and Samantha', items:[
     'New role added, separate from coach and from Ben. Admin staff, set by email in a new ADMIN_EMAILS environment variable, get the same full read and write access Ben has: every coach\u2019s clients, prospects and relationships, no ownership check on saves, per Ben\u2019s explicit instruction that administration staff need access to everything.',
     'Every function that previously required a COACH_MAP entry to let anyone through now also accepts an ADMIN_EMAILS match, so admin staff are never blocked for having no coach identity of their own.',
@@ -571,15 +576,81 @@ function immersionCountdown(c){
   return daysSince-84;
 }
 
+/* How the client list is ordered, ported from The Bridge's six sort
+   modes. "Quietest first" and "Next session" both lean on real data
+   already synced in this app, calendar sessions and Fireflies, not a
+   separate concept invented for sorting alone. */
+const CLIENT_SORTS = [
+  {k:'newest',  n:'Newest first',     d:'Most recent start date'},
+  {k:'oldest',  n:'Longest standing', d:'Earliest start date'},
+  {k:'quiet',   n:'Quietest first',   d:'Longest since contact'},
+  {k:'session', n:'Next session',     d:'Soonest booked, unbooked at the top'},
+  {k:'fee',     n:'Highest fee',      d:'Monthly fee, largest first'},
+  {k:'name',    n:'Name',             d:'Alphabetical'}
+];
+function lastContactFor(c){
+  const first=c.n.split(' ')[0];
+  const calLast=(STATE.lastSessions||{})[first];
+  const ffEntries=(STATE.fireflies||{})[c.n];
+  const ffLast = ffEntries && ffEntries.length ? ffEntries[0].date : null;
+  const dates=[calLast, ffLast].filter(Boolean);
+  return dates.length ? dates.sort().slice(-1)[0] : null;
+}
+function sortClients(list){
+  const byName=(a,b)=>String(a.n||'').localeCompare(String(b.n||''));
+  const started=c=>c.startDate||'';
+  switch(STATE.clientSort){
+    case 'oldest':
+      return list.sort((a,b)=>{
+        const x=started(a), y=started(b);
+        if(!x&&!y) return byName(a,b);
+        if(!x) return 1; if(!y) return -1;
+        return x.localeCompare(y) || byName(a,b);
+      });
+    case 'quiet':
+      return list.sort((a,b)=>{
+        const x=lastContactFor(a), y=lastContactFor(b);
+        if(!x&&!y) return byName(a,b);
+        if(!x) return -1; if(!y) return 1; /* never contacted is the quietest of all */
+        return x.localeCompare(y) || byName(a,b);
+      });
+    case 'session':
+      return list.sort((a,b)=>{
+        const x=(STATE.sessions||{})[a.n.split(' ')[0]], y=(STATE.sessions||{})[b.n.split(' ')[0]];
+        if(!x&&!y) return byName(a,b);
+        if(!x) return -1; if(!y) return 1;
+        return String(x).localeCompare(String(y)) || byName(a,b);
+      });
+    case 'fee':
+      return list.sort((a,b)=>(Number(b.f)||0)-(Number(a.f)||0)||byName(a,b));
+    case 'name':
+      return list.sort(byName);
+    case 'newest':
+    default:
+      return list.sort((a,b)=>{
+        const x=started(a), y=started(b);
+        if(!x&&!y) return byName(a,b);
+        if(!x) return 1; if(!y) return -1;
+        return y.localeCompare(x) || byName(a,b);
+      });
+  }
+}
+
 function renderClients(){
   const m=document.getElementById('main');
   if(STATE.clientOpen) return renderClientDetail();
   if(!STATE.clientFilter) STATE.clientFilter='active';
+  if(!STATE.clientSort) STATE.clientSort='newest';
   const q=(document.getElementById('cQ')?document.getElementById('cQ').value:'').toLowerCase();
 
   const bar=document.createElement('div'); bar.className='toolbar';
   bar.innerHTML='<input type="search" id="cQ" placeholder="Search clients" oninput="render()" value="'+(q?q:'')+'">'+
-    '<button class="btn" onclick="openNewClient()">New client</button>';
+    '<div style="display:flex;gap:8px;align-items:center">'+
+      '<select id="cSort" title="'+(CLIENT_SORTS.find(s=>s.k===STATE.clientSort)||{}).d+'" onchange="STATE.clientSort=this.value; render()">'+
+        CLIENT_SORTS.map(s=>'<option value="'+s.k+'" '+(STATE.clientSort===s.k?'selected':'')+'>Sort: '+s.n+'</option>').join('')+
+      '</select>'+
+      '<button class="btn" onclick="openNewClient()">New client</button>'+
+    '</div>';
   m.appendChild(bar);
 
   /* Filter chips. Coach chips only appear for Ben, since a coach's own
@@ -613,9 +684,11 @@ function renderClients(){
     return true;
   });
   list = list.filter(c=>!q || c.n.toLowerCase().includes(q));
+  list = sortClients(list);
 
+  const noStartCount = list.filter(c=>!c.startDate).length;
   const countLine=document.createElement('div'); countLine.style.cssText='font-size:.78rem;color:var(--muted,#69707F);margin:2px 0 12px';
-  countLine.textContent=list.length+' client'+(list.length===1?'':'s');
+  countLine.textContent=list.length+' client'+(list.length===1?'':'s')+(noStartCount?' \u00b7 '+noStartCount+' without a start date':'');
   m.appendChild(countLine);
 
   if(!list.length){ m.innerHTML+='<div class="empty">No clients found.</div>'; return; }
