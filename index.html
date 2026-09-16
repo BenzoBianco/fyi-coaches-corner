@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>FYI Coaches' Corner v1.09.24</title>
+<title>FYI Coaches' Corner v1.09.25</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -247,7 +247,7 @@ main{padding:22px;max-width:1140px;margin:0 auto}
 
 <div id="app">
   <header class="top">
-    <div class="brand">FYI Coaches' Corner<span class="verBadge" id="verBadge" onclick="toggleChangelog()" title="Click for what's new">v1.09.24</span><small id="coachBadge"></small></div>
+    <div class="brand">FYI Coaches' Corner<span class="verBadge" id="verBadge" onclick="toggleChangelog()" title="Click for what's new">v1.09.25</span><small id="coachBadge"></small></div>
     <div class="who">
       <span id="whoEmail"></span>
       <button onclick="doLogout()">Sign out</button>
@@ -386,8 +386,13 @@ function copySupervisionEmail(clientId){
   } else { fallback(); }
 }
 
-const APP_VERSION = '1.09.24';
+const APP_VERSION = '1.09.25';
 const RELEASES = [
+  {v:'1.09.25', d:'16/09/2026', t:'Dropped Referred By, expanded contact log types', items:[
+    'Checked the real data before touching anything: across every populated client, Referral Source already holds the actual referrer\u2019s name. Referred By Client was blank everywhere except one record, where it just repeated Referral Source. Removed from the form as dead weight, the Airtable field itself is untouched.',
+    'Fixed a bug this would have caused: Save to Airtable still referenced the removed field and would have thrown an error on every save. Caught before it shipped.',
+    'Contact log types expanded to match what\u2019s actually used: Phone call, SMS, WhatsApp, In person and Email.'
+  ]},
   {v:'1.09.24', d:'16/09/2026', t:'Compact client layout, contact log, editable email', items:[
     'Client detail rebuilt into skinny two-column panels, matching The Bridge\u2019s own density, replacing the padded single-column fieldGrid. Personal details, Engagement, and Other details as separate panels rather than one long list.',
     'New Log a Contact panel: date, Email or Meeting, an optional note. WhatsApp deliberately left out, per Ben\u2019s call, meetings and emails are what get tracked here. Next session, Last Zoom contact and Graduates now shown as plain read-only lines rather than editable fields, since they\u2019re computed, not typed in.',
@@ -889,7 +894,6 @@ function renderClientDetail(){
         '<div class="cd2-row"><label>State</label><input type="text" id="fS" value="'+(c.s||'').replace(/"/g,'&quot;')+'"></div>'+
         '<div class="cd2-row"><label>CA number</label><input type="text" id="fCa" value="'+(c.ca||'').replace(/"/g,'&quot;')+'"></div>'+
         '<div class="cd2-row"><label>Referral source</label><input type="text" id="fRefSource" value="'+(c.refSource||'').replace(/"/g,'&quot;')+'"></div>'+
-        '<div class="cd2-row"><label>Referred by</label><input type="text" id="fReferredBy" value="'+(c.referredBy||'').replace(/"/g,'&quot;')+'"></div>'+
         '<div class="cd2-row"><label>DISC</label><input type="text" id="fDisc" value="'+(c.d||'').replace(/"/g,'&quot;')+'"></div>'+
         '<div class="cd2-row"><label>Start date</label><input type="date" id="fStartDate" value="'+(c.startDate||'')+'"></div>'+
         '<div class="cd2-row"><label>Exit date</label><input type="date" id="fExitDate" value="'+(c.exitDate||'')+'"></div>'+
@@ -898,9 +902,9 @@ function renderClientDetail(){
       '</div>'+
 
       '<div class="cd2-panel"><h4>Log a contact</h4>'+
-        '<p style="font-size:.7rem;color:var(--muted,#69707F);margin:-6px 0 10px">WhatsApp doesn\u2019t need logging here. Just emails and meetings that don\u2019t already show up above.</p>'+
+        '<p style="font-size:.7rem;color:var(--muted,#69707F);margin:-6px 0 10px">Phone, SMS, WhatsApp and in-person catch-ups never reach Fireflies or the calendar. Log them here and they count toward days since contact.</p>'+
         '<div class="cd2-row"><label>Date</label><input type="date" id="logDate" value="'+new Date().toISOString().slice(0,10)+'"></div>'+
-        '<div class="cd2-row"><label>Type</label><select id="logType"><option>Email</option><option>Meeting</option></select></div>'+
+        '<div class="cd2-row"><label>Type</label><select id="logType"><option>Phone call</option><option>SMS</option><option>WhatsApp</option><option>Email</option><option>In person</option></select></div>'+
         '<div class="cd2-row"><label>What was covered, optional</label><input type="text" id="logNote"></div>'+
         '<button class="btn secondary" onclick="addClientContactLog(\''+c.airtableId+'\')">Log it</button>'+
         '<div class="cd2-log-hist">'+
@@ -1310,7 +1314,6 @@ async function pushClient(id){
     s: document.getElementById('fS').value,
     ca: document.getElementById('fCa').value,
     refSource: document.getElementById('fRefSource').value,
-    referredBy: document.getElementById('fReferredBy').value,
     disc: document.getElementById('fDisc').value,
     phone: document.getElementById('fPhone').value,
     email: document.getElementById('fEmail').value,
