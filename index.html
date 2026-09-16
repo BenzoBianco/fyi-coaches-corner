@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>FYI Coaches' Corner v1.09.19</title>
+<title>FYI Coaches' Corner v1.09.23</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -226,7 +226,7 @@ main{padding:22px;max-width:1140px;margin:0 auto}
 
 <div id="app">
   <header class="top">
-    <div class="brand">FYI Coaches' Corner<span class="verBadge" id="verBadge" onclick="toggleChangelog()" title="Click for what's new">v1.09.19</span><small id="coachBadge"></small></div>
+    <div class="brand">FYI Coaches' Corner<span class="verBadge" id="verBadge" onclick="toggleChangelog()" title="Click for what's new">v1.09.23</span><small id="coachBadge"></small></div>
     <div class="who">
       <span id="whoEmail"></span>
       <button onclick="doLogout()">Sign out</button>
@@ -365,8 +365,25 @@ function copySupervisionEmail(clientId){
   } else { fallback(); }
 }
 
-const APP_VERSION = '1.09.19';
+const APP_VERSION = '1.09.23';
 const RELEASES = [
+  {v:'1.09.23', d:'16/09/2026', t:'Switched to Airtable\u2019s own graduation and contact formulas', items:[
+    'Fixed a real bug: the First 30 Days rebuild changed p30StateFor\u2019s shape but the client card\u2019s progress count was never updated, so "30 Days X/36" was silently broken on every card since v1.09.19.',
+    'Graduation now reads Airtable\u2019s own Days To Graduation and Graduation Date formulas directly, this app\u2019s own client-side recalculation is retired, so the two numbers can\u2019t drift apart.',
+    'Last contact switched from this app\u2019s calendar-matching guess to Airtable\u2019s own Last Zoom Session Date and Days Since Last Zoom Contact fields, more authoritative, maintained centrally rather than guessed per request.',
+    'Risk Flag now shown as a coloured tag on the card, the colour read directly off the field\u2019s own text, Red, Amber or Green, not a separately invented scheme.'
+  ]},
+  {v:'1.09.22', d:'16/09/2026', t:'Best practice tips, sourced from this week\u2019s real calls', items:[
+    'New panel on every client: twelve best-practice tips pulled from Ben\u2019s actual Fireflies transcripts, 14 to 16 September, each one that came up across more than one mentee, not a single conversation. Every tip shows who it was said to and when.',
+    'Tick one off once it\u2019s actually been passed to this client, the date stamps automatically. Meant to grow over time, not a fixed list, add a new tip whenever a piece of advice repeats enough to count as standing practice.',
+    'New Airtable field, Best Practice Tips Passed, same JSON-per-client pattern as Supervision and First 30 Days.'
+  ]},
+  {v:'1.09.21', d:'16/09/2026', t:'Fixed a stray Bridge reference in the mentee-facing script', items:[
+    'Item 6b, How long we are together: "Both dates sit in The Bridge" changed to "We monitor both these dates." The old line named an internal tool a mentee has no reason to hear about, and it was stale anyway, this content lives in Coaches\u2019 Corner now.'
+  ]},
+  {v:'1.09.20', d:'16/09/2026', t:'Eight core areas spelled out in the onboarding script', items:[
+    'Item 2 of the onboarding meeting, Expectations and ground rules, now names all eight core areas in the line itself, new deals, existing pipeline, current marketing, compliance, current performance, systems and processes, challenges and pain points, and goals, so a coach doesn\u2019t need to recall them from memory mid-call.'
+  ]},
   {v:'1.09.19', d:'16/09/2026', t:'First 30 Days now shows the real onboarding script', items:[
     'Found the gap: stage 00 carries a full live-call script in The Bridge, numbered items with their own sub-prompts, separate from the 36-task mentee/mentor counter this app already tracked. That script was never being read, so it was invisible here even though the data existed.',
     'Stage tabs added, 00 through 04, each showing its own task count, matching The Bridge\u2019s tile row. Selecting a stage shows its intro, its \u201cHow this differs\u201d framing where it has one, and its full script, checkboxes for prompts, a real text field for the one that captures an answer, the partnership manager\u2019s name.',
@@ -595,15 +612,9 @@ function bdayNext(dob){
   if(b<t) b.setFullYear(b.getFullYear()+1);
   return Math.round((b-t)/86400000);
 }
-/* Start date plus mandated months, per the standing decision: ten months
-   means ten months, not a fixed 24-month assumption. */
-function daysToGraduation(c){
-  if(!c.startDate || !c.mandatedMonths) return null;
-  const start=new Date(c.startDate+'T00:00:00');
-  const grad=new Date(start); grad.setMonth(grad.getMonth()+Number(c.mandatedMonths));
-  const t=new Date(); t.setHours(0,0,0,0);
-  return Math.round((grad-t)/86400000);
-}
+/* Graduation is now read directly from Airtable's own Days To Graduation
+   formula, not recalculated here, so the two numbers can never drift
+   apart. This client-side version is retired. */
 function discMiniBars(animal){
   const lv=discLevels(animal); if(!lv) return '';
   return '<span style="display:inline-flex;align-items:flex-end;gap:2px;height:14px;margin-right:5px">'+
@@ -746,10 +757,8 @@ function renderClients(){
 
     const contactsCount = [c.mobileInContacts, c.emailInContacts, c.addressInContacts].filter(Boolean).length;
     const bn = bdayNext(c.dob);
-    const grad = daysToGraduation(c);
     const immCd = immersionCountdown(c);
     const nextSession = (STATE.sessions||{})[c.n.split(' ')[0]];
-    const lastSession = (STATE.lastSessions||{})[c.n.split(' ')[0]];
 
     let html = '<h3>'+c.n+'</h3>';
     if(nextSession){
@@ -761,20 +770,27 @@ function renderClients(){
     if(c.p) html += '<span class="tag" style="background:#E9F0F8;border-color:#C3D6EA;color:#33587F">'+c.p+'</span>';
     if(c.d) html += '<span class="tag" style="background:#F4EFE3;border-color:#DCCFAF;color:#7A6224">'+discMiniBars(c.d)+c.d+'</span>';
     html += '<span class="tag" style="background:'+(contactsCount<3?'#FBEBEA;border-color:#D98782;color:#A8382F':'#EFF7EF;border-color:#7BAE7F;color:#3E7C43')+'">Contacts '+contactsCount+'/3</span>';
+    /* Risk Flag reads like "Exit risk: Amber", the colour word is already
+       in the string, so it's read off the text itself, not guessed
+       against an assumed set of values. */
+    if(c.riskFlag){
+      const rf=c.riskFlag.toLowerCase();
+      const rc = rf.indexOf('red')>-1?'#FBEBEA;border-color:#D98782;color:#A8382F' : rf.indexOf('amber')>-1?'#FBF3E2;border-color:#E0B45C;color:#8A671B' : rf.indexOf('green')>-1?'#EFF7EF;border-color:#7BAE7F;color:#3E7C43' : '#EEF0F2;border-color:#D8D8D8;color:#69707F';
+      html += '<span class="tag" style="background:'+rc+'">'+c.riskFlag+'</span>';
+    }
     html += '</div>';
     if(c.p30running){
-      const p30done = p30StateFor(c).filter(Boolean).length;
+      const p30done = p30StateFor(c).tasks.filter(Boolean).length;
       if(p30done<36) html += '<div class="meta" style="margin-top:6px"><span class="tag" style="background:#F4EFE3;border-color:#DCCFAF;color:#7A6224">30 Days '+p30done+'/36</span></div>';
     }
     if(bn!==null && bn<=30) html += '<div class="meta" style="margin-top:6px"><span class="tag" style="background:#F7E9F0;border-color:#E2C0D2;color:#8C3B63">Birthday in '+bn+'d</span></div>';
     html += '<div style="margin-top:10px;font-size:.78rem;display:flex;flex-direction:column;gap:3px">';
-    if(lastSession){
-      const dAgo = -daysUntil(lastSession);
-      html += '<div style="display:flex;justify-content:space-between"><span style="color:var(--muted,#69707F)">Last session</span><b>'+new Date(lastSession).toLocaleDateString('en-AU')+' ('+dAgo+'d ago)</b></div>';
+    if(c.lastZoomDate){
+      html += '<div style="display:flex;justify-content:space-between"><span style="color:var(--muted,#69707F)">Last Zoom contact</span><b>'+new Date(c.lastZoomDate).toLocaleDateString('en-AU')+(c.daysSinceZoom!=null?' ('+c.daysSinceZoom+'d ago)':'')+'</b></div>';
     }
     if(c.startDate) html += '<div style="display:flex;justify-content:space-between"><span style="color:var(--muted,#69707F)">Started</span><b>'+new Date(c.startDate).toLocaleDateString('en-AU')+'</b></div>';
     if(c.f) html += '<div style="display:flex;justify-content:space-between"><span style="color:var(--muted,#69707F)">Monthly fee</span><b>AUD $'+Number(c.f).toLocaleString()+'</b></div>';
-    if(grad!==null) html += '<div style="display:flex;justify-content:space-between"><span style="color:var(--muted,#69707F)">To graduation</span><b>'+grad+'d</b></div>';
+    if(c.daysToGrad!=null) html += '<div style="display:flex;justify-content:space-between"><span style="color:var(--muted,#69707F)">To graduation</span><b>'+c.daysToGrad+'d</b></div>';
     html += '</div>';
     html += '<div class="cl-open" style="font-size:.68rem;color:var(--accent,#4A6FA5);font-weight:700;margin-top:8px">Open client file &rarr;</div>';
     card.innerHTML = html;
@@ -824,6 +840,8 @@ function renderClientDetail(){
   m.appendChild(d);
 
   if(c.mandatedMonths) m.appendChild(supervisionPanel(c));
+
+  m.appendChild(bpPanel(c));
 
   if(c.d && ANIMALS[c.d]) m.appendChild(discPanel(c.d));
 
@@ -1069,6 +1087,65 @@ async function updateSupervisionRow(clientId, idx, key, val){
     if(note) note.textContent = (!r.ok || d.ok===false) ? (d.message||'Save failed.') : 'Saved '+new Date().toLocaleTimeString();
   }catch(e){ if(note) note.textContent='Could not reach the server.'; }
   if(key==='complete' && STATE.clientOpen===clientId) render();
+}
+
+/* ================= Best practice tips =================
+   Started 16/09/2026, sourced from actual mentee calls that week, not
+   invented. Meant to grow, so this is a plain array, add a new object
+   any time a piece of advice repeats across enough calls to count as a
+   standing tip, not a one-off. Each entry's "source" is who it was
+   actually said to, kept so the list stays honest about where it came
+   from rather than reading as received wisdom from nowhere. */
+const BEST_PRACTICE_TIPS = [
+  {id:'bp01', text:'Review the settlement report on the 15th every month.', source:'Almohin, Charles, Samuel, Jason, Michael Molloy, 14\u201316/09/2026'},
+  {id:'bp02', text:'Mark deals \u201cnot proceeding\u201d rather than deleting them, so the data survives for performance analysis.', source:'Charles, 15/09/2026'},
+  {id:'bp03', text:'Keep one CRM pipeline for every loan type, not separate systems for residential, commercial and asset finance.', source:'Jason, Charles, 15/09/2026'},
+  {id:'bp04', text:'Assign realistic settlement dates as you go: four weeks for refinance, eight weeks for purchase.', source:'Michael Wilczynski, Jason, Almohin, 14\u201316/09/2026'},
+  {id:'bp05', text:'Refer commercial deals over $500,000 to Marketplace Finance rather than placing them yourself.', source:'Charles, Ash, Jason, Michael Wilczynski, 15\u201316/09/2026'},
+  {id:'bp06', text:'Use the Bid Snippet Builder on every file to evidence best interests duty.', source:'Daniel, Asit, 15/09/2026'},
+  {id:'bp07', text:'Living expenses must sit at least 7% above the HEM benchmark, not just match it.', source:'Daniel, Asit, 15/09/2026'},
+  {id:'bp08', text:'Build and regularly back up a relationship and referral contact tracker.', source:'Dylan, 16/09/2026'},
+  {id:'bp09', text:'Lead with personal brand, not just company branding.', source:'Dylan, 16/09/2026'},
+  {id:'bp10', text:'Run a comprehensive upfront discovery questionnaire to filter viable deals early.', source:'Ash, Aimee, 15/09/2026'},
+  {id:'bp11', text:'Set goals in Connective analytics and email them to goals@connective.com.au.', source:'Jason, 15/09/2026'},
+  {id:'bp12', text:'Update CRM status immediately after every client call, don\u2019t let it lag.', source:'Almohin, Jason, 14\u201315/09/2026'}
+];
+function bpStateFor(c){
+  try{ const v=JSON.parse(c.bestPractice||'{}'); if(v && typeof v==='object') return v; }catch(e){}
+  return {};
+}
+function bpPanel(c){
+  const state=bpStateFor(c);
+  const done=BEST_PRACTICE_TIPS.filter(t=>state[t.id] && state[t.id].passed).length;
+  const wrap=document.createElement('div'); wrap.className='detail'; wrap.style.marginTop='14px';
+  let html='<h2>Best practice tips</h2>'+
+    '<p style="color:var(--muted,#69707F);font-size:13px;margin-top:-8px">Tick off once you\u2019ve actually passed this on. Something to talk about next time if their CRM shows it hasn\u2019t landed.</p>'+
+    '<p style="font-size:13px;color:var(--muted,#69707F)">'+done+' of '+BEST_PRACTICE_TIPS.length+' passed on.</p>'+
+    '<div class="progressBar"><div class="fill" style="width:'+Math.round(done/BEST_PRACTICE_TIPS.length*100)+'%;background:var(--accent,#4A6FA5)"></div></div>';
+  BEST_PRACTICE_TIPS.forEach(t=>{
+    const row=state[t.id]||{passed:false,date:''};
+    html+='<div style="display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-top:1px solid var(--border,#DFE3EB)">'+
+      '<input type="checkbox" style="margin-top:3px" '+(row.passed?'checked':'')+' onchange="toggleBestPractice(\''+c.airtableId+'\',\''+t.id+'\',this.checked)">'+
+      '<div style="flex:1"><div style="font-size:13px">'+t.text+'</div>'+
+      '<div style="font-size:.66rem;color:var(--muted,#69707F);margin-top:2px">From: '+t.source+(row.passed && row.date?' &middot; passed on '+new Date(row.date).toLocaleDateString('en-AU'):'')+'</div></div>'+
+    '</div>';
+  });
+  html+='<div class="savedNote" id="bpSaveNote" style="margin-top:10px"></div>';
+  wrap.innerHTML=html;
+  return wrap;
+}
+async function toggleBestPractice(clientId, tipId, val){
+  const c=STATE.clients.find(x=>x.airtableId===clientId);
+  const state=bpStateFor(c);
+  state[tipId]={passed:val, date: val ? new Date().toISOString().slice(0,10) : ''};
+  c.bestPractice=JSON.stringify(state);
+  const note=document.getElementById('bpSaveNote'); if(note) note.textContent='Saving...';
+  try{
+    const r=await authedFetch('/.netlify/functions/client-update',{method:'POST', body:JSON.stringify({recordId:clientId, name:c.n, fields:{bestPractice:c.bestPractice}})});
+    const d=await r.json();
+    if(note) note.textContent = (!r.ok || d.ok===false) ? (d.message||'Save failed.') : 'Saved '+new Date().toLocaleTimeString();
+  }catch(e){ if(note) note.textContent='Could not reach the server.'; }
+  if(STATE.clientOpen===clientId) render();
 }
 
 /* ================= Meeting Intelligence ================= */
@@ -1793,7 +1870,7 @@ const PROGRAM_30={
     {n:'2',t:'Expectations and ground rules',p:[
      'My role: educate you and hold you accountable. Your role: listen, learn, and apply.',
      'This mentoring is for you personally, not your team. I don\u2019t train, coach or mentor your staff, whatever you take from these sessions is yours to pass on.',
-     'Weekly meetings for the first three months, rotating through the eight core areas.',
+     'Weekly meetings for the first three months, rotating through the eight core areas: new deals, existing pipeline, current marketing, compliance, current performance, systems and processes, challenges and pain points, and goals.',
      'One meeting a week to get you set up, then two once you are busy.',
      'Phones on aeroplane mode, both of us, so nothing interrupts.',
      'Standards matter: I am on time and expect the same. Ten minutes late and we rebook.',
@@ -1836,7 +1913,7 @@ const PROGRAM_30={
      'They are two different things and they do not always finish together. You might complete '+
        'the Connective period with program still to run, or the other way round. Neither is a '+
        'problem, it just means we keep an eye on both.',
-     'The main thing is that neither of us is ever guessing. Both dates sit in The Bridge, and '+
+     'The main thing is that neither of us is ever guessing. We monitor both these dates, and '+
        'any time you want to know where you are against them, just ask.',
      'Anything you want to ask about that?']},
 
