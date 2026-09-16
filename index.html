@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>FYI Coaches' Corner v1.09.17</title>
+<title>FYI Coaches' Corner v1.09.18</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -110,6 +110,38 @@ main{padding:22px;max-width:1140px;margin:0 auto}
 .progressBar{height:6px;background:var(--border,#E4DFEC);border-radius:3px;overflow:hidden;margin:10px 0 20px}
 .progressBar .fill{height:100%;background:var(--accent,#6B5B95)}
 
+/* ---- DISC profile block, ported exactly from The Bridge's own CSS and
+   colours, not the Sales Animal PDF's red styling. ---- */
+.dp-body{display:grid;grid-template-columns:minmax(300px,1.1fr) minmax(260px,1fr);gap:26px;align-items:start}
+@media(max-width:760px){.dp-body{grid-template-columns:1fr;gap:18px}}
+.dp-chart{position:relative;height:290px;padding-left:74px}
+.dp-grid{position:absolute;left:0;right:0;top:0;height:238px;display:flex;flex-direction:column;justify-content:space-between;pointer-events:none}
+.dp-gl{display:flex;align-items:center;gap:9px}
+.dp-gl span{width:64px;text-align:right;font-size:.62rem;text-transform:uppercase;letter-spacing:.03em;color:var(--muted,#69707F);font-weight:700;flex-shrink:0}
+.dp-gl i{flex:1;height:1px;background:var(--border,#DFE3EB);display:block}
+.dp-bars{position:relative;display:flex;gap:16px;height:290px;align-items:flex-end}
+.dp-col{flex:1;display:flex;flex-direction:column;align-items:center;height:100%}
+.dp-barwrap{width:100%;height:238px;display:flex;align-items:flex-end}
+.dp-bar{width:100%;border-radius:6px 6px 0 0;min-height:6px;box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.dp-bar.v4{background:#C0453F} .dp-bar.v3{background:#E0A93C}
+.dp-bar.v2{background:#6090C9} .dp-bar.v1{background:#9AA0B0}
+.dp-lab{font-family:'Montserrat',sans-serif;font-weight:800;font-size:1.5rem;color:var(--primary,#2A3550);margin-top:9px;line-height:1}
+.dp-val{font-size:.66rem;color:var(--muted,#69707F);font-weight:600;text-align:center;line-height:1.25;margin-top:3px}
+.dp-side{display:flex;flex-direction:column;gap:14px}
+.dp-hero{display:flex;align-items:baseline;gap:11px;flex-wrap:wrap}
+.dp-hn{font-family:'Montserrat',sans-serif;font-weight:800;font-size:1.7rem;color:var(--primary,#2A3550);line-height:1.05}
+.dp-hid{font-size:.7rem;font-weight:700;letter-spacing:.05em;color:var(--muted,#69707F);border:1px solid var(--border,#DFE3EB);border-radius:99px;padding:3px 10px}
+.dp-reads{display:flex;gap:10px}
+.dp-reads>div{flex:1;background:var(--bg,#F4F6F9);border:1px solid var(--border,#DFE3EB);border-radius:9px;padding:10px 12px;font-size:.72rem;color:var(--muted,#69707F);line-height:1.45}
+.dp-reads span{display:block;font-size:.58rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted,#69707F);font-weight:700}
+.dp-reads b{display:block;font-family:'Montserrat',sans-serif;font-size:1.35rem;color:var(--accent,#4A6FA5);line-height:1.1;margin:2px 0 3px}
+.dp-meta{display:flex;flex-direction:column;gap:7px;padding-top:13px;border-top:1px solid var(--border,#DFE3EB)}
+.dp-meta>div{display:flex;gap:10px;font-size:.81rem;color:var(--text,#26293A)}
+.dp-meta span{font-size:.6rem;text-transform:uppercase;letter-spacing:.04em;color:var(--muted,#69707F);font-weight:700;min-width:118px;padding-top:2px;flex-shrink:0}
+.dp-coach{background:var(--bg,#F4F6F9);border:1px solid var(--border,#DFE3EB);border-left:3px solid var(--accent2,#C59C44);border-radius:9px;padding:12px 14px}
+.dp-coach b{display:block;font-family:'Montserrat',sans-serif;font-size:.78rem;color:var(--primary,#2A3550);margin-bottom:4px}
+.dp-coach p{margin:0;font-size:.8rem;color:var(--text,#26293A);line-height:1.5}
+
 /* ---- Relationships tab, styled to match Ben's standalone tracker exactly ---- */
 .relTracker{--rt-navy:#333547;--rt-blue:#6090c7;--rt-blue-dark:#4a76ab;--rt-gold:#c59c44;--rt-silver:#d8d8d8;--rt-red:#b3452c;--rt-paper:#f7f7f5;--rt-ink-soft:#6b6d7a;font-family:'Montserrat',sans-serif;color:var(--rt-navy)}
 .relTracker .rt-dash{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}
@@ -194,7 +226,7 @@ main{padding:22px;max-width:1140px;margin:0 auto}
 
 <div id="app">
   <header class="top">
-    <div class="brand">FYI Coaches' Corner<span class="verBadge" id="verBadge" onclick="toggleChangelog()" title="Click for what's new">v1.09.17</span><small id="coachBadge"></small></div>
+    <div class="brand">FYI Coaches' Corner<span class="verBadge" id="verBadge" onclick="toggleChangelog()" title="Click for what's new">v1.09.18</span><small id="coachBadge"></small></div>
     <div class="who">
       <span id="whoEmail"></span>
       <button onclick="doLogout()">Sign out</button>
@@ -333,8 +365,11 @@ function copySupervisionEmail(clientId){
   } else { fallback(); }
 }
 
-const APP_VERSION = '1.09.17';
+const APP_VERSION = '1.09.18';
 const RELEASES = [
+  {v:'1.09.18', d:'16/09/2026', t:'DISC panel reverted to The Bridge\u2019s own design', items:[
+    'Ben clarified the red Sales Animal PDF styling was only a reference for content, not the look he wanted. Reverted to The Bridge\u2019s actual DISC panel, pulled from its own source this time, not a screenshot: the exact CSS classes and colours, C0453F for Very High, E0A93C for High, 6090C9 for Low, 9AA0B0 for Very Low, same grid layout, same Highest/Lowest reads, same Coaching Them box.'
+  ]},
   {v:'1.09.17', d:'16/09/2026', t:'Fixed: DISC chart bars were broken', items:[
     'The last version\u2019s chart used stacked absolutely-positioned divs, which rendered wrong: bars overlapping, only two of the four visible. Rebuilt as a single SVG instead, checked numerically before shipping, D, I, S and C now each get their own height and position every time, matching the reference guide\u2019s layout properly.'
   ]},
@@ -971,53 +1006,27 @@ function discPanel(animal){
   const lo=lv.slice().sort((x,y)=>x.v-y.v)[0];
   const wrap=document.createElement('div'); wrap.className='detail'; wrap.style.marginTop='14px';
 
-  /* SVG, not stacked divs, so four bars render as four distinct columns
-     every time rather than fighting absolute-position box math. Matches
-     the Sales Animal Profile Reference Guide: bordered card, D I S C
-     header row, four gridlines Very High to Very Low, a fixed red
-     reference line at the High band, one bar per letter. */
-  const W=260, H=210, padTop=40, padBottom=26, padLeft=64, padRight=14;
-  const chartH=H-padTop-padBottom, chartW=W-padLeft-padRight;
-  const rowH=chartH/4;
-  const barW=Math.min(30, chartW/DISC_LETTERS.length-14);
-  const gap=(chartW-barW*4)/4;
+  const gridHtml=['Very high','High','Low','Very low'].map(l=>'<div class="dp-gl"><span>'+l+'</span><i></i></div>').join('');
+  const barsHtml=lv.map(b=>
+    '<div class="dp-col"><div class="dp-barwrap"><div class="dp-bar v'+b.v+'" style="height:'+(b.v/4*100)+'%" title="'+b.l+': '+DISC_LEVELS[b.v]+'"></div></div>'+
+      '<div class="dp-lab">'+b.l+'</div><div class="dp-val">'+DISC_LEVELS[b.v]+'</div></div>'
+  ).join('');
 
-  let svg='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;max-width:280px;display:block">';
-  svg+='<rect x="1" y="1" width="'+(W-2)+'" height="'+(H-2)+'" fill="#fff" stroke="#333" stroke-width="1.5" rx="6"/>';
-  DISC_LETTERS.forEach((l,i)=>{
-    const cx=padLeft+gap/2+barW/2+i*(barW+gap);
-    svg+='<text x="'+cx+'" y="22" text-anchor="middle" font-family="Montserrat,sans-serif" font-weight="800" font-size="15" fill="#b3211f">'+l+'</text>';
-  });
-  ['Very High','High','Low','Very Low'].forEach((label,i)=>{
-    const y=padTop+i*rowH;
-    svg+='<line x1="'+padLeft+'" y1="'+y+'" x2="'+(W-padRight)+'" y2="'+y+'" stroke="#e5e5e5" stroke-width="1"/>';
-    svg+='<text x="6" y="'+(y+11)+'" font-family="Inter,sans-serif" font-size="9.5" fill="#888">'+label+'</text>';
-  });
-  svg+='<line x1="'+padLeft+'" y1="'+(padTop+rowH)+'" x2="'+(W-padRight)+'" y2="'+(padTop+rowH)+'" stroke="#b3211f" stroke-width="2"/>';
-  lv.forEach((b,i)=>{
-    const bh=(b.v/4)*chartH;
-    const x=padLeft+gap/2+i*(barW+gap);
-    const y=padTop+chartH-bh;
-    svg+='<rect x="'+x+'" y="'+y+'" width="'+barW+'" height="'+bh+'" fill="#b3211f"/>';
-  });
-  svg+='</svg>';
-
-  const info='<div style="flex:1;min-width:200px">'+
-    '<div style="font-family:Montserrat,sans-serif;font-weight:800;font-size:1.3rem;color:#b3211f">'+animal+'</div>'+
-    '<div style="font-size:.85rem;color:var(--text,#26293A);margin-top:6px;line-height:1.7">'+
-      '<b>Profile ID:</b> '+a.p+' '+a.n+'<br>'+
-      '<b>Job Role:</b> '+a.role+'<br>'+
-      '<b>Pace:</b> '+a.pace+'<br>'+
-      '<b>Attention to detail:</b> '+a.det+
+  wrap.innerHTML='<h2>DISC Profile</h2><div class="dp-body">'+
+    '<div class="dp-chart"><div class="dp-grid">'+gridHtml+'</div><div class="dp-bars">'+barsHtml+'</div></div>'+
+    '<div class="dp-side">'+
+      '<div class="dp-hero"><span class="dp-hn">'+animal+'</span><span class="dp-hid">'+a.p+' '+a.n+'</span></div>'+
+      '<div class="dp-reads">'+
+        '<div><span>Highest</span><b>'+hi.l+'</b>'+TRAIT[hi.l]+'</div>'+
+        '<div><span>Lowest</span><b>'+lo.l+'</b>'+TRAIT[lo.l]+'</div>'+
+      '</div>'+
+      '<div class="dp-meta">'+
+        '<div><span>Suits</span>'+a.role+'</div>'+
+        '<div><span>Pace</span>'+a.pace+'</div>'+
+        '<div><span>Attention to detail</span>'+a.det+'</div>'+
+      '</div>'+
+      '<div class="dp-coach"><b>Coaching them</b><p>'+COACH[hi.l]+'</p></div>'+
     '</div></div>';
-
-  wrap.innerHTML='<h2>DISC profile</h2>'+
-    '<div style="display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start">'+svg+info+'</div>'+
-    '<div class="fieldGrid" style="margin-top:18px">'+
-      '<div class="field"><label>Highest</label><div>'+hi.l+', '+TRAIT[hi.l]+'</div></div>'+
-      '<div class="field"><label>Lowest</label><div>'+lo.l+', '+TRAIT[lo.l]+'</div></div>'+
-      '<div class="field full"><label>Coaching them</label><div>'+COACH[hi.l]+'</div></div>'+
-    '</div>';
   return wrap;
 }
 
