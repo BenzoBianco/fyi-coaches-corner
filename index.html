@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>FYI Coaches' Corner v1.09.25</title>
+<title>FYI Coaches' Corner v1.09.26</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -247,7 +247,7 @@ main{padding:22px;max-width:1140px;margin:0 auto}
 
 <div id="app">
   <header class="top">
-    <div class="brand">FYI Coaches' Corner<span class="verBadge" id="verBadge" onclick="toggleChangelog()" title="Click for what's new">v1.09.25</span><small id="coachBadge"></small></div>
+    <div class="brand">FYI Coaches' Corner<span class="verBadge" id="verBadge" onclick="toggleChangelog()" title="Click for what's new">v1.09.26</span><small id="coachBadge"></small></div>
     <div class="who">
       <span id="whoEmail"></span>
       <button onclick="doLogout()">Sign out</button>
@@ -386,8 +386,13 @@ function copySupervisionEmail(clientId){
   } else { fallback(); }
 }
 
-const APP_VERSION = '1.09.25';
+const APP_VERSION = '1.09.26';
 const RELEASES = [
+  {v:'1.09.26', d:'16/09/2026', t:'First 30 Days, weeks 1 to 4 fully rendered', items:[
+    'Same class of gap as stage 00\u2019s script: the full weekly content was already embedded, prep boxes for mentor and mentee, the timed 30-minute agenda, the warm reactivation message template for Week 2, and the \u201cThis stage is done when\u201d test, but none of it was ever rendered. All of it shows now, exactly as it reads in The Bridge.',
+    'Stage 00\u2019s bridge-into-Week-1 section added too: what happens in the next meeting, so onboarding closes with a clear handover instead of just ending.',
+    'Copy the message button added to the Week 2 reactivation script, copies to clipboard the same way the Supervision milestone email does.'
+  ]},
   {v:'1.09.25', d:'16/09/2026', t:'Dropped Referred By, expanded contact log types', items:[
     'Checked the real data before touching anything: across every populated client, Referral Source already holds the actual referrer\u2019s name. Referred By Client was blank everywhere except one record, where it just repeated Referral Source. Removed from the form as dead weight, the Airtable field itself is untouched.',
     'Fixed a bug this would have caused: Save to Airtable still referenced the removed field and would have thrown an error on every save. Caught before it shipped.',
@@ -1037,6 +1042,36 @@ function p30Panel(c){
   if(stage.whereH && stage.where){
     html+='<div class="sopGroup" style="margin-top:12px">'+stage.whereH+'</div><p style="font-size:13px">'+stage.where+'</p>';
   }
+  if(stage.prepMentor || stage.prepMentee){
+    html+='<div class="fieldGrid" style="margin-top:12px">'+
+      (stage.prepMentor ? '<div class="field"><label>Before the meeting, mentor</label><div style="font-size:13px">'+stage.prepMentor+'</div></div>' : '')+
+      (stage.prepMentee ? '<div class="field"><label>Before the meeting, mentee</label><div style="font-size:13px">'+stage.prepMentee+'</div></div>' : '')+
+    '</div>';
+  }
+  if(stage.agenda && stage.agenda.length){
+    html+='<div class="sopGroup" style="margin-top:16px">The 30-minute agenda</div>';
+    stage.agenda.forEach(block=>{
+      html+='<div style="display:flex;gap:14px;padding:8px 0;border-top:1px solid var(--border,#DFE3EB)">'+
+        '<b style="width:80px;flex-shrink:0;color:var(--accent2,#C59C44);font-family:Montserrat,sans-serif;font-size:.8rem">'+block[0]+'</b>'+
+        '<span style="font-size:13px">'+block[1]+'</span></div>';
+    });
+  }
+  if(stage.bridgeH && stage.bridge){
+    html+='<div class="sopGroup" style="margin-top:16px">'+stage.bridgeH+'</div>';
+    if(stage.bridgeNote) html+='<p style="font-size:13px">'+stage.bridgeNote+'</p>';
+    stage.bridge.forEach(b=>{
+      html+='<div style="margin-top:10px"><b style="font-family:Montserrat,sans-serif;font-size:.85rem;color:var(--primary,#2A3550)">'+b.h+'</b>'+
+        '<ul style="margin:6px 0 0;padding-left:18px;font-size:13px">'+b.items.map(x=>'<li style="margin-bottom:3px">'+x+'</li>').join('')+'</ul></div>';
+    });
+  }
+  if(stage.scriptBox){
+    html+='<div style="margin-top:16px;padding:14px 16px;border-left:3px solid var(--accent2,#C59C44);background:var(--bg,#F4F6F9);border-radius:0 8px 8px 0">'+
+      '<div style="font-size:.66rem;text-transform:uppercase;letter-spacing:.04em;color:var(--muted,#69707F);font-weight:700;margin-bottom:8px">'+stage.scriptBox.h+'</div>'+
+      '<p style="font-style:italic;font-size:13px;background:var(--card,#fff);border:1px solid var(--border,#DFE3EB);border-radius:8px;padding:10px 12px">'+stage.scriptBox.body+'</p>'+
+      '<p style="font-size:12px;color:var(--muted,#69707F);margin-top:8px">'+stage.scriptBox.note+'</p>'+
+      '<button class="btn secondary" type="button" onclick="copyP30Script(this,'+"'"+stage.scriptBox.body.replace(/'/g,"\\'")+"'"+')">Copy the message</button>'+
+    '</div>';
+  }
   if(stage.script && stage.script.length){
     html+='<div class="sopGroup" style="margin-top:16px">'+(stage.scriptH||'The script')+'</div>';
     const scriptState=p30ScriptStateFor(state, stage.id);
@@ -1073,10 +1108,24 @@ function p30Panel(c){
       });
     });
   }
+  if(stage.done){
+    html+='<div style="margin-top:16px;padding:14px 16px;border-left:3px solid var(--accent2,#C59C44);background:var(--bg,#F4F6F9);border-radius:0 8px 8px 0">'+
+      '<div style="font-size:.66rem;text-transform:uppercase;letter-spacing:.04em;color:var(--muted,#69707F);font-weight:700;margin-bottom:6px">This stage is done when</div>'+
+      '<p style="font-size:13px;margin:0">'+stage.done+'</p>'+
+    '</div>';
+  }
   html+='</div>';
   html+='<div class="savedNote" id="p30SaveNote" style="margin-top:10px"></div>';
   wrap.innerHTML=html;
   return wrap;
+}
+
+function copyP30Script(btn, text){
+  const label=btn.textContent;
+  navigator.clipboard.writeText(text).then(()=>{
+    btn.textContent='\u2713 Copied';
+    setTimeout(()=>btn.textContent=label, 2000);
+  }).catch(()=>alert('Copy failed. Select the text manually.'));
 }
 
 async function saveP30(clientId, fields){
