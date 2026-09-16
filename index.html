@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>FYI Coaches' Corner v1.09.16</title>
+<title>FYI Coaches' Corner v1.09.17</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -194,7 +194,7 @@ main{padding:22px;max-width:1140px;margin:0 auto}
 
 <div id="app">
   <header class="top">
-    <div class="brand">FYI Coaches' Corner<span class="verBadge" id="verBadge" onclick="toggleChangelog()" title="Click for what's new">v1.09.16</span><small id="coachBadge"></small></div>
+    <div class="brand">FYI Coaches' Corner<span class="verBadge" id="verBadge" onclick="toggleChangelog()" title="Click for what's new">v1.09.17</span><small id="coachBadge"></small></div>
     <div class="who">
       <span id="whoEmail"></span>
       <button onclick="doLogout()">Sign out</button>
@@ -333,8 +333,11 @@ function copySupervisionEmail(clientId){
   } else { fallback(); }
 }
 
-const APP_VERSION = '1.09.16';
+const APP_VERSION = '1.09.17';
 const RELEASES = [
+  {v:'1.09.17', d:'16/09/2026', t:'Fixed: DISC chart bars were broken', items:[
+    'The last version\u2019s chart used stacked absolutely-positioned divs, which rendered wrong: bars overlapping, only two of the four visible. Rebuilt as a single SVG instead, checked numerically before shipping, D, I, S and C now each get their own height and position every time, matching the reference guide\u2019s layout properly.'
+  ]},
   {v:'1.09.16', d:'15/09/2026', t:'DISC card matched to the Sales Animal Profile Reference Guide', items:[
     'Redesigned to match the layout of Ben\u2019s reference guide: bordered card, red bars against Very High to Very Low gridlines, Profile ID, Job Role, Pace and Attention to Detail laid out the same way.',
     'Photos not included, deliberately. The reference guide\u2019s animal photos are stock images Coaches\u2019 Corner has no licence to reproduce. Style only, per Ben\u2019s call.'
@@ -968,28 +971,36 @@ function discPanel(animal){
   const lo=lv.slice().sort((x,y)=>x.v-y.v)[0];
   const wrap=document.createElement('div'); wrap.className='detail'; wrap.style.marginTop='14px';
 
-  /* Chart styled to match the Sales Animal Profile Reference Guide: a
-     bordered card, a single red bar per letter against four gridlines,
-     Very High down to Very Low, with a fixed red reference line at the
-     High band, the same position on every profile in that guide. */
-  const ROWS=['Very High','High','Low','Very Low'];
-  let chart='<div style="border:1px solid #333;border-radius:6px;padding:14px 16px 10px;max-width:340px;background:#fff">'+
-    '<div style="display:flex;justify-content:center;gap:22px;font-weight:800;font-family:Montserrat,sans-serif;color:#b3211f;font-size:.8rem;margin-bottom:6px">'+
-      DISC_LETTERS.map(l=>'<span>'+l+'</span>').join('')+
-    '</div>'+
-    '<div style="position:relative;height:140px;border-top:1px solid #ddd">';
-  ROWS.forEach((label,i)=>{
-    chart+='<div style="position:absolute;left:0;right:0;top:'+(i*140/4)+'px;border-top:1px solid #eee;font-size:.6rem;color:#888;padding-left:2px">'+label+'</div>';
+  /* SVG, not stacked divs, so four bars render as four distinct columns
+     every time rather than fighting absolute-position box math. Matches
+     the Sales Animal Profile Reference Guide: bordered card, D I S C
+     header row, four gridlines Very High to Very Low, a fixed red
+     reference line at the High band, one bar per letter. */
+  const W=260, H=210, padTop=40, padBottom=26, padLeft=64, padRight=14;
+  const chartH=H-padTop-padBottom, chartW=W-padLeft-padRight;
+  const rowH=chartH/4;
+  const barW=Math.min(30, chartW/DISC_LETTERS.length-14);
+  const gap=(chartW-barW*4)/4;
+
+  let svg='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;max-width:280px;display:block">';
+  svg+='<rect x="1" y="1" width="'+(W-2)+'" height="'+(H-2)+'" fill="#fff" stroke="#333" stroke-width="1.5" rx="6"/>';
+  DISC_LETTERS.forEach((l,i)=>{
+    const cx=padLeft+gap/2+barW/2+i*(barW+gap);
+    svg+='<text x="'+cx+'" y="22" text-anchor="middle" font-family="Montserrat,sans-serif" font-weight="800" font-size="15" fill="#b3211f">'+l+'</text>';
   });
-  /* Fixed reference line at the High band, matching the guide's own
-     static template line, not computed per animal. */
-  chart+='<div style="position:absolute;left:0;right:0;top:'+(140/4)+'px;border-top:2px solid #b3211f"></div>';
-  chart+='<div style="position:absolute;left:58px;right:8px;bottom:0;top:0;display:flex;justify-content:space-around;align-items:flex-end">';
-  lv.forEach(b=>{
-    const h=(b.v/4*100);
-    chart+='<div style="width:22px;height:'+h+'%;background:#b3211f;border-radius:1px 1px 0 0"></div>';
+  ['Very High','High','Low','Very Low'].forEach((label,i)=>{
+    const y=padTop+i*rowH;
+    svg+='<line x1="'+padLeft+'" y1="'+y+'" x2="'+(W-padRight)+'" y2="'+y+'" stroke="#e5e5e5" stroke-width="1"/>';
+    svg+='<text x="6" y="'+(y+11)+'" font-family="Inter,sans-serif" font-size="9.5" fill="#888">'+label+'</text>';
   });
-  chart+='</div></div></div>';
+  svg+='<line x1="'+padLeft+'" y1="'+(padTop+rowH)+'" x2="'+(W-padRight)+'" y2="'+(padTop+rowH)+'" stroke="#b3211f" stroke-width="2"/>';
+  lv.forEach((b,i)=>{
+    const bh=(b.v/4)*chartH;
+    const x=padLeft+gap/2+i*(barW+gap);
+    const y=padTop+chartH-bh;
+    svg+='<rect x="'+x+'" y="'+y+'" width="'+barW+'" height="'+bh+'" fill="#b3211f"/>';
+  });
+  svg+='</svg>';
 
   const info='<div style="flex:1;min-width:200px">'+
     '<div style="font-family:Montserrat,sans-serif;font-weight:800;font-size:1.3rem;color:#b3211f">'+animal+'</div>'+
@@ -1001,7 +1012,7 @@ function discPanel(animal){
     '</div></div>';
 
   wrap.innerHTML='<h2>DISC profile</h2>'+
-    '<div style="display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start">'+chart+info+'</div>'+
+    '<div style="display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start">'+svg+info+'</div>'+
     '<div class="fieldGrid" style="margin-top:18px">'+
       '<div class="field"><label>Highest</label><div>'+hi.l+', '+TRAIT[hi.l]+'</div></div>'+
       '<div class="field"><label>Lowest</label><div>'+lo.l+', '+TRAIT[lo.l]+'</div></div>'+
