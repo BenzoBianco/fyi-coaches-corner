@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>FYI Coaches' Corner v1.09.23</title>
+<title>FYI Coaches' Corner v1.09.24</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -142,6 +142,27 @@ main{padding:22px;max-width:1140px;margin:0 auto}
 .dp-coach b{display:block;font-family:'Montserrat',sans-serif;font-size:.78rem;color:var(--primary,#2A3550);margin-bottom:4px}
 .dp-coach p{margin:0;font-size:.8rem;color:var(--text,#26293A);line-height:1.5}
 
+/* ---- Compact two-panel client detail, matched to The Bridge's own
+   skinny layout, replacing the padded fieldGrid version. ---- */
+.cd2-cols{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+@media(max-width:760px){.cd2-cols{grid-template-columns:1fr}}
+.cd2-panel{background:var(--bg,#F4F6F9);border:1px solid var(--border,#DFE3EB);border-radius:10px;padding:16px 18px}
+.cd2-panel h4{margin:0 0 12px;font-family:'Montserrat',sans-serif;font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted,#69707F);font-weight:800}
+.cd2-row{margin-bottom:10px}
+.cd2-row label{display:block;font-size:.62rem;text-transform:uppercase;letter-spacing:.04em;color:var(--muted,#69707F);font-weight:700;margin-bottom:3px}
+.cd2-row input,.cd2-row select,.cd2-row textarea{width:100%;padding:6px 9px;border:1px solid var(--border,#DFE3EB);border-radius:6px;font-size:13px;font-family:'Inter',sans-serif;background:var(--card,#fff)}
+.cd2-row textarea{min-height:60px;resize:vertical}
+.cd2-inline{display:flex;gap:8px;align-items:center}
+.cd2-inline input[type=text],.cd2-inline input[type=email],.cd2-inline input[type=tel]{flex:1}
+.cd2-inline label{display:flex;align-items:center;gap:4px;font-size:.62rem;text-transform:none;font-weight:600;white-space:nowrap;margin:0}
+.cd2-static{display:flex;justify-content:space-between;padding:5px 0;font-size:13px;border-top:1px solid var(--border,#DFE3EB)}
+.cd2-static span{color:var(--muted,#69707F)}
+.cd2-static b{color:var(--text,#26293A)}
+.cd2-log-hist{display:flex;flex-direction:column-reverse;gap:6px;margin-top:10px}
+.cd2-log-item{font-size:12.5px;padding:6px 0;border-top:1px solid var(--border,#DFE3EB)}
+.cd2-log-item .meta{display:flex;justify-content:space-between;color:var(--muted,#69707F);font-weight:600}
+.cd2-log-item .note{margin-top:3px;color:var(--text,#26293A)}
+
 /* ---- Relationships tab, styled to match Ben's standalone tracker exactly ---- */
 .relTracker{--rt-navy:#333547;--rt-blue:#6090c7;--rt-blue-dark:#4a76ab;--rt-gold:#c59c44;--rt-silver:#d8d8d8;--rt-red:#b3452c;--rt-paper:#f7f7f5;--rt-ink-soft:#6b6d7a;font-family:'Montserrat',sans-serif;color:var(--rt-navy)}
 .relTracker .rt-dash{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}
@@ -226,7 +247,7 @@ main{padding:22px;max-width:1140px;margin:0 auto}
 
 <div id="app">
   <header class="top">
-    <div class="brand">FYI Coaches' Corner<span class="verBadge" id="verBadge" onclick="toggleChangelog()" title="Click for what's new">v1.09.23</span><small id="coachBadge"></small></div>
+    <div class="brand">FYI Coaches' Corner<span class="verBadge" id="verBadge" onclick="toggleChangelog()" title="Click for what's new">v1.09.24</span><small id="coachBadge"></small></div>
     <div class="who">
       <span id="whoEmail"></span>
       <button onclick="doLogout()">Sign out</button>
@@ -365,8 +386,14 @@ function copySupervisionEmail(clientId){
   } else { fallback(); }
 }
 
-const APP_VERSION = '1.09.23';
+const APP_VERSION = '1.09.24';
 const RELEASES = [
+  {v:'1.09.24', d:'16/09/2026', t:'Compact client layout, contact log, editable email', items:[
+    'Client detail rebuilt into skinny two-column panels, matching The Bridge\u2019s own density, replacing the padded single-column fieldGrid. Personal details, Engagement, and Other details as separate panels rather than one long list.',
+    'New Log a Contact panel: date, Email or Meeting, an optional note. WhatsApp deliberately left out, per Ben\u2019s call, meetings and emails are what get tracked here. Next session, Last Zoom contact and Graduates now shown as plain read-only lines rather than editable fields, since they\u2019re computed, not typed in.',
+    'Email is now a real editable field, reading and writing the Email column, wasn\u2019t wired in before.',
+    'Confirmed with Ben: switching to Google Meet needs no changes here. calendar.js matches sessions by the event title, not the video platform, same as it always has.'
+  ]},
   {v:'1.09.23', d:'16/09/2026', t:'Switched to Airtable\u2019s own graduation and contact formulas', items:[
     'Fixed a real bug: the First 30 Days rebuild changed p30StateFor\u2019s shape but the client card\u2019s progress count was never updated, so "30 Days X/36" was silently broken on every card since v1.09.19.',
     'Graduation now reads Airtable\u2019s own Days To Graduation and Graduation Date formulas directly, this app\u2019s own client-side recalculation is retired, so the two numbers can\u2019t drift apart.',
@@ -805,6 +832,10 @@ function fieldRow(label, id, value, type){
   return '<div class="field"><label>'+label+'</label><input id="'+id+'" type="'+type+'" value="'+(value==null?'':String(value).replace(/"/g,'&quot;'))+'"></div>';
 }
 
+function clientContactLogFor(c){
+  try{ const v=JSON.parse(c.contactLog||'[]'); if(Array.isArray(v)) return v; }catch(e){}
+  return [];
+}
 function renderClientDetail(){
   const m=document.getElementById('main');
   const c=STATE.clients.find(x=>x.airtableId===STATE.clientOpen);
@@ -814,27 +845,73 @@ function renderClientDetail(){
     (c.mandatedMonths ? '<span style="display:inline-flex;flex-direction:column;align-items:center;justify-content:center;width:52px;height:52px;border:2px solid var(--accent,#4A6FA5);border-radius:50%;margin-left:8px;vertical-align:middle;font-family:Montserrat,sans-serif"><b style="font-size:1.05rem;line-height:1;color:var(--primary,#2A3550)">'+c.mandatedMonths+'</b><span style="font-size:.55rem;text-transform:uppercase;letter-spacing:.03em;color:var(--muted,#69707F)">mths</span></span>' : '');
   const subtitleParts = [c.c, c.s, c.st, c.p].filter(Boolean).join(' &middot; ');
   const referredLine = c.referredBy ? ' &middot; Referred by <b>'+c.referredBy+'</b>' : '';
+  const contactsCount = [c.mobileInContacts, c.emailInContacts, c.addressInContacts].filter(Boolean).length;
+  const bn = bdayNext(c.dob);
+  const nextSession = (STATE.sessions||{})[c.n.split(' ')[0]];
+  const log = clientContactLogFor(c);
+
   d.innerHTML='<button class="back" onclick="STATE.clientOpen=null; render()">&larr; Back to clients</button>'+
     '<h2 style="display:flex;align-items:center;flex-wrap:wrap;gap:0">'+c.n+headerBadges+'</h2>'+
     '<div style="font-size:.82rem;color:var(--muted,#69707F);margin:-8px 0 16px">'+subtitleParts+referredLine+'</div>'+
-    '<div class="fieldGrid">'+
-      fieldRow('Status','fClientStatus',c.clientStatus)+
-      fieldRow('Program','fP',c.p)+
-      fieldRow('Lifecycle stage','fSt',c.st)+
-      fieldRow('Engagement (Green/Amber/Red)','fEng',c.rag)+
-      fieldRow('Monthly fee','fF',c.f,'number')+
-      fieldRow('State','fS',c.s)+
-      fieldRow('CA number','fCa',c.ca)+
-      fieldRow('Referral source','fRefSource',c.refSource)+
-      fieldRow('Referred by','fReferredBy',c.referredBy)+
-      fieldRow('DISC','fDisc',c.d)+
-      fieldRow('Mobile','fPhone',c.phone)+
-      fieldRow('Date of birth','fDob',c.dob,'date')+
-      fieldRow('Start date','fStartDate',c.startDate,'date')+
-      fieldRow('Exit date','fExitDate',c.exitDate,'date')+
-      fieldRow('Mandated months','fMandatedMonths',c.mandatedMonths,'number')+
-      fieldRow('Notes','fNotes',c.notes,'textarea')+
+    '<div class="cd2-cols">'+
+
+      '<div class="cd2-panel"><h4>Personal details</h4>'+
+        '<div class="cd2-row"><label>Date of birth</label><input type="date" id="fDob" value="'+(c.dob||'')+'">'+
+          (bn!==null ? '<div style="font-size:.7rem;color:var(--muted,#69707F);margin-top:3px">Next birthday in '+bn+' day'+(bn===1?'':'s')+'.</div>' : '')+
+        '</div>'+
+        '<div class="cd2-row"><label>Mobile, tick when added to your contacts</label><div class="cd2-inline">'+
+          '<input type="text" id="fPhone" value="'+(c.phone||'').replace(/"/g,'&quot;')+'">'+
+          '<label><input type="checkbox" id="fMobileInContacts" '+(c.mobileInContacts?'checked':'')+'> In contacts</label></div></div>'+
+        '<div class="cd2-row"><label>Email, tick when added to your contacts</label><div class="cd2-inline">'+
+          '<input type="email" id="fEmail" value="'+(c.email||'').replace(/"/g,'&quot;')+'">'+
+          '<label><input type="checkbox" id="fEmailInContacts" '+(c.emailInContacts?'checked':'')+'> In contacts</label></div></div>'+
+        '<div class="cd2-row"><label><input type="checkbox" id="fAddressInContacts" '+(c.addressInContacts?'checked':'')+' style="width:auto;margin-right:6px"> Address added to contacts</label></div>'+
+        '<div class="progressBar" style="margin-top:2px"><div class="fill" style="width:'+(contactsCount/3*100)+'%;background:var(--accent,#4A6FA5)"></div></div>'+
+        '<div style="font-size:.68rem;color:var(--muted,#69707F);text-align:right;margin-top:3px">'+contactsCount+'/3 in contacts</div>'+
+      '</div>'+
+
+      '<div class="cd2-panel"><h4>Engagement</h4>'+
+        '<div class="cd2-row"><label>Status</label><input type="text" id="fClientStatus" value="'+(c.clientStatus||'').replace(/"/g,'&quot;')+'"></div>'+
+        '<div class="cd2-row"><label>Business name</label><input type="text" id="fBusiness" value="'+(c.business||'').replace(/"/g,'&quot;')+'" disabled title="Read only here"></div>'+
+        '<div class="cd2-row"><label>Program</label><input type="text" id="fP" value="'+(c.p||'').replace(/"/g,'&quot;')+'"></div>'+
+        '<div class="cd2-row"><label>Lifecycle stage</label><input type="text" id="fSt" value="'+(c.st||'').replace(/"/g,'&quot;')+'"></div>'+
+        '<div class="cd2-row"><label>Engagement (Green/Amber/Red)</label><input type="text" id="fEng" value="'+(c.rag||'').replace(/"/g,'&quot;')+'"></div>'+
+        '<div class="cd2-row"><label>Monthly fee (AUD)</label><input type="number" id="fF" value="'+(c.f||0)+'"></div>'+
+        (nextSession ? '<div class="cd2-static"><span>Next session</span><b>'+new Date(nextSession).toLocaleDateString('en-AU')+'</b></div>' : '')+
+        (c.lastZoomDate ? '<div class="cd2-static"><span>Last Zoom contact</span><b>'+new Date(c.lastZoomDate).toLocaleDateString('en-AU')+(c.daysSinceZoom!=null?' ('+c.daysSinceZoom+'d ago)':'')+'</b></div>' : '')+
+        (c.gradDate ? '<div class="cd2-static"><span>Graduates</span><b>'+new Date(c.gradDate).toLocaleDateString('en-AU')+(c.daysToGrad!=null?' &middot; '+c.daysToGrad+'d':'')+'</b></div>' : '')+
+      '</div>'+
+
     '</div>'+
+
+    '<div class="cd2-cols" style="margin-top:14px">'+
+      '<div class="cd2-panel"><h4>Other details</h4>'+
+        '<div class="cd2-row"><label>State</label><input type="text" id="fS" value="'+(c.s||'').replace(/"/g,'&quot;')+'"></div>'+
+        '<div class="cd2-row"><label>CA number</label><input type="text" id="fCa" value="'+(c.ca||'').replace(/"/g,'&quot;')+'"></div>'+
+        '<div class="cd2-row"><label>Referral source</label><input type="text" id="fRefSource" value="'+(c.refSource||'').replace(/"/g,'&quot;')+'"></div>'+
+        '<div class="cd2-row"><label>Referred by</label><input type="text" id="fReferredBy" value="'+(c.referredBy||'').replace(/"/g,'&quot;')+'"></div>'+
+        '<div class="cd2-row"><label>DISC</label><input type="text" id="fDisc" value="'+(c.d||'').replace(/"/g,'&quot;')+'"></div>'+
+        '<div class="cd2-row"><label>Start date</label><input type="date" id="fStartDate" value="'+(c.startDate||'')+'"></div>'+
+        '<div class="cd2-row"><label>Exit date</label><input type="date" id="fExitDate" value="'+(c.exitDate||'')+'"></div>'+
+        '<div class="cd2-row"><label>Mandated months</label><input type="number" id="fMandatedMonths" value="'+(c.mandatedMonths||0)+'"></div>'+
+        '<div class="cd2-row"><label>Notes</label><textarea id="fNotes">'+(c.notes||'')+'</textarea></div>'+
+      '</div>'+
+
+      '<div class="cd2-panel"><h4>Log a contact</h4>'+
+        '<p style="font-size:.7rem;color:var(--muted,#69707F);margin:-6px 0 10px">WhatsApp doesn\u2019t need logging here. Just emails and meetings that don\u2019t already show up above.</p>'+
+        '<div class="cd2-row"><label>Date</label><input type="date" id="logDate" value="'+new Date().toISOString().slice(0,10)+'"></div>'+
+        '<div class="cd2-row"><label>Type</label><select id="logType"><option>Email</option><option>Meeting</option></select></div>'+
+        '<div class="cd2-row"><label>What was covered, optional</label><input type="text" id="logNote"></div>'+
+        '<button class="btn secondary" onclick="addClientContactLog(\''+c.airtableId+'\')">Log it</button>'+
+        '<div class="cd2-log-hist">'+
+          (log.length ? log.map(e=>
+            '<div class="cd2-log-item"><div class="meta"><span>'+e.type+'</span><span>'+new Date(e.date).toLocaleDateString('en-AU')+'</span></div>'+
+            (e.note?'<div class="note">'+e.note+'</div>':'')+'</div>'
+          ).join('') : '<div class="cd2-no" style="font-size:12.5px;color:var(--muted,#69707F);font-style:italic;margin-top:8px">No contacts logged yet.</div>')+
+        '</div>'+
+      '</div>'+
+    '</div>'+
+
     '<div class="detailActions"><button class="btn" onclick="pushClient(\''+c.airtableId+'\')">Save to Airtable</button>'+
     '<span class="savedNote" id="clientSaveNote"></span></div>';
   m.appendChild(d);
@@ -849,6 +926,24 @@ function renderClientDetail(){
   if(mi) m.appendChild(mi);
 
   m.appendChild(p30Panel(c));
+}
+
+async function addClientContactLog(clientId){
+  const c=STATE.clients.find(x=>x.airtableId===clientId);
+  const date=document.getElementById('logDate').value;
+  const type=document.getElementById('logType').value;
+  const note=document.getElementById('logNote').value;
+  if(!date) return;
+  const log=clientContactLogFor(c);
+  log.push({date, type, note});
+  c.contactLog=JSON.stringify(log);
+  const note2=document.getElementById('clientSaveNote');
+  try{
+    const r=await authedFetch('/.netlify/functions/client-update',{method:'POST', body:JSON.stringify({recordId:clientId, name:c.n, fields:{contactLog:c.contactLog}})});
+    const dd=await r.json();
+    if(!r.ok || dd.ok===false){ if(note2) note2.textContent=dd.message||'Save failed.'; return; }
+  }catch(e){ if(note2) note2.textContent='Could not reach the server.'; return; }
+  render();
 }
 
 /* ================= First 30 Days, tracked ================= */
@@ -1216,12 +1311,17 @@ async function pushClient(id){
     ca: document.getElementById('fCa').value,
     refSource: document.getElementById('fRefSource').value,
     referredBy: document.getElementById('fReferredBy').value,
-    disc: document.getElementById('fDisc').value,    phone: document.getElementById('fPhone').value,
+    disc: document.getElementById('fDisc').value,
+    phone: document.getElementById('fPhone').value,
+    email: document.getElementById('fEmail').value,
     dob: document.getElementById('fDob').value,
     startDate: document.getElementById('fStartDate').value,
     exitDate: document.getElementById('fExitDate').value,
     mandatedMonths: document.getElementById('fMandatedMonths').value,
-    notes: document.getElementById('fNotes').value
+    notes: document.getElementById('fNotes').value,
+    mobileInContacts: document.getElementById('fMobileInContacts').checked,
+    emailInContacts: document.getElementById('fEmailInContacts').checked,
+    addressInContacts: document.getElementById('fAddressInContacts').checked
   };
   const note=document.getElementById('clientSaveNote'); note.textContent='Saving...';
   try{
