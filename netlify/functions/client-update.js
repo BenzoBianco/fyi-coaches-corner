@@ -37,7 +37,8 @@ const FIELD_MAP = {
   emailInContacts:   'Email In Contacts',
   addressInContacts: 'Address In Contacts',
   p30running: 'First 30 Days Running',
-  p30:        'First 30 Days Progress'
+  p30:        'First 30 Days Progress',
+  bestPractice: 'Best Practice Tips Passed'
 };
 
 async function findRecord(base, pat, name) {

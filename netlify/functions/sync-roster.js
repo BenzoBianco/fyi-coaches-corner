@@ -54,7 +54,15 @@ function mapClient(r) {
     emailInContacts: !!f['Email In Contacts'],
     addressInContacts: !!f['Address In Contacts'],
     p30running: !!f['First 30 Days Running'],
-    p30: f['First 30 Days Progress'] || ''
+    p30: f['First 30 Days Progress'] || '',
+    bestPractice: f['Best Practice Tips Passed'] || '',
+    gradDate: f['Graduation Date'] || '',
+    daysToGrad: (f['Days To Graduation']===0 || f['Days To Graduation']) ? f['Days To Graduation'] : null,
+    gradFlag: f['Graduation Flag'] || '',
+    riskFlag: f['Risk Flag'] || '',
+    lastZoomDate: f['Last Zoom Session Date'] || '',
+    daysSinceZoom: (f['Days Since Last Zoom Contact']===0 || f['Days Since Last Zoom Contact']) ? f['Days Since Last Zoom Contact'] : null,
+    contactRisk: f['Contact Risk'] || ''
   };
 }
 
