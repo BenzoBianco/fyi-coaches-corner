@@ -62,7 +62,8 @@ function mapClient(r) {
     riskFlag: f['Risk Flag'] || '',
     lastZoomDate: f['Last Zoom Session Date'] || '',
     daysSinceZoom: (f['Days Since Last Zoom Contact']===0 || f['Days Since Last Zoom Contact']) ? f['Days Since Last Zoom Contact'] : null,
-    contactRisk: f['Contact Risk'] || ''
+    contactRisk: f['Contact Risk'] || '',
+    contactLog: f['Contact Log'] || ''
   };
 }
 
