@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>FYI Coaches' Corner v1.09.18</title>
+<title>FYI Coaches' Corner v1.09.19</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -226,7 +226,7 @@ main{padding:22px;max-width:1140px;margin:0 auto}
 
 <div id="app">
   <header class="top">
-    <div class="brand">FYI Coaches' Corner<span class="verBadge" id="verBadge" onclick="toggleChangelog()" title="Click for what's new">v1.09.18</span><small id="coachBadge"></small></div>
+    <div class="brand">FYI Coaches' Corner<span class="verBadge" id="verBadge" onclick="toggleChangelog()" title="Click for what's new">v1.09.19</span><small id="coachBadge"></small></div>
     <div class="who">
       <span id="whoEmail"></span>
       <button onclick="doLogout()">Sign out</button>
@@ -365,8 +365,13 @@ function copySupervisionEmail(clientId){
   } else { fallback(); }
 }
 
-const APP_VERSION = '1.09.18';
+const APP_VERSION = '1.09.19';
 const RELEASES = [
+  {v:'1.09.19', d:'16/09/2026', t:'First 30 Days now shows the real onboarding script', items:[
+    'Found the gap: stage 00 carries a full live-call script in The Bridge, numbered items with their own sub-prompts, separate from the 36-task mentee/mentor counter this app already tracked. That script was never being read, so it was invisible here even though the data existed.',
+    'Stage tabs added, 00 through 04, each showing its own task count, matching The Bridge\u2019s tile row. Selecting a stage shows its intro, its \u201cHow this differs\u201d framing where it has one, and its full script, checkboxes for prompts, a real text field for the one that captures an answer, the partnership manager\u2019s name.',
+    'The top-line \u201cX of 36 actions complete\u201d still counts only mentee and mentor follow-ups, unchanged, matching The Bridge\u2019s own figure. Script prompts save separately in the same Airtable field, nothing new to create.'
+  ]},
   {v:'1.09.18', d:'16/09/2026', t:'DISC panel reverted to The Bridge\u2019s own design', items:[
     'Ben clarified the red Sales Animal PDF styling was only a reference for content, not the look he wanted. Reverted to The Bridge\u2019s actual DISC panel, pulled from its own source this time, not a screenshot: the exact CSS classes and colours, C0453F for Very High, E0A93C for High, 6090C9 for Low, 9AA0B0 for Very Low, same grid layout, same Highest/Lowest reads, same Coaching Them box.'
   ]},
@@ -836,17 +841,40 @@ function renderClientDetail(){
 function p30TaskList(){
   const out=[];
   PROGRAM_30.stages.forEach(st=>{
-    (st.mentee||[]).forEach(t=>out.push({stage:st.n, title:st.t, who:'Mentee', text:t}));
-    (st.mentor||[]).forEach(t=>out.push({stage:st.n, title:st.t, who:'Mentor', text:t}));
+    (st.mentee||[]).forEach(t=>out.push({stageId:st.id, stage:st.n, title:st.t, who:'Mentee', text:t}));
+    (st.mentor||[]).forEach(t=>out.push({stageId:st.id, stage:st.n, title:st.t, who:'Mentor', text:t}));
+  });
+  return out;
+}
+/* The onboarding meeting (stage 00) also carries a full live-call script,
+   numbered items with their own sub-prompts, some plain checkboxes, a
+   couple that capture a short answer (the partnership manager's name).
+   Separate from the 36-task counter, which only ever counts mentee and
+   mentor follow-ups, same as The Bridge's own top-line "X of 36". */
+function scriptItemsFor(stage){
+  const out=[]; let checkIdx=0;
+  (stage.script||[]).forEach(item=>{
+    item.p.forEach(p=>{
+      if(typeof p==='string'){ out.push({itemN:item.n, itemT:item.t, kind:'check', text:p, checkIdx:checkIdx}); checkIdx++; }
+      else { out.push({itemN:item.n, itemT:item.t, kind:'field', text:p.t, field:p.field, placeholder:p.placeholder||''}); }
+    });
   });
   return out;
 }
 function p30StateFor(c){
-  try{ const v=JSON.parse(c.p30||'[]'); if(Array.isArray(v) && v.length===36) return v; }catch(e){}
-  return new Array(36).fill(false);
+  try{
+    const v=JSON.parse(c.p30||'{}');
+    if(Array.isArray(v) && v.length===36) return {tasks:v, script:{}}; /* heals the pre-script format */
+    if(v && Array.isArray(v.tasks) && v.tasks.length===36) return {tasks:v.tasks, script:v.script||{}};
+  }catch(e){}
+  return {tasks:new Array(36).fill(false), script:{}};
+}
+function p30ScriptStateFor(state, stageId){
+  return state.script[stageId] || {checks:[], fields:{}};
 }
 
 function p30Panel(c){
+  if(!STATE.p30Stage) STATE.p30Stage = PROGRAM_30.stages[0].id;
   const wrap=document.createElement('div'); wrap.className='detail'; wrap.style.marginTop='14px';
   let html='<h2>'+PROGRAM_30.title+'</h2><p style="color:var(--muted,#69707F);font-size:13px;margin-top:-8px">'+PROGRAM_30.sub+'</p>'+
     '<label style="display:flex;align-items:center;gap:8px;font-size:13px;margin:14px 0;cursor:pointer">'+
@@ -863,20 +891,72 @@ function p30Panel(c){
     return wrap;
   }
 
-  const tasks=p30TaskList();
+  const allTasks=p30TaskList();
   const state=p30StateFor(c);
-  const done=state.filter(Boolean).length;
-  html+='<p style="font-size:13px;color:var(--muted,#69707F)">'+done+' of 36 tasks complete.</p>'+
+  const done=state.tasks.filter(Boolean).length;
+  html+='<p style="font-size:13px;color:var(--muted,#69707F)">'+done+' of 36 actions complete.</p>'+
     '<div class="progressBar"><div class="fill" style="width:'+Math.round(done/36*100)+'%;background:var(--accent,#4A6FA5)"></div></div>';
 
-  let lastStage=null, lastWho=null;
-  tasks.forEach((t,i)=>{
-    if(t.stage!==lastStage){ html+='<div class="sopGroup" style="margin-top:16px">'+t.stage+', '+t.title+'</div>'; lastStage=t.stage; lastWho=null; }
-    if(t.who!==lastWho){ html+='<div style="font-size:.66rem;text-transform:uppercase;letter-spacing:.04em;color:var(--muted,#69707F);font-weight:700;margin:8px 0 4px">'+t.who+'</div>'; lastWho=t.who; }
-    html+='<label style="display:flex;gap:8px;align-items:flex-start;padding:4px 0;font-size:13px;cursor:pointer">'+
-      '<input type="checkbox" style="margin-top:2px" '+(state[i]?'checked':'')+' onchange="toggleP30Task(\''+c.airtableId+'\','+i+',this.checked)">'+
-      '<span>'+t.text+'</span></label>';
+  /* Stage tabs, matching The Bridge's 00 to 04 tiles, each showing its
+     own mentee-plus-mentor count. */
+  html+='<div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(150px,1fr));margin-top:6px">';
+  PROGRAM_30.stages.forEach(st=>{
+    const stTasks=allTasks.filter(t=>t.stageId===st.id);
+    const stDone=stTasks.filter((t,i)=>{
+      const globalIdx=allTasks.indexOf(t);
+      return state.tasks[globalIdx];
+    }).length;
+    const active=STATE.p30Stage===st.id;
+    html+='<div class="card" style="cursor:pointer;'+(active?'border-color:var(--accent,#4A6FA5);border-width:2px':'')+'" onclick="STATE.p30Stage=\''+st.id+'\'; render()">'+
+      '<h3 style="color:var(--accent,#4A6FA5)">'+st.n+'</h3><div class="meta" style="margin-top:4px;font-weight:600;color:var(--primary,#2A3550)">'+st.t+'</div>'+
+      '<div class="meta" style="margin-top:4px">'+stDone+'/'+stTasks.length+'</div>'+
+    '</div>';
   });
+  html+='</div>';
+
+  const stage=PROGRAM_30.stages.find(s=>s.id===STATE.p30Stage)||PROGRAM_30.stages[0];
+  html+='<div style="margin-top:18px;padding-top:14px;border-top:1px solid var(--border,#DFE3EB)">';
+  if(stage.focus) html+='<p style="font-weight:700;color:var(--primary,#2A3550)">'+stage.focus+'</p>';
+  if(stage.whereH && stage.where){
+    html+='<div class="sopGroup" style="margin-top:12px">'+stage.whereH+'</div><p style="font-size:13px">'+stage.where+'</p>';
+  }
+  if(stage.script && stage.script.length){
+    html+='<div class="sopGroup" style="margin-top:16px">'+(stage.scriptH||'The script')+'</div>';
+    const scriptState=p30ScriptStateFor(state, stage.id);
+    let lastItem=null;
+    scriptItemsFor(stage).forEach(si=>{
+      if(si.itemN!==lastItem){
+        html+='<div style="display:flex;align-items:center;gap:8px;margin:14px 0 4px"><span style="width:22px;height:22px;border-radius:50%;background:var(--accent2,#C59C44);color:#fff;font-family:Montserrat,sans-serif;font-weight:700;font-size:.72rem;display:flex;align-items:center;justify-content:center;flex-shrink:0">'+si.itemN+'</span><b style="font-family:Montserrat,sans-serif">'+si.itemT+'</b></div>';
+        lastItem=si.itemN;
+      }
+      if(si.kind==='check'){
+        const checked=!!scriptState.checks[si.checkIdx];
+        html+='<label style="display:flex;gap:8px;align-items:flex-start;padding:4px 0 4px 30px;font-size:13px;cursor:pointer">'+
+          '<input type="checkbox" style="margin-top:2px" '+(checked?'checked':'')+' onchange="toggleP30Script(\''+c.airtableId+'\',\''+stage.id+'\','+si.checkIdx+',this.checked)">'+
+          '<span>'+si.text+'</span></label>';
+      } else {
+        const val=scriptState.fields[si.field]||'';
+        html+='<div style="padding:4px 0 4px 30px;font-size:13px">'+si.text+
+          '<input type="text" value="'+val.replace(/"/g,'&quot;')+'" placeholder="'+si.placeholder+'" style="display:block;margin-top:4px;padding:6px 8px;border:1px solid var(--border,#DFE3EB);border-radius:6px;font-size:13px;width:100%;max-width:260px" onchange="setP30ScriptField(\''+c.airtableId+'\',\''+stage.id+'\',\''+si.field+'\',this.value)"></div>';
+      }
+    });
+  }
+  if(stage.mentee || stage.mentor){
+    html+='<div class="sopGroup" style="margin-top:16px">Follow-up tasks</div>';
+    ['Mentee','Mentor'].forEach(who=>{
+      const items=(who==='Mentee'?stage.mentee:stage.mentor)||[];
+      if(!items.length) return;
+      html+='<div style="font-size:.66rem;text-transform:uppercase;letter-spacing:.04em;color:var(--muted,#69707F);font-weight:700;margin:8px 0 4px">'+who+'</div>';
+      items.forEach(text=>{
+        const t=allTasks.find(x=>x.stageId===stage.id && x.who===who && x.text===text);
+        const globalIdx=allTasks.indexOf(t);
+        html+='<label style="display:flex;gap:8px;align-items:flex-start;padding:4px 0;font-size:13px;cursor:pointer">'+
+          '<input type="checkbox" '+(state.tasks[globalIdx]?'checked':'')+' onchange="toggleP30Task(\''+c.airtableId+'\','+globalIdx+',this.checked)">'+
+          '<span>'+text+'</span></label>';
+      });
+    });
+  }
+  html+='</div>';
   html+='<div class="savedNote" id="p30SaveNote" style="margin-top:10px"></div>';
   wrap.innerHTML=html;
   return wrap;
@@ -900,7 +980,24 @@ function toggleP30Running(clientId, val){
 function toggleP30Task(clientId, idx, val){
   const c=STATE.clients.find(x=>x.airtableId===clientId);
   const state=p30StateFor(c);
-  state[idx]=val;
+  state.tasks[idx]=val;
+  c.p30=JSON.stringify(state);
+  saveP30(clientId, {p30:c.p30});
+  if(STATE.clientOpen===clientId) render();
+}
+function toggleP30Script(clientId, stageId, checkIdx, val){
+  const c=STATE.clients.find(x=>x.airtableId===clientId);
+  const state=p30StateFor(c);
+  if(!state.script[stageId]) state.script[stageId]={checks:[],fields:{}};
+  state.script[stageId].checks[checkIdx]=val;
+  c.p30=JSON.stringify(state);
+  saveP30(clientId, {p30:c.p30});
+}
+function setP30ScriptField(clientId, stageId, field, val){
+  const c=STATE.clients.find(x=>x.airtableId===clientId);
+  const state=p30StateFor(c);
+  if(!state.script[stageId]) state.script[stageId]={checks:[],fields:{}};
+  state.script[stageId].fields[field]=val;
   c.p30=JSON.stringify(state);
   saveP30(clientId, {p30:c.p30});
 }
