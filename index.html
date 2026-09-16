@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>FYI Coaches' Corner v1.09.15</title>
+<title>FYI Coaches' Corner v1.09.16</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -194,7 +194,7 @@ main{padding:22px;max-width:1140px;margin:0 auto}
 
 <div id="app">
   <header class="top">
-    <div class="brand">FYI Coaches' Corner<span class="verBadge" id="verBadge" onclick="toggleChangelog()" title="Click for what's new">v1.09.15</span><small id="coachBadge"></small></div>
+    <div class="brand">FYI Coaches' Corner<span class="verBadge" id="verBadge" onclick="toggleChangelog()" title="Click for what's new">v1.09.16</span><small id="coachBadge"></small></div>
     <div class="who">
       <span id="whoEmail"></span>
       <button onclick="doLogout()">Sign out</button>
@@ -333,8 +333,12 @@ function copySupervisionEmail(clientId){
   } else { fallback(); }
 }
 
-const APP_VERSION = '1.09.15';
+const APP_VERSION = '1.09.16';
 const RELEASES = [
+  {v:'1.09.16', d:'15/09/2026', t:'DISC card matched to the Sales Animal Profile Reference Guide', items:[
+    'Redesigned to match the layout of Ben\u2019s reference guide: bordered card, red bars against Very High to Very Low gridlines, Profile ID, Job Role, Pace and Attention to Detail laid out the same way.',
+    'Photos not included, deliberately. The reference guide\u2019s animal photos are stock images Coaches\u2019 Corner has no licence to reproduce. Style only, per Ben\u2019s call.'
+  ]},
   {v:'1.09.15', d:'15/09/2026', t:'Client sort added, matching The Bridge', items:[
     'Sort dropdown added beside the client filters: Newest first, Longest standing, Quietest first, Next session, Highest fee, Name. Same six options and the same tie-breaking rules as The Bridge.',
     'Quietest first and Next session both use real data already syncing in this app, calendar sessions and Fireflies, not a new concept invented for sorting.',
@@ -963,22 +967,44 @@ function discPanel(animal){
   const hi=lv.slice().sort((x,y)=>y.v-x.v)[0];
   const lo=lv.slice().sort((x,y)=>x.v-y.v)[0];
   const wrap=document.createElement('div'); wrap.className='detail'; wrap.style.marginTop='14px';
-  let bars='<div style="display:flex;gap:18px;align-items:flex-end;height:120px;margin:14px 0">';
+
+  /* Chart styled to match the Sales Animal Profile Reference Guide: a
+     bordered card, a single red bar per letter against four gridlines,
+     Very High down to Very Low, with a fixed red reference line at the
+     High band, the same position on every profile in that guide. */
+  const ROWS=['Very High','High','Low','Very Low'];
+  let chart='<div style="border:1px solid #333;border-radius:6px;padding:14px 16px 10px;max-width:340px;background:#fff">'+
+    '<div style="display:flex;justify-content:center;gap:22px;font-weight:800;font-family:Montserrat,sans-serif;color:#b3211f;font-size:.8rem;margin-bottom:6px">'+
+      DISC_LETTERS.map(l=>'<span>'+l+'</span>').join('')+
+    '</div>'+
+    '<div style="position:relative;height:140px;border-top:1px solid #ddd">';
+  ROWS.forEach((label,i)=>{
+    chart+='<div style="position:absolute;left:0;right:0;top:'+(i*140/4)+'px;border-top:1px solid #eee;font-size:.6rem;color:#888;padding-left:2px">'+label+'</div>';
+  });
+  /* Fixed reference line at the High band, matching the guide's own
+     static template line, not computed per animal. */
+  chart+='<div style="position:absolute;left:0;right:0;top:'+(140/4)+'px;border-top:2px solid #b3211f"></div>';
+  chart+='<div style="position:absolute;left:58px;right:8px;bottom:0;top:0;display:flex;justify-content:space-around;align-items:flex-end">';
   lv.forEach(b=>{
     const h=(b.v/4*100);
-    const color = b.v===4 ? 'var(--accent,#4A6FA5)' : b.v===1 ? 'var(--border,#DFE3EB)' : '#C59C44';
-    bars+='<div style="display:flex;flex-direction:column;align-items:center;gap:6px;flex:1">'+
-      '<div style="width:100%;max-width:44px;height:'+h+'%;background:'+color+';border-radius:6px 6px 0 0;align-self:flex-end"></div>'+
-      '<b style="font-family:Montserrat,sans-serif">'+b.l+'</b><span style="font-size:.68rem;color:var(--muted,#69707F)">'+DISC_LEVELS[b.v]+'</span>'+
-    '</div>';
+    chart+='<div style="width:22px;height:'+h+'%;background:#b3211f;border-radius:1px 1px 0 0"></div>';
   });
-  bars+='</div>';
-  wrap.innerHTML='<h2>DISC profile, '+animal+' ('+a.p+' '+a.n+')</h2>'+bars+
-    '<div class="fieldGrid" style="margin-top:6px">'+
+  chart+='</div></div></div>';
+
+  const info='<div style="flex:1;min-width:200px">'+
+    '<div style="font-family:Montserrat,sans-serif;font-weight:800;font-size:1.3rem;color:#b3211f">'+animal+'</div>'+
+    '<div style="font-size:.85rem;color:var(--text,#26293A);margin-top:6px;line-height:1.7">'+
+      '<b>Profile ID:</b> '+a.p+' '+a.n+'<br>'+
+      '<b>Job Role:</b> '+a.role+'<br>'+
+      '<b>Pace:</b> '+a.pace+'<br>'+
+      '<b>Attention to detail:</b> '+a.det+
+    '</div></div>';
+
+  wrap.innerHTML='<h2>DISC profile</h2>'+
+    '<div style="display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start">'+chart+info+'</div>'+
+    '<div class="fieldGrid" style="margin-top:18px">'+
       '<div class="field"><label>Highest</label><div>'+hi.l+', '+TRAIT[hi.l]+'</div></div>'+
       '<div class="field"><label>Lowest</label><div>'+lo.l+', '+TRAIT[lo.l]+'</div></div>'+
-      '<div class="field"><label>Suits</label><div>'+a.role+'</div></div>'+
-      '<div class="field"><label>Pace</label><div>'+a.pace+'</div></div>'+
       '<div class="field full"><label>Coaching them</label><div>'+COACH[hi.l]+'</div></div>'+
     '</div>';
   return wrap;
