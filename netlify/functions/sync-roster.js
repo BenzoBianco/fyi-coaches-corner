@@ -91,7 +91,8 @@ function mapProspect(r) {
     note: f['Notes'] || '',
     email: f['Email'] || '',
     phone: f['Mobile Phone'] || '',
-    business: f['Business name'] || ''
+    business: f['Business name'] || '',
+    archived: !!f['Archived']
   };
 }
 

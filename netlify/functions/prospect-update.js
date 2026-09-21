@@ -23,7 +23,8 @@ const FIELD_MAP = {
   email:    'Email',
   mandated: '# Mandated Months',
   phone:    'Mobile Phone',
-  business: 'Business name'
+  business: 'Business name',
+  archived: 'Archived'
 };
 
 export default async (req, context) => {
