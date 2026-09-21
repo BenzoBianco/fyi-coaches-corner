@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>FYI Coaches' Corner v1.09.28</title>
+<title>FYI Coaches' Corner v1.09.30</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -247,7 +247,7 @@ main{padding:22px;max-width:1140px;margin:0 auto}
 
 <div id="app">
   <header class="top">
-    <div class="brand">FYI Coaches' Corner<span class="verBadge" id="verBadge" onclick="toggleChangelog()" title="Click for what's new">v1.09.28</span><small id="coachBadge"></small></div>
+    <div class="brand">FYI Coaches' Corner<span class="verBadge" id="verBadge" onclick="toggleChangelog()" title="Click for what's new">v1.09.30</span><small id="coachBadge"></small></div>
     <div class="who">
       <span id="whoEmail"></span>
       <button onclick="doLogout()">Sign out</button>
@@ -386,8 +386,15 @@ function copySupervisionEmail(clientId){
   } else { fallback(); }
 }
 
-const APP_VERSION = '1.09.28';
+const APP_VERSION = '1.09.30';
 const RELEASES = [
+  {v:'1.09.30', d:'21/09/2026', t:'Referrer Status is now a real dropdown', items:[
+    'Status on the relationship page was a free-text box, letting it drift from what Airtable actually allows. Now a dropdown with the three real values from the live table, Active, Dormant, Off-radar, matching the coloured badges you already see in Airtable.'
+  ]},
+  {v:'1.09.29', d:'21/09/2026', t:'Relationship archiving', items:[
+    'Same pattern as Prospects: new Archived checkbox field, an Archive button on the relationship\u2019s own page, and an Active/Archived pill toggle at the top of the tab. Archived contacts drop out of the dashboard counts and the default list, greyed out and reachable only via the Archived pill.',
+    'For referral partnerships that are no longer live, not deleted, just out of the way.'
+  ]},
   {v:'1.09.28', d:'21/09/2026', t:'Prospect archiving', items:[
     'New Archived checkbox field on Prospects. Archiving a prospect from its detail page removes it from the default list, greyed out and only visible via the new Archived pill filter, kept for statistical purposes rather than deleted.',
     'Active and Archived pill counts shown in the Prospects toolbar, same filter-chip style as the Clients tab.'
@@ -1603,15 +1610,22 @@ function renderRelationships(){
   if(STATE.relOpen!==null) return renderRelationshipDetail();
 
   const wrap=document.createElement('div'); wrap.className='relTracker';
+  if(!STATE.showArchivedRels) STATE.showArchivedRels=false;
 
-  const statuses = STATE.relationships.map(relCadenceStatus);
+  const nonArchived = STATE.relationships.filter(r=>!r.archived);
+  const archivedCount = STATE.relationships.length - nonArchived.length;
+  const statuses = nonArchived.map(relCadenceStatus);
   const counts = {overdue:0, soon:0, ok:0};
   statuses.forEach(s=>counts[s.cls]++);
   wrap.innerHTML = '<div class="rt-dash">'+
       '<div class="rt-dash-card overdue"><div class="num">'+counts.overdue+'</div><div class="lbl">Overdue</div></div>'+
       '<div class="rt-dash-card soon"><div class="num">'+counts.soon+'</div><div class="lbl">Due within 3 days</div></div>'+
       '<div class="rt-dash-card ok"><div class="num">'+counts.ok+'</div><div class="lbl">On track</div></div>'+
-      '<div class="rt-dash-card total"><div class="num">'+STATE.relationships.length+'</div><div class="lbl">Total contacts</div></div>'+
+      '<div class="rt-dash-card total"><div class="num">'+nonArchived.length+'</div><div class="lbl">Total contacts</div></div>'+
+    '</div>'+
+    '<div class="rt-chips" style="margin-bottom:14px">'+
+      '<button class="rt-chip'+(!STATE.showArchivedRels?' active':'')+'" data-archview="active">Active</button>'+
+      '<button class="rt-chip'+(STATE.showArchivedRels?' active':'')+'" data-archview="archived">Archived ('+archivedCount+')</button>'+
     '</div>';
 
   const q=(STATE.relSearch||'').toLowerCase();
@@ -1628,6 +1642,7 @@ function renderRelationships(){
   wrap.appendChild(toolbar);
 
   let visible = STATE.relationships.filter(r=>{
+    if(!!r.archived !== STATE.showArchivedRels) return false;
     if(STATE.relCategoryFilter && r.category!==STATE.relCategoryFilter) return false;
     if(q){
       const hay=(r.n+' '+(r.email||'')+' '+(r.phone||'')+' '+(r.company||'')+' '+(r.profession||'')).toLowerCase();
@@ -1661,6 +1676,7 @@ function renderRelationships(){
       ).join('') : '<div class="rt-no-history">No contact logged yet.</div>';
 
       const row=document.createElement('div'); row.className='rt-row';
+      if(r.archived) row.style.cssText='opacity:.55;filter:grayscale(.6)';
       row.innerHTML = relRingSVG(status)+
         '<div class="rt-main">'+
           '<div class="rt-name-line"><span class="rt-name" onclick="STATE.relOpen=\''+r.airtableId+'\'; render()">'+r.n+'</span>'+heatBadge+(r.category?'<span class="rt-tag">'+r.category+'</span>':'')+keyBadges+'</div>'+
@@ -1692,7 +1708,11 @@ function renderRelationships(){
   document.getElementById('rtSearch').oninput=e=>{ STATE.relSearch=e.target.value; render(); };
   document.getElementById('rtCategory').onchange=e=>{ STATE.relCategoryFilter=e.target.value; render(); };
   document.getElementById('rtSort').onchange=e=>{ STATE.relSort=e.target.value; render(); };
-  wrap.querySelectorAll('.rt-chip').forEach(b=>{ b.onclick=()=>{ STATE.relFilter=b.dataset.status; render(); }; });
+  wrap.querySelectorAll('.rt-chip').forEach(b=>{ b.onclick=()=>{
+    if(b.dataset.archview) STATE.showArchivedRels = b.dataset.archview==='archived';
+    else STATE.relFilter=b.dataset.status;
+    render();
+  }; });
 }
 
 async function quickLog(relId, method, direction){
@@ -1713,6 +1733,16 @@ function relLogFor(r){
   return [];
 }
 
+async function toggleRelationshipArchive(id, val){
+  const r=STATE.relationships.find(x=>x.airtableId===id);
+  r.archived=val;
+  try{
+    await authedFetch('/.netlify/functions/relationship-update',{method:'POST', body:JSON.stringify({recordId:id, name:r.n, fields:{archived:val}})});
+  }catch(e){}
+  STATE.relOpen=null;
+  render();
+}
+
 function renderRelationshipDetail(){
   const m=document.getElementById('main');
   const isNew = STATE.relOpen==='new';
@@ -1720,7 +1750,7 @@ function renderRelationshipDetail(){
   if(!r){ STATE.relOpen=null; return renderRelationships(); }
   const d=document.createElement('div'); d.className='detail';
   d.innerHTML='<button class="back" onclick="STATE.relOpen=null; render()">&larr; Back to relationships</button>'+
-    '<h2>'+(isNew?'New relationship':r.n)+'</h2>'+
+    '<h2>'+(isNew?'New relationship':r.n)+(r.archived?' <span class="tag grey" style="font-size:.68rem;vertical-align:middle">Archived</span>':'')+'</h2>'+
     '<div class="fieldGrid">'+
       (isNew?fieldRow('Name','rName',''):'')+
       fieldRow('Company','rCompany',r.company)+
@@ -1730,7 +1760,9 @@ function renderRelationshipDetail(){
       '</select></div>'+
       fieldRow('Type','rType',r.type)+
       fieldRow('Priority','rPri',r.pri)+
-      fieldRow('Status','rStatus',r.status)+
+      '<div class="field"><label>Status</label><select id="rStatus">'+
+        ['','Active','Dormant','Off-radar'].map(o=>'<option value="'+o+'" '+(r.status===o?'selected':'')+'>'+(o||'—')+'</option>').join('')+
+      '</select></div>'+
       fieldRow('Email','rEmail',r.email,'email')+
       fieldRow('Mobile','rPhone',r.phone)+
       fieldRow('Last contacted','rLast',r.last,'date')+
@@ -1746,6 +1778,7 @@ function renderRelationshipDetail(){
         'style="accent-color:'+heatColor(r.heat==null?5:r.heat)+'" '+
         'oninput="this.previousElementSibling.textContent=\'Relationship heat, \'+this.value+\' of 10\'"></div>'+
     '<div class="detailActions"><button class="btn" onclick="pushRelationship('+(isNew?'null':'\''+r.airtableId+'\'')+')">Save to Airtable</button>'+
+    (!isNew ? '<button class="btn ghost" onclick="toggleRelationshipArchive(\''+r.airtableId+'\','+(!r.archived)+')">'+(r.archived?'Unarchive':'Archive')+'</button>' : '')+
     '<span class="savedNote" id="relSaveNote"></span></div>';
   m.appendChild(d);
 
