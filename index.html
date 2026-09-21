@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>FYI Coaches' Corner v1.09.27</title>
+<title>FYI Coaches' Corner v1.09.28</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -247,7 +247,7 @@ main{padding:22px;max-width:1140px;margin:0 auto}
 
 <div id="app">
   <header class="top">
-    <div class="brand">FYI Coaches' Corner<span class="verBadge" id="verBadge" onclick="toggleChangelog()" title="Click for what's new">v1.09.27</span><small id="coachBadge"></small></div>
+    <div class="brand">FYI Coaches' Corner<span class="verBadge" id="verBadge" onclick="toggleChangelog()" title="Click for what's new">v1.09.28</span><small id="coachBadge"></small></div>
     <div class="who">
       <span id="whoEmail"></span>
       <button onclick="doLogout()">Sign out</button>
@@ -386,8 +386,12 @@ function copySupervisionEmail(clientId){
   } else { fallback(); }
 }
 
-const APP_VERSION = '1.09.27';
+const APP_VERSION = '1.09.28';
 const RELEASES = [
+  {v:'1.09.28', d:'21/09/2026', t:'Prospect archiving', items:[
+    'New Archived checkbox field on Prospects. Archiving a prospect from its detail page removes it from the default list, greyed out and only visible via the new Archived pill filter, kept for statistical purposes rather than deleted.',
+    'Active and Archived pill counts shown in the Prospects toolbar, same filter-chip style as the Clients tab.'
+  ]},
   {v:'1.09.27', d:'21/09/2026', t:'Fee broken into base and Mercury Pro addon', items:[
     'Checked Airtable\u2019s own formulas before building anything: Actual Fee Monthly already combines Base Monthly Fee, the Mercury Pro Addon, and any concession, so that\u2019s what the outside card now shows as the total, not a value recalculated here.',
     'Mercury Pro Addon and Addon Months are now editable. Add On End Date and whether the addon is still active are read directly from Airtable, shown with days remaining on the client card and in the Engagement panel.',
@@ -1421,17 +1425,30 @@ function prOverdue(p){ return p.close && p.close < new Date().toISOString().slic
 function renderProspects(){
   const m=document.getElementById('main');
   if(STATE.prospectOpen) return renderProspectDetail();
-  const bar=document.createElement('div'); bar.className='toolbar';
-  bar.innerHTML='<div></div><button class="btn" onclick="openNewProspect()">New prospect</button>';
-  m.appendChild(bar);
-  if(!STATE.prospects.length){ m.innerHTML+='<div class="empty">No prospects found.</div>'; return; }
+  if(!STATE.showArchivedProspects) STATE.showArchivedProspects=false;
 
-  const list = STATE.prospects.slice().sort((a,b)=>(b.idle||0)-(a.idle||0));
+  const activeCount=STATE.prospects.filter(p=>!p.archived).length;
+  const archivedCount=STATE.prospects.filter(p=>p.archived).length;
+
+  const bar=document.createElement('div'); bar.className='toolbar';
+  bar.innerHTML='<div class="cl-filters" style="margin:0">'+
+      '<button class="cl-filter'+(!STATE.showArchivedProspects?' active':'')+'" onclick="STATE.showArchivedProspects=false; render()">Active ('+activeCount+')</button>'+
+      '<button class="cl-filter'+(STATE.showArchivedProspects?' active':'')+'" onclick="STATE.showArchivedProspects=true; render()">Archived ('+archivedCount+')</button>'+
+    '</div>'+
+    '<button class="btn" onclick="openNewProspect()">New prospect</button>';
+  m.appendChild(bar);
+
+  let list = STATE.prospects.filter(p=> STATE.showArchivedProspects ? p.archived : !p.archived);
+  list = list.slice().sort((a,b)=>(b.idle||0)-(a.idle||0));
+
+  if(!list.length){ m.innerHTML+='<div class="empty">'+(STATE.showArchivedProspects?'No archived prospects.':'No active prospects found.')+'</div>'; return; }
+
   const grid=document.createElement('div'); grid.className='grid';
   list.forEach(p=>{
     const temp = prTemp(p);
     const idleCls = p.idle>45?'warn':p.idle>21?'watch':'';
     const card=document.createElement('div'); card.className='card pr-'+temp;
+    if(p.archived) card.style.cssText='opacity:.55;filter:grayscale(.6)';
     card.onclick=()=>{ STATE.prospectOpen=p.airtableId; render(); };
     let html='<h3>'+p.n+'</h3>'+
       '<div class="meta" style="margin-top:2px">'+(STATE.principal && p.coach ? p.coach+' &middot; ' : '')+'via '+(p.src||'unknown')+(p.prog?' &middot; '+p.prog:'')+'</div>'+
@@ -1453,13 +1470,23 @@ function renderProspects(){
   m.appendChild(grid);
 }
 
+async function toggleProspectArchive(id, val){
+  const p=STATE.prospects.find(x=>x.airtableId===id);
+  p.archived=val;
+  try{
+    await authedFetch('/.netlify/functions/prospect-update',{method:'POST', body:JSON.stringify({recordId:id, fields:{archived:val}})});
+  }catch(e){}
+  STATE.prospectOpen=null;
+  render();
+}
+
 function renderProspectDetail(){
   const m=document.getElementById('main');
   const p=STATE.prospects.find(x=>x.airtableId===STATE.prospectOpen);
   if(!p){ STATE.prospectOpen=null; return renderProspects(); }
   const d=document.createElement('div'); d.className='detail';
   d.innerHTML='<button class="back" onclick="STATE.prospectOpen=null; render()">&larr; Back to prospects</button>'+
-    '<h2>'+p.n+'</h2>'+
+    '<h2>'+p.n+(p.archived?' <span class="tag grey" style="font-size:.68rem;vertical-align:middle">Archived</span>':'')+'</h2>'+
     '<div class="fieldGrid">'+
       fieldRow('Status','pStage',p.stage)+
       fieldRow('Source','pSrc',p.src)+
@@ -1476,6 +1503,7 @@ function renderProspectDetail(){
       fieldRow('Notes','pNote',p.note,'textarea')+
     '</div>'+
     '<div class="detailActions"><button class="btn" onclick="pushProspect(\''+p.airtableId+'\')">Save to Airtable</button>'+
+    '<button class="btn ghost" onclick="toggleProspectArchive(\''+p.airtableId+'\','+(!p.archived)+')">'+(p.archived?'Unarchive':'Archive')+'</button>'+
     '<span class="savedNote" id="prospectSaveNote"></span></div>';
   m.appendChild(d);
 
