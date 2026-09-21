@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>FYI Coaches' Corner v1.09.26</title>
+<title>FYI Coaches' Corner v1.09.27</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -247,7 +247,7 @@ main{padding:22px;max-width:1140px;margin:0 auto}
 
 <div id="app">
   <header class="top">
-    <div class="brand">FYI Coaches' Corner<span class="verBadge" id="verBadge" onclick="toggleChangelog()" title="Click for what's new">v1.09.26</span><small id="coachBadge"></small></div>
+    <div class="brand">FYI Coaches' Corner<span class="verBadge" id="verBadge" onclick="toggleChangelog()" title="Click for what's new">v1.09.27</span><small id="coachBadge"></small></div>
     <div class="who">
       <span id="whoEmail"></span>
       <button onclick="doLogout()">Sign out</button>
@@ -386,8 +386,13 @@ function copySupervisionEmail(clientId){
   } else { fallback(); }
 }
 
-const APP_VERSION = '1.09.26';
+const APP_VERSION = '1.09.27';
 const RELEASES = [
+  {v:'1.09.27', d:'21/09/2026', t:'Fee broken into base and Mercury Pro addon', items:[
+    'Checked Airtable\u2019s own formulas before building anything: Actual Fee Monthly already combines Base Monthly Fee, the Mercury Pro Addon, and any concession, so that\u2019s what the outside card now shows as the total, not a value recalculated here.',
+    'Mercury Pro Addon and Addon Months are now editable. Add On End Date and whether the addon is still active are read directly from Airtable, shown with days remaining on the client card and in the Engagement panel.',
+    'Google Meet added to the client contact log types, alongside Phone call, SMS, WhatsApp, Email and In person.'
+  ]},
   {v:'1.09.26', d:'16/09/2026', t:'First 30 Days, weeks 1 to 4 fully rendered', items:[
     'Same class of gap as stage 00\u2019s script: the full weekly content was already embedded, prep boxes for mentor and mentee, the timed 30-minute agenda, the warm reactivation message template for Week 2, and the \u201cThis stage is done when\u201d test, but none of it was ever rendered. All of it shows now, exactly as it reads in The Bridge.',
     'Stage 00\u2019s bridge-into-Week-1 section added too: what happens in the next meeting, so onboarding closes with a clear handover instead of just ending.',
@@ -826,7 +831,15 @@ function renderClients(){
       html += '<div style="display:flex;justify-content:space-between"><span style="color:var(--muted,#69707F)">Last Zoom contact</span><b>'+new Date(c.lastZoomDate).toLocaleDateString('en-AU')+(c.daysSinceZoom!=null?' ('+c.daysSinceZoom+'d ago)':'')+'</b></div>';
     }
     if(c.startDate) html += '<div style="display:flex;justify-content:space-between"><span style="color:var(--muted,#69707F)">Started</span><b>'+new Date(c.startDate).toLocaleDateString('en-AU')+'</b></div>';
-    if(c.f) html += '<div style="display:flex;justify-content:space-between"><span style="color:var(--muted,#69707F)">Monthly fee</span><b>AUD $'+Number(c.f).toLocaleString()+'</b></div>';
+    if(c.actualFee!=null){
+      html += '<div style="display:flex;justify-content:space-between"><span style="color:var(--muted,#69707F)">Monthly fee</span><b>AUD $'+Number(c.actualFee).toLocaleString()+'</b></div>';
+      if(c.addonActive && c.addonEndDate){
+        const addonDays=daysUntil(c.addonEndDate);
+        html += '<div style="display:flex;justify-content:space-between;font-size:.7rem;color:var(--muted,#69707F)"><span>incl. Mercury Pro</span><span>ends '+new Date(c.addonEndDate).toLocaleDateString('en-AU')+(addonDays!=null?' ('+addonDays+'d)':'')+'</span></div>';
+      }
+    } else if(c.f) {
+      html += '<div style="display:flex;justify-content:space-between"><span style="color:var(--muted,#69707F)">Monthly fee</span><b>AUD $'+Number(c.f).toLocaleString()+'</b></div>';
+    }
     if(c.daysToGrad!=null) html += '<div style="display:flex;justify-content:space-between"><span style="color:var(--muted,#69707F)">To graduation</span><b>'+c.daysToGrad+'d</b></div>';
     html += '</div>';
     html += '<div class="cl-open" style="font-size:.68rem;color:var(--accent,#4A6FA5);font-weight:700;margin-top:8px">Open client file &rarr;</div>';
@@ -886,7 +899,11 @@ function renderClientDetail(){
         '<div class="cd2-row"><label>Program</label><input type="text" id="fP" value="'+(c.p||'').replace(/"/g,'&quot;')+'"></div>'+
         '<div class="cd2-row"><label>Lifecycle stage</label><input type="text" id="fSt" value="'+(c.st||'').replace(/"/g,'&quot;')+'"></div>'+
         '<div class="cd2-row"><label>Engagement (Green/Amber/Red)</label><input type="text" id="fEng" value="'+(c.rag||'').replace(/"/g,'&quot;')+'"></div>'+
-        '<div class="cd2-row"><label>Monthly fee (AUD)</label><input type="number" id="fF" value="'+(c.f||0)+'"></div>'+
+        '<div class="cd2-row"><label>Base monthly fee (AUD)</label><input type="number" id="fF" value="'+(c.f||0)+'"></div>'+
+        '<div class="cd2-row"><label>Mercury Pro addon (AUD)</label><input type="number" id="fMercuryAddon" value="'+(c.mercuryAddon||0)+'"></div>'+
+        '<div class="cd2-row"><label>Addon months, always 12</label><input type="number" id="fAddonMonths" value="'+(c.addonMonths||0)+'"></div>'+
+        (c.addonEndDate ? '<div class="cd2-static"><span>Addon ends</span><b>'+new Date(c.addonEndDate).toLocaleDateString('en-AU')+(c.addonActive && daysUntil(c.addonEndDate)!=null?' ('+daysUntil(c.addonEndDate)+'d left)':' (ended)')+'</b></div>' : '')+
+        (c.actualFee!=null ? '<div class="cd2-static"><span>Total monthly fee</span><b>AUD $'+Number(c.actualFee).toLocaleString()+'</b></div>' : '')+
         (nextSession ? '<div class="cd2-static"><span>Next session</span><b>'+new Date(nextSession).toLocaleDateString('en-AU')+'</b></div>' : '')+
         (c.lastZoomDate ? '<div class="cd2-static"><span>Last Zoom contact</span><b>'+new Date(c.lastZoomDate).toLocaleDateString('en-AU')+(c.daysSinceZoom!=null?' ('+c.daysSinceZoom+'d ago)':'')+'</b></div>' : '')+
         (c.gradDate ? '<div class="cd2-static"><span>Graduates</span><b>'+new Date(c.gradDate).toLocaleDateString('en-AU')+(c.daysToGrad!=null?' &middot; '+c.daysToGrad+'d':'')+'</b></div>' : '')+
@@ -909,7 +926,7 @@ function renderClientDetail(){
       '<div class="cd2-panel"><h4>Log a contact</h4>'+
         '<p style="font-size:.7rem;color:var(--muted,#69707F);margin:-6px 0 10px">Phone, SMS, WhatsApp and in-person catch-ups never reach Fireflies or the calendar. Log them here and they count toward days since contact.</p>'+
         '<div class="cd2-row"><label>Date</label><input type="date" id="logDate" value="'+new Date().toISOString().slice(0,10)+'"></div>'+
-        '<div class="cd2-row"><label>Type</label><select id="logType"><option>Phone call</option><option>SMS</option><option>WhatsApp</option><option>Email</option><option>In person</option></select></div>'+
+        '<div class="cd2-row"><label>Type</label><select id="logType"><option>Phone call</option><option>SMS</option><option>WhatsApp</option><option>Google Meet</option><option>Email</option><option>In person</option></select></div>'+
         '<div class="cd2-row"><label>What was covered, optional</label><input type="text" id="logNote"></div>'+
         '<button class="btn secondary" onclick="addClientContactLog(\''+c.airtableId+'\')">Log it</button>'+
         '<div class="cd2-log-hist">'+
@@ -1360,6 +1377,8 @@ async function pushClient(id){
     st: document.getElementById('fSt').value,
     eng: document.getElementById('fEng').value,
     f: document.getElementById('fF').value,
+    mercuryAddon: document.getElementById('fMercuryAddon').value,
+    addonMonths: document.getElementById('fAddonMonths').value,
     s: document.getElementById('fS').value,
     ca: document.getElementById('fCa').value,
     refSource: document.getElementById('fRefSource').value,
