@@ -63,7 +63,12 @@ function mapClient(r) {
     lastZoomDate: f['Last Zoom Session Date'] || '',
     daysSinceZoom: (f['Days Since Last Zoom Contact']===0 || f['Days Since Last Zoom Contact']) ? f['Days Since Last Zoom Contact'] : null,
     contactRisk: f['Contact Risk'] || '',
-    contactLog: f['Contact Log'] || ''
+    contactLog: f['Contact Log'] || '',
+    mercuryAddon: f['Mercury Pro Addon'] || 0,
+    addonMonths: f['Addon Months'] || 0,
+    addonEndDate: f['Add On End Date'] || '',
+    addonActive: !!f['Add on Active'],
+    actualFee: (f['Actual Fee Monthly']===0 || f['Actual Fee Monthly']) ? f['Actual Fee Monthly'] : null
   };
 }
 

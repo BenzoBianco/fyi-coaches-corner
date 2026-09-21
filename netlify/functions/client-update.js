@@ -40,7 +40,9 @@ const FIELD_MAP = {
   p30:        'First 30 Days Progress',
   bestPractice: 'Best Practice Tips Passed',
   email:      'Email',
-  contactLog: 'Contact Log'
+  contactLog: 'Contact Log',
+  mercuryAddon: 'Mercury Pro Addon',
+  addonMonths:  'Addon Months'
 };
 
 async function findRecord(base, pat, name) {
@@ -84,7 +86,7 @@ export default async (req, context) => {
     const col = FIELD_MAP[k];
     if (!col) { skipped.push(k); return; }
     if (v === undefined || v === null) return;
-    fields[col] = (k === 'f' || k === 'mandatedMonths') ? Number(v) || 0 : v;
+    fields[col] = (k === 'f' || k === 'mandatedMonths' || k === 'mercuryAddon' || k === 'addonMonths') ? Number(v) || 0 : v;
   });
 
   if (!Object.keys(fields).length) {
