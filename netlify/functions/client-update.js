@@ -42,7 +42,8 @@ const FIELD_MAP = {
   email:      'Email',
   contactLog: 'Contact Log',
   mercuryAddon: 'Mercury Pro Addon',
-  addonMonths:  'Addon Months'
+  addonMonths:  'Addon Months',
+  clientSummary: 'Client Summary'
 };
 
 async function findRecord(base, pat, name) {

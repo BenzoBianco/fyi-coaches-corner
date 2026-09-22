@@ -68,7 +68,8 @@ function mapClient(r) {
     addonMonths: f['Addon Months'] || 0,
     addonEndDate: f['Add On End Date'] || '',
     addonActive: !!f['Add on Active'],
-    actualFee: (f['Actual Fee Monthly']===0 || f['Actual Fee Monthly']) ? f['Actual Fee Monthly'] : null
+    actualFee: (f['Actual Fee Monthly']===0 || f['Actual Fee Monthly']) ? f['Actual Fee Monthly'] : null,
+    clientSummary: f['Client Summary'] || ''
   };
 }
 
@@ -122,7 +123,8 @@ function mapRelationship(r) {
     keyDateLabel: f['Key Date Label'] || '',
     keyDateValue: f['Key Date Value'] || '',
     nextAction: f['Next Action'] || '',
-    log: f['Contact Log'] || ''
+    log: f['Contact Log'] || '',
+    archived: !!f['Archived']
   };
 }
 
