@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>FYI Coaches' Corner v1.09.30</title>
+<title>FYI Coaches' Corner v1.09.31</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -247,7 +247,7 @@ main{padding:22px;max-width:1140px;margin:0 auto}
 
 <div id="app">
   <header class="top">
-    <div class="brand">FYI Coaches' Corner<span class="verBadge" id="verBadge" onclick="toggleChangelog()" title="Click for what's new">v1.09.30</span><small id="coachBadge"></small></div>
+    <div class="brand">FYI Coaches' Corner<span class="verBadge" id="verBadge" onclick="toggleChangelog()" title="Click for what's new">v1.09.31</span><small id="coachBadge"></small></div>
     <div class="who">
       <span id="whoEmail"></span>
       <button onclick="doLogout()">Sign out</button>
@@ -255,6 +255,7 @@ main{padding:22px;max-width:1140px;margin:0 auto}
   </header>
   <div id="changelogPanel" class="hidden" style="background:#fff;border-bottom:1px solid var(--border,#DFE3EB);padding:16px 22px;max-width:1140px;margin:0 auto"></div>
   <nav id="tabs">
+    <button data-tab="dashboard" onclick="setTab('dashboard')">Dashboard</button>
     <button data-tab="clients" onclick="setTab('clients')">Clients</button>
     <button data-tab="prospects" onclick="setTab('prospects')">Prospects</button>
     <button data-tab="relationships" onclick="setTab('relationships')">Relationships</button>
@@ -386,8 +387,13 @@ function copySupervisionEmail(clientId){
   } else { fallback(); }
 }
 
-const APP_VERSION = '1.09.30';
+const APP_VERSION = '1.09.31';
 const RELEASES = [
+  {v:'1.09.31', d:'22/09/2026', t:'Dashboard added as the opening page, client summary field', items:[
+    'New Dashboard tab, now the default landing page: active client count, prospects and relationships gone quiet, nearing-graduation and not-contacted-in-30-days lists, column charts for lifecycle stage, engagement and program.',
+    'Client Summary added to Personal Details, a long text field for background, industry history and where they\u2019re from, in the empty space below the contacts checklist.',
+    'Caught and fixed a real syntax bug in the dashboard\u2019s stat card code before it shipped, a misplaced semicolon that would have broken every card\u2019s styling.'
+  ]},
   {v:'1.09.30', d:'21/09/2026', t:'Referrer Status is now a real dropdown', items:[
     'Status on the relationship page was a free-text box, letting it drift from what Airtable actually allows. Now a dropdown with the three real values from the live table, Active, Dormant, Off-radar, matching the coloured badges you already see in Airtable.'
   ]},
@@ -561,7 +567,7 @@ async function boot(){
   await loadTraining();
   loadFireflies().then(()=>{ if(STATE.tab==='clients') render(); }); /* not awaited: never block first paint on a third-party API */
   loadCalendar().then(()=>{ if(STATE.tab==='clients') render(); });
-  setTab('clients');
+  setTab('dashboard');
 }
 
 function banner(msg, kind){
@@ -619,18 +625,111 @@ function setTab(t){
   /* Same mechanism The Bridge uses per business: the active tab decides
      the palette, so Coaches' Corner shifts tone the same way rather than
      staying one flat colour throughout. */
-  const THEME_CLASS = { clients:'theme-clients', prospects:'theme-prospects', relationships:'theme-rel', sops:'theme-sop', training:'theme-training' };
+  const THEME_CLASS = { dashboard:'theme-clients', clients:'theme-clients', prospects:'theme-prospects', relationships:'theme-rel', sops:'theme-sop', training:'theme-training' };
   document.body.className = THEME_CLASS[t] || 'theme-clients';
   render();
 }
 function render(){
-  const fn = { clients:renderClients, prospects:renderProspects, relationships:renderRelationships,
+  const fn = { dashboard:renderDashboard, clients:renderClients, prospects:renderProspects, relationships:renderRelationships,
     sops:renderSOPs, training:renderTraining }[STATE.tab];
   document.getElementById('main').innerHTML='';
   fn();
 }
 
-/* ================= Clients ================= */
+/* ================= Dashboard ================= */
+function svgColumnChart(data, opts){
+  opts=opts||{};
+  const W=opts.w||600, H=opts.h||220, padTop=20, padBottom=44, padLeft=34, padRight=14;
+  const chartW=W-padLeft-padRight, chartH=H-padTop-padBottom;
+  const max=Math.max(1, ...data.map(d=>d.value));
+  const barW=Math.min(56, chartW/data.length-14);
+  const gap=(chartW-barW*data.length)/(data.length+1);
+  let svg='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto;display:block">';
+  [0,.25,.5,.75,1].forEach(f=>{
+    const y=padTop+chartH*(1-f);
+    svg+='<line x1="'+padLeft+'" y1="'+y+'" x2="'+(W-padRight)+'" y2="'+y+'" stroke="#e5e5e5" stroke-width="1"/>';
+    svg+='<text x="'+(padLeft-6)+'" y="'+(y+3)+'" text-anchor="end" font-family="Inter,sans-serif" font-size="9" fill="#999">'+Math.round(max*f)+'</text>';
+  });
+  data.forEach((d,i)=>{
+    const bh=(d.value/max)*chartH;
+    const x=padLeft+gap+i*(barW+gap);
+    const y=padTop+chartH-bh;
+    svg+='<rect x="'+x+'" y="'+y+'" width="'+barW+'" height="'+Math.max(bh,1)+'" fill="'+(d.color||'#4A6FA5')+'" rx="3"/>';
+    svg+='<text x="'+(x+barW/2)+'" y="'+(padTop+chartH-bh-6)+'" text-anchor="middle" font-family="Montserrat,sans-serif" font-weight="700" font-size="12" fill="#2A3550">'+d.value+'</text>';
+    const label=d.label.length>12 ? d.label.slice(0,11)+'\u2026' : d.label;
+    svg+='<text x="'+(x+barW/2)+'" y="'+(H-24)+'" text-anchor="middle" font-family="Inter,sans-serif" font-size="10" fill="#6b7480" transform="rotate(0 '+(x+barW/2)+' '+(H-24)+')"><title>'+d.label+'</title>'+label+'</text>';
+  });
+  svg+='</svg>';
+  return svg;
+}
+function dashStatCard(num, label, color, onclick){
+  return '<div class="card" style="cursor:'+(onclick?'pointer':'default')+';border-left:4px solid '+(color||'#DFE3EB')+'"'+(onclick?' onclick="'+onclick+'"':'')+'>'+
+    '<div style="font-family:Montserrat,sans-serif;font-weight:800;font-size:1.7rem;color:var(--primary,#2A3550)">'+num+'</div>'+
+    '<div style="font-size:.72rem;color:var(--muted,#69707F);margin-top:2px">'+label+'</div></div>';
+}
+function renderDashboard(){
+  const m=document.getElementById('main');
+  const active = STATE.clients.filter(c=>c.clientStatus==='Active');
+  const nearingGrad = active.filter(c=>c.daysToGrad!=null && c.daysToGrad<=60 && c.daysToGrad>=0);
+  const notContacted = active.filter(c=>c.daysSinceZoom!=null && c.daysSinceZoom>30);
+  const neverZoom = active.filter(c=>!c.lastZoomDate);
+  const activeProspects = STATE.prospects.filter(p=>!p.archived);
+  const staleProspects = activeProspects.filter(p=>p.idle>45);
+  const activeRels = STATE.relationships.filter(r=>!r.archived);
+  const overdueRels = activeRels.filter(r=>relCadenceStatus(r).cls==='overdue');
+
+  const stageOrder=['1. Immersion','2. Development','3. Momentum','4. Mature','10. Optimisation'];
+  const stageCounts={};
+  active.forEach(c=>{ const s=c.st||'Unset'; stageCounts[s]=(stageCounts[s]||0)+1; });
+  const stageData=Object.keys(stageCounts).sort((a,b)=>{
+    const ia=stageOrder.indexOf(a), ib=stageOrder.indexOf(b);
+    return (ia<0?99:ia)-(ib<0?99:ib);
+  }).map(s=>({label:s.replace(/^\d+\.\s*/,''), value:stageCounts[s]}));
+
+  const engCounts={Green:0,Amber:0,Red:0,Unset:0};
+  active.forEach(c=>{ const e=c.rag||'Unset'; engCounts[e]=(engCounts[e]||0)+1; });
+  const engData=[
+    {label:'Green', value:engCounts.Green, color:'#57A05C'},
+    {label:'Amber', value:engCounts.Amber, color:'#E0A93C'},
+    {label:'Red', value:engCounts.Red, color:'#C0453F'},
+    {label:'Unset', value:engCounts.Unset, color:'#9AA0B0'}
+  ].filter(d=>d.value>0);
+
+  const progCounts={};
+  active.forEach(c=>{ const p=c.p||'Unset'; progCounts[p]=(progCounts[p]||0)+1; });
+  const progData=Object.entries(progCounts).sort((a,b)=>b[1]-a[1]).map(([label,value])=>({label,value}));
+
+  let html = '<div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr));margin-bottom:20px">'+
+    dashStatCard(active.length, 'Active clients', '#4A6FA5', "STATE.clientFilter='active'; setTab('clients')")+
+    dashStatCard(nearingGrad.length, 'Nearing graduation, 60d', '#C59C44')+
+    dashStatCard(notContacted.length, 'Not contacted 30d+', '#C0453F')+
+    dashStatCard(activeProspects.length, 'Active prospects', '#7A5C93', "setTab('prospects')")+
+    dashStatCard(staleProspects.length, 'Prospects gone quiet', '#C0453F')+
+    dashStatCard(overdueRels.length, 'Relationships overdue', '#3E8E7E')+
+  '</div>';
+
+  html += '<div class="cd2-cols">'+
+    '<div class="cd2-panel"><h4>Clients by lifecycle stage</h4>'+svgColumnChart(stageData)+'</div>'+
+    '<div class="cd2-panel"><h4>Clients by engagement</h4>'+svgColumnChart(engData)+'</div>'+
+  '</div>'+
+  '<div class="cd2-panel" style="margin-top:14px"><h4>Clients by program</h4>'+svgColumnChart(progData, {h:200})+'</div>';
+
+  html += '<div class="cd2-cols" style="margin-top:14px">'+
+    '<div class="cd2-panel"><h4>Nearing graduation</h4>'+
+      (nearingGrad.length ? nearingGrad.sort((a,b)=>a.daysToGrad-b.daysToGrad).map(c=>
+        '<div class="cd2-static" style="cursor:pointer" onclick="STATE.clientOpen=\''+c.airtableId+'\'; setTab(\'clients\')"><span>'+c.n+'</span><b>'+c.daysToGrad+'d</b></div>'
+      ).join('') : '<div class="empty" style="padding:14px">None within 60 days.</div>')+
+    '</div>'+
+    '<div class="cd2-panel"><h4>Not contacted in 30+ days</h4>'+
+      (notContacted.length ? notContacted.sort((a,b)=>b.daysSinceZoom-a.daysSinceZoom).map(c=>
+        '<div class="cd2-static" style="cursor:pointer" onclick="STATE.clientOpen=\''+c.airtableId+'\'; setTab(\'clients\')"><span>'+c.n+'</span><b>'+c.daysSinceZoom+'d</b></div>'
+      ).join('') : '<div class="empty" style="padding:14px">Everyone\u2019s been contacted recently.</div>')+
+      (neverZoom.length ? '<div style="font-size:.68rem;color:var(--muted,#69707F);margin-top:8px">'+neverZoom.length+' client'+(neverZoom.length===1?'':'s')+' with no Zoom contact on record at all.</div>' : '')+
+    '</div>'+
+  '</div>';
+
+  m.innerHTML=html;
+}
 const CLIENT_FILTERS = [
   {id:'active', label:'Active roster', test:c => c.clientStatus==='Active'},
   {id:'everyone', label:'Everyone', test:()=>true},
@@ -902,6 +1001,7 @@ function renderClientDetail(){
         '<div class="cd2-row"><label><input type="checkbox" id="fAddressInContacts" '+(c.addressInContacts?'checked':'')+' style="width:auto;margin-right:6px"> Address added to contacts</label></div>'+
         '<div class="progressBar" style="margin-top:2px"><div class="fill" style="width:'+(contactsCount/3*100)+'%;background:var(--accent,#4A6FA5)"></div></div>'+
         '<div style="font-size:.68rem;color:var(--muted,#69707F);text-align:right;margin-top:3px">'+contactsCount+'/3 in contacts</div>'+
+        '<div class="cd2-row" style="margin-top:14px"><label>Client summary, background, industry history, where they\u2019re from</label><textarea id="fClientSummary" style="min-height:150px">'+(c.clientSummary||'')+'</textarea></div>'+
       '</div>'+
 
       '<div class="cd2-panel"><h4>Engagement</h4>'+
@@ -1401,6 +1501,7 @@ async function pushClient(id){
     exitDate: document.getElementById('fExitDate').value,
     mandatedMonths: document.getElementById('fMandatedMonths').value,
     notes: document.getElementById('fNotes').value,
+    clientSummary: document.getElementById('fClientSummary').value,
     mobileInContacts: document.getElementById('fMobileInContacts').checked,
     emailInContacts: document.getElementById('fEmailInContacts').checked,
     addressInContacts: document.getElementById('fAddressInContacts').checked
