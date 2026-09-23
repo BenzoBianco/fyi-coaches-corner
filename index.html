@@ -3,7 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>FYI Coaches' Corner v1.09.31</title>
+<title>FYI Coaches' Corner v1.09.32</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23E8801A'/%3E%3Ctext x='32' y='43' font-family='Arial, Helvetica, sans-serif' font-weight='800' font-size='27' fill='%23ffffff' text-anchor='middle'%3ECC%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -247,7 +248,7 @@ main{padding:22px;max-width:1140px;margin:0 auto}
 
 <div id="app">
   <header class="top">
-    <div class="brand">FYI Coaches' Corner<span class="verBadge" id="verBadge" onclick="toggleChangelog()" title="Click for what's new">v1.09.31</span><small id="coachBadge"></small></div>
+    <div class="brand">FYI Coaches' Corner<span class="verBadge" id="verBadge" onclick="toggleChangelog()" title="Click for what's new">v1.09.32</span><small id="coachBadge"></small></div>
     <div class="who">
       <span id="whoEmail"></span>
       <button onclick="doLogout()">Sign out</button>
@@ -387,8 +388,11 @@ function copySupervisionEmail(clientId){
   } else { fallback(); }
 }
 
-const APP_VERSION = '1.09.31';
+const APP_VERSION = '1.09.32';
 const RELEASES = [
+  {v:'1.09.32', d:'22/09/2026', t:'Favicon added', items:[
+    'Orange rounded square, white "CC". Built as an inline SVG in the page itself, no separate image file to host or lose track of.'
+  ]},
   {v:'1.09.31', d:'22/09/2026', t:'Dashboard added as the opening page, client summary field', items:[
     'New Dashboard tab, now the default landing page: active client count, prospects and relationships gone quiet, nearing-graduation and not-contacted-in-30-days lists, column charts for lifecycle stage, engagement and program.',
     'Client Summary added to Personal Details, a long text field for background, industry history and where they\u2019re from, in the empty space below the contacts checklist.',
