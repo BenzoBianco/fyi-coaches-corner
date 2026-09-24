@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>FYI Coaches' Corner v1.09.34</title>
+<title>FYI Coaches' Corner v1.09.35</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23E8801A'/%3E%3Ctext x='32' y='43' font-family='Arial, Helvetica, sans-serif' font-weight='800' font-size='27' fill='%23ffffff' text-anchor='middle'%3ECC%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet">
@@ -248,7 +248,7 @@ main{padding:22px;max-width:1140px;margin:0 auto}
 
 <div id="app">
   <header class="top">
-    <div class="brand">FYI Coaches' Corner<span class="verBadge" id="verBadge" onclick="toggleChangelog()" title="Click for what's new">v1.09.34</span><small id="coachBadge"></small></div>
+    <div class="brand">FYI Coaches' Corner<span class="verBadge" id="verBadge" onclick="toggleChangelog()" title="Click for what's new">v1.09.35</span><small id="coachBadge"></small></div>
     <div class="who">
       <span id="whoEmail"></span>
       <button onclick="doLogout()">Sign out</button>
@@ -388,8 +388,11 @@ function copySupervisionEmail(clientId){
   } else { fallback(); }
 }
 
-const APP_VERSION = '1.09.34';
+const APP_VERSION = '1.09.35';
 const RELEASES = [
+  {v:'1.09.35', d:'24/09/2026', t:'Dashboard reordered', items:[
+    'Nearing graduation, Not contacted, and Birthdays now sit directly under the stat cards. The three column charts moved down below them.'
+  ]},
   {v:'1.09.34', d:'24/09/2026', t:'Upcoming birthdays added to the dashboard', items:[
     'New stat card and list, every active client with a birthday in the next 14 days, soonest first, each one clickable straight to the client file. Uses the same birthday calculation already running on the client cards, nothing new invented.'
   ]},
@@ -722,13 +725,7 @@ function renderDashboard(){
     dashStatCard(overdueRels.length, 'Relationships overdue', '#3E8E7E')+
   '</div>';
 
-  html += '<div class="cd2-cols">'+
-    '<div class="cd2-panel"><h4>Clients by lifecycle stage</h4>'+svgColumnChart(stageData)+'</div>'+
-    '<div class="cd2-panel"><h4>Clients by engagement</h4>'+svgColumnChart(engData)+'</div>'+
-  '</div>'+
-  '<div class="cd2-panel" style="margin-top:14px"><h4>Clients by program</h4>'+svgColumnChart(progData, {h:200})+'</div>';
-
-  html += '<div class="cd2-cols" style="margin-top:14px">'+
+  html += '<div class="cd2-cols" style="margin-top:0">'+
     '<div class="cd2-panel"><h4>Nearing graduation</h4>'+
       (nearingGrad.length ? nearingGrad.sort((a,b)=>a.daysToGrad-b.daysToGrad).map(c=>
         '<div class="cd2-static" style="cursor:pointer" onclick="STATE.clientOpen=\''+c.airtableId+'\'; setTab(\'clients\')"><span>'+c.n+'</span><b>'+c.daysToGrad+'d</b></div>'
@@ -747,6 +744,12 @@ function renderDashboard(){
       '<div class="cd2-static" style="cursor:pointer" onclick="STATE.clientOpen=\''+x.c.airtableId+'\'; setTab(\'clients\')"><span>'+x.c.n+'</span><b>'+(x.days===0?'today':x.days===1?'tomorrow':'in '+x.days+'d')+'</b></div>'
     ).join('') : '<div class="empty" style="padding:14px">None in the next two weeks.</div>')+
   '</div>';
+
+  html += '<div class="cd2-cols" style="margin-top:14px">'+
+    '<div class="cd2-panel"><h4>Clients by lifecycle stage</h4>'+svgColumnChart(stageData)+'</div>'+
+    '<div class="cd2-panel"><h4>Clients by engagement</h4>'+svgColumnChart(engData)+'</div>'+
+  '</div>'+
+  '<div class="cd2-panel" style="margin-top:14px"><h4>Clients by program</h4>'+svgColumnChart(progData, {h:200})+'</div>';
 
   m.innerHTML=html;
 }
