@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>FYI Coaches' Corner v1.09.37</title>
+<title>FYI Coaches' Corner v1.09.38</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23E8801A'/%3E%3Ctext x='32' y='43' font-family='Arial, Helvetica, sans-serif' font-weight='800' font-size='27' fill='%23ffffff' text-anchor='middle'%3ECC%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet">
@@ -256,7 +256,7 @@ main{padding:22px;max-width:1140px;margin:0 auto}
 
 <div id="app">
   <header class="top">
-    <div class="brand">FYI Coaches' Corner<span class="verBadge" id="verBadge" onclick="toggleChangelog()" title="Click for what's new">v1.09.37</span><small id="coachBadge"></small></div>
+    <div class="brand">FYI Coaches' Corner<span class="verBadge" id="verBadge" onclick="toggleChangelog()" title="Click for what's new">v1.09.38</span><small id="coachBadge"></small></div>
     <div class="who">
       <span id="whoEmail"></span>
       <button onclick="doLogout()">Sign out</button>
@@ -396,11 +396,15 @@ function copySupervisionEmail(clientId){
   } else { fallback(); }
 }
 
-const APP_VERSION = '1.09.37';
+const APP_VERSION = '1.09.38';
 /* Coach chips on the Clients tab. Edit these when the team changes. */
 const CURRENT_COACHES = ['Ben','Belinda'];
 const RETIRED_COACHES = ['Helen'];
 const RELEASES = [
+  {v:'1.09.38', d:'20/10/2026', t:'Logged contact now counts on the dashboard', items:[
+    'Not contacted 30d+, the no-contact count and the Last contact line on cards now use the latest of the Zoom date and anything in the client\u2019s Contact log. Before this, a logged call, message or visit never moved the dashboard.',
+    'The free-text Notes box carries no date, so it does not count as contact. Use the Contact log for that.'
+  ]},
   {v:'1.09.37', d:'20/10/2026', t:'Belinda added, Helen archived from the coach filters', items:[
     'The coach filter row on Clients now always shows Ben and Belinda. Anyone else appears only while they have an Active client.',
     'Helen no longer appears. Her past clients stay reachable under Previous clients and Everyone, nothing is deleted.',
@@ -702,12 +706,26 @@ function dashStatCard(num, label, color, onclick){
     '<div style="font-family:Montserrat,sans-serif;font-weight:800;font-size:1.7rem;color:var(--primary,#2A3550)">'+num+'</div>'+
     '<div style="font-size:.72rem;color:var(--muted,#69707F);margin-top:2px">'+label+'</div></div>';
 }
+/* Last real contact = the latest of the Zoom date Airtable calculates and
+   anything logged in the client's Contact log. Before 1.09.38 the dashboard
+   and cards read only the Airtable Zoom formula, so a logged call or
+   message never counted. The free-text Notes box has no date, so it cannot. */
+function lastTouch(c){
+  const dates=[];
+  if(c.lastZoomDate) dates.push(String(c.lastZoomDate).slice(0,10));
+  clientContactLogFor(c).forEach(e=>{ if(e && e.date) dates.push(String(e.date).slice(0,10)); });
+  if(!dates.length) return {date:null, days:null};
+  const date=dates.sort().slice(-1)[0];
+  const days=Math.max(0,Math.floor((Date.now()-new Date(date+'T00:00:00').getTime())/86400000));
+  return {date, days};
+}
 function renderDashboard(){
   const m=document.getElementById('main');
   const active = STATE.clients.filter(c=>c.clientStatus==='Active');
   const nearingGrad = active.filter(c=>c.daysToGrad!=null && c.daysToGrad<=60 && c.daysToGrad>=0);
-  const notContacted = active.filter(c=>c.daysSinceZoom!=null && c.daysSinceZoom>30);
-  const neverZoom = active.filter(c=>!c.lastZoomDate);
+  active.forEach(c=>{ c._lt=lastTouch(c); });
+  const notContacted = active.filter(c=>c._lt.days!=null && c._lt.days>30);
+  const neverZoom = active.filter(c=>!c._lt.date);
   const upcomingBdays = active.map(c=>({c, days:bdayNext(c.dob)})).filter(x=>x.days!=null && x.days<=14).sort((a,b)=>a.days-b.days);
   const activeProspects = STATE.prospects.filter(p=>!p.archived);
   const staleProspects = activeProspects.filter(p=>p.idle>45);
@@ -752,10 +770,10 @@ function renderDashboard(){
       ).join('') : '<div class="empty" style="padding:14px">None within 60 days.</div>')+
     '</div>'+
     '<div class="cd2-panel"><h4>Not contacted in 30+ days</h4>'+
-      (notContacted.length ? notContacted.sort((a,b)=>b.daysSinceZoom-a.daysSinceZoom).map(c=>
-        '<div class="cd2-static" style="cursor:pointer" onclick="STATE.clientOpen=\''+c.airtableId+'\'; setTab(\'clients\')"><span>'+c.n+'</span><b>'+c.daysSinceZoom+'d</b></div>'
+      (notContacted.length ? notContacted.sort((a,b)=>b._lt.days-a._lt.days).map(c=>
+        '<div class="cd2-static" style="cursor:pointer" onclick="STATE.clientOpen=\''+c.airtableId+'\'; setTab(\'clients\')"><span>'+c.n+'</span><b>'+c._lt.days+'d</b></div>'
       ).join('') : '<div class="empty" style="padding:14px">Everyone\u2019s been contacted recently.</div>')+
-      (neverZoom.length ? '<div style="font-size:.68rem;color:var(--muted,#69707F);margin-top:8px">'+neverZoom.length+' client'+(neverZoom.length===1?'':'s')+' with no Zoom contact on record at all.</div>' : '')+
+      (neverZoom.length ? '<div style="font-size:.68rem;color:var(--muted,#69707F);margin-top:8px">'+neverZoom.length+' client'+(neverZoom.length===1?'':'s')+' with no contact on record at all.</div>' : '')+
     '</div>'+
   '</div>';
 
@@ -993,8 +1011,9 @@ function renderClients(){
     }
     if(bn!==null && bn<=30) html += '<div class="meta" style="margin-top:6px"><span class="tag" style="background:#F7E9F0;border-color:#E2C0D2;color:#8C3B63">Birthday in '+bn+'d</span></div>';
     html += '<div style="margin-top:10px;font-size:.78rem;display:flex;flex-direction:column;gap:3px">';
-    if(c.lastZoomDate){
-      html += '<div style="display:flex;justify-content:space-between"><span style="color:var(--muted,#69707F)">Last Zoom contact</span><b>'+new Date(c.lastZoomDate).toLocaleDateString('en-AU')+(c.daysSinceZoom!=null?' ('+c.daysSinceZoom+'d ago)':'')+'</b></div>';
+    const lt=lastTouch(c);
+    if(lt.date){
+      html += '<div style="display:flex;justify-content:space-between"><span style="color:var(--muted,#69707F)">Last contact</span><b>'+new Date(lt.date).toLocaleDateString('en-AU')+' ('+lt.days+'d ago)</b></div>';
     }
     if(c.startDate) html += '<div style="display:flex;justify-content:space-between"><span style="color:var(--muted,#69707F)">Started</span><b>'+new Date(c.startDate).toLocaleDateString('en-AU')+'</b></div>';
     if(c.actualFee!=null){
@@ -1072,7 +1091,7 @@ function renderClientDetail(){
         (c.addonEndDate ? '<div class="cd2-static"><span>Addon ends</span><b>'+new Date(c.addonEndDate).toLocaleDateString('en-AU')+(c.addonActive && daysUntil(c.addonEndDate)!=null?' ('+daysUntil(c.addonEndDate)+'d left)':' (ended)')+'</b></div>' : '')+
         (c.actualFee!=null ? '<div class="cd2-static"><span>Total monthly fee</span><b>AUD $'+Number(c.actualFee).toLocaleString()+'</b></div>' : '')+
         (nextSession ? '<div class="cd2-static"><span>Next session</span><b>'+new Date(nextSession).toLocaleDateString('en-AU')+'</b></div>' : '')+
-        (c.lastZoomDate ? '<div class="cd2-static"><span>Last Zoom contact</span><b>'+new Date(c.lastZoomDate).toLocaleDateString('en-AU')+(c.daysSinceZoom!=null?' ('+c.daysSinceZoom+'d ago)':'')+'</b></div>' : '')+
+        (lastTouch(c).date ? '<div class="cd2-static"><span>Last contact</span><b>'+new Date(lastTouch(c).date).toLocaleDateString('en-AU')+' ('+lastTouch(c).days+'d ago)</b></div>' : '')+
         (c.gradDate ? '<div class="cd2-static"><span>Graduates</span><b>'+new Date(c.gradDate).toLocaleDateString('en-AU')+(c.daysToGrad!=null?' &middot; '+c.daysToGrad+'d':'')+'</b></div>' : '')+
       '</div>'+
 
