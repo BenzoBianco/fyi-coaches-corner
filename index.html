@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>FYI Coaches' Corner v1.09.35</title>
+<title>FYI Coaches' Corner v1.09.36</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23E8801A'/%3E%3Ctext x='32' y='43' font-family='Arial, Helvetica, sans-serif' font-weight='800' font-size='27' fill='%23ffffff' text-anchor='middle'%3ECC%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet">
@@ -108,6 +108,14 @@ main{padding:22px;max-width:1140px;margin:0 auto}
 .module ul.checklist{list-style:none;padding:0;margin:0}
 .module ul.checklist li{display:flex;gap:8px;align-items:flex-start;padding:5px 0;font-size:13px}
 .module ul.checklist input{margin-top:3px;accent-color:var(--accent,#6B5B95)}
+.resList{border-top:1px solid var(--border,#E4DFEC)}
+.resRow{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:11px 0;border-bottom:1px solid var(--border,#E4DFEC)}
+.resRow:last-child{border-bottom:0}
+.resT{font-size:13.5px;font-weight:600;color:var(--text,#2E2940)}
+.resD{font-size:12.5px;color:var(--muted,#6E6880);margin-top:2px}
+.resGo{font-size:12.5px;font-weight:600;color:var(--accent,#6B5B95);text-decoration:none;white-space:nowrap}
+.resGo:hover{text-decoration:underline}
+.resSoon{font-size:11.5px;color:var(--muted,#6E6880);background:var(--bg,#F5F3F8);border-radius:10px;padding:3px 9px;white-space:nowrap}
 .progressBar{height:6px;background:var(--border,#E4DFEC);border-radius:3px;overflow:hidden;margin:10px 0 20px}
 .progressBar .fill{height:100%;background:var(--accent,#6B5B95)}
 
@@ -248,7 +256,7 @@ main{padding:22px;max-width:1140px;margin:0 auto}
 
 <div id="app">
   <header class="top">
-    <div class="brand">FYI Coaches' Corner<span class="verBadge" id="verBadge" onclick="toggleChangelog()" title="Click for what's new">v1.09.35</span><small id="coachBadge"></small></div>
+    <div class="brand">FYI Coaches' Corner<span class="verBadge" id="verBadge" onclick="toggleChangelog()" title="Click for what's new">v1.09.36</span><small id="coachBadge"></small></div>
     <div class="who">
       <span id="whoEmail"></span>
       <button onclick="doLogout()">Sign out</button>
@@ -388,8 +396,12 @@ function copySupervisionEmail(clientId){
   } else { fallback(); }
 }
 
-const APP_VERSION = '1.09.35';
+const APP_VERSION = '1.09.36';
 const RELEASES = [
+  {v:'1.09.36', d:'19/10/2026', t:'Coach Training rewritten as a resource hub', items:[
+    'The sign-off checklists and progress bar are gone. Coach Training now points to the coaches\u2019 shared drive, section by section, with a link beside each resource.',
+    'Resources without a link yet show \u201cBeing added\u201d, so links can be dropped in without changing the layout.'
+  ]},
   {v:'1.09.35', d:'24/09/2026', t:'Dashboard reordered', items:[
     'Nearing graduation, Not contacted, and Birthdays now sit directly under the stat cards. The three column charts moved down below them.'
   ]},
@@ -2047,45 +2059,33 @@ function renderSopDoc(){
 }
 
 /* ================= Coach Training ================= */
+/* Coach Training is a resource hub, not an exam. Every item points at the
+   shared coaches' drive. A link left empty shows "Being added" until Ben
+   supplies it; the rest of the page needs no change when links arrive. */
 function renderTraining(){
   const m=document.getElementById('main');
-  const mine = STATE.trainProgress || {};
-  const totalChecks = TRAIN_MODULES.reduce((a,mod)=>a+mod.check.length,0);
-  let done=0;
-  TRAIN_MODULES.forEach(mod=>{ (mine[mod.id]||[]).forEach(v=>{ if(v) done++; }); });
-  const pct = totalChecks ? Math.round(done/totalChecks*100) : 0;
-
-  const head=document.createElement('div');
-  head.innerHTML='<p style="color:var(--muted);font-size:13px">'+done+' of '+totalChecks+' items signed off, '+pct+'%.</p>'+
-    '<div class="progressBar"><div class="fill" style="width:'+pct+'%"></div></div>';
+  const head=document.createElement('div'); head.className='module';
+  const root=TRAIN_DRIVE_ROOT
+    ? '<a class="btn" href="'+TRAIN_DRIVE_ROOT+'" target="_blank" rel="noopener" style="display:inline-block;text-decoration:none;margin-top:12px">Open the coaches’ shared drive</a>'
+    : '<div class="why" style="margin:12px 0 0">The shared drive link is being added.</div>';
+  head.innerHTML='<h3 style="font-size:1.05rem">Everything you need, in one place</h3>'+
+    '<div class="why" style="margin-bottom:0">Each section below points to the matching folder in the coaches’ shared drive. There is nothing to memorise and nothing to sign off. Open what you need, when you need it, and ask Ben or Darrel if something is missing or out of date.</div>'+root;
   m.appendChild(head);
-
-  TRAIN_MODULES.forEach(mod=>{
+  TRAIN_SECTIONS.forEach(sec=>{
     const box=document.createElement('div'); box.className='module';
-    let html='<h3>'+mod.t+'</h3><div class="why">'+mod.why+'</div>';
-    if(Array.isArray(mod.res) && mod.res.length){
-      const links = mod.res.filter(x=>x.k==='drive'||x.k==='read');
-      if(links.length){
-        html+='<div style="font-size:12px;color:var(--muted);margin-bottom:10px">'+
-          links.map(x=> x.k==='drive' ? '<a href="'+x.u+'" target="_blank" style="color:var(--teal-dk)">'+x.t+'</a>' : x.t ).join(' &middot; ')+
-        '</div>';
-      }
-    }
-    html+='<ul class="checklist">';
-    mod.check.forEach((label,i)=>{
-      const checked = (mine[mod.id] && mine[mod.id][i]) ? 'checked' : '';
-      html+='<li><input type="checkbox" '+checked+' onchange="toggleCheck(\''+mod.id+'\','+i+',this.checked)"> <span>'+label+'</span></li>';
+    let html='<h3>'+sec.t+'</h3><div class="why">'+sec.when+'</div><div class="resList">';
+    sec.res.forEach(r=>{
+      const u=r.u||'';
+      const right = r.tab
+        ? '<a href="#" class="resGo" onclick="setTab(\''+r.tab+'\');return false">Open in this app &rarr;</a>'
+        : (u ? '<a href="'+u+'" target="_blank" rel="noopener" class="resGo">Open &rarr;</a>' : '<span class="resSoon">Being added</span>');
+      html+='<div class="resRow"><div><div class="resT">'+r.t+'</div><div class="resD">'+r.d+'</div></div>'+right+'</div>';
     });
-    html+='</ul>';
-    box.innerHTML=html;
-    m.appendChild(box);
+    html+='</div>';
+    box.innerHTML=html; m.appendChild(box);
   });
 }
-function toggleCheck(modId, idx, val){
-  STATE.trainProgress[modId] = STATE.trainProgress[modId] || [];
-  STATE.trainProgress[modId][idx] = val;
-  saveTraining();
-}
+
 
 /* ================= Content, duplicated from The Bridge ================= */
 const TRAIT={D:'drive and directness',I:'influence and warmth',S:'steadiness and patience',C:'compliance and detail'};
@@ -2776,129 +2776,85 @@ const SOPS=[
  notes:['Each BOP client operates a different type of business, so their post-meeting notes may vary depending on their specific needs']}
 ];
 
-const TRAIN_MODULES=[
- {id:'m1', n:'01', t:'The FYI Method',
-  why:'Before anything else, a new coach needs to know what we actually sell: a structured programme, not ad hoc advice. The First 30 Days is the spine of it.',
+/* Paste the shared drive's top-level folder link here. */
+const TRAIN_DRIVE_ROOT='';
+/* Each resource: t = title, d = what it is, u = Drive link (leave '' until supplied),
+   tab = open a tab inside this app instead of a Drive link. */
+const TRAIN_SECTIONS=[
+ {t:'1. Start here',
+  when:'Your first week. A short orientation to how FYI works and what a mentee experiences.',
   res:[
-   {t:'The First 30 Days, full programme',k:'tab',tab:'clients',theme:'theme-clients',
-    d:'Rendered in full inside any client file. All five stages, every prompt, the timed agendas and the scripts.'},
-   {t:'The First 30 Days source document',k:'drive',
-    u:'https://drive.google.com/drive/folders/1fLyvjd0-yBtaahmMRCItjEa1XsUcTQef',
-    d:'The original PDF in the Drive folder.'},
-   {t:'Navigating the Finance Maze',k:'read',d:'Ben\u2019s book. Read it before coaching anyone.'}
-  ],
-  check:['Read the First 30 Days end to end',
-    'Sit in on one live onboarding meeting as an observer',
-    'Run one onboarding meeting with Ben observing',
-    'Can explain the eight core areas without notes',
-    'Can explain why implementation beats information']},
-
- {id:'m2', n:'02', t:'The 20-Stage Workflow',
-  why:'Every mentee runs deals through the same twenty stages. It is the backbone the whole programme measures against, and a coach who does not know it cannot read a pipeline.',
+   {t:'Welcome to FYI Business Coaching',d:'One page: who we are, who we serve, how a mentee moves through the program.',u:''},
+   {t:'The FYI Method at a glance',d:'The idea behind the program and the principles every session comes back to.',u:''},
+   {t:'Navigating the Finance Maze',d:'Ben’s book. The mindset behind how we coach.',u:''},
+   {t:'Who to ask',d:'Ben for coaching and method. Darrel and Sam for admin, access and logistics.',u:''}
+  ]},
+ {t:'2. Onboarding a new mentee',
+  when:'Use before and during a mentee’s first 30 days. The same procedure sits inside every client file under The First 30 Days.',
   res:[
-   {t:'The 20-stage workflow reference',k:'tab',tab:'clients',theme:'theme-clients',
-    d:'Open any client file, then The First 30 Days, then the workflow button.'},
-   {t:'Mercury Nexus',k:'ext',u:'https://www.connective.com.au/',
-    d:'The three swim lanes live here. Blue stages are the broker, green are the team.'}
-  ],
-  check:['Name all twenty stages in order',
-    'Explain which stages the broker owns and which the team owns',
-    'Walk a live Kanban with a mentee and identify the weak lane',
-    'Install the twenty statuses in a mentee Mercury']},
-
- {id:'m3', n:'03', t:'Standard Operating Procedures',
-  why:'The SOPs are how the business runs when Ben is not in the room. A coach follows them rather than inventing their own way.',
+   {t:'The First 30 Days, in the client file',d:'The full onboarding procedure, with prompts, timed agendas, scripts and task lists, inside any client.',tab:'clients'},
+   {t:'The First 30 Days, printable copy',d:'The same procedure as a Word document and a PDF, for reading offline or handing on.',u:'https://drive.google.com/drive/folders/1fLyvjd0-yBtaahmMRCItjEa1XsUcTQef'},
+   {t:'Starter video watchlist',d:'The eight videos a new mentee watches, in order, with when each is due.',u:''},
+   {t:'Mercury admin access instructions',d:'What to send the mentee so the FYI team can see their deals.',u:''},
+   {t:'Goals sheet',d:'The sheet completed in Week 1 and emailed to Connective for Mercury Nexus analytics.',u:''}
+  ]},
+ {t:'3. Reading a mentee’s pipeline',
+  when:'Open when you are looking at a mentee’s deals and need the reference in front of you.',
   res:[
-   {t:'All procedures, rendered',k:'tab',tab:'sop',theme:'theme-sop',
-    d:'Six procedures with steps, checklists and a change-request form.'},
-   {t:'FYIBC SOP master document',k:'drive',
-    u:'https://docs.google.com/document/d/13rzl3dQNuAbCp_nIbYg51dYs1Xarfb5zUhNugM2Kmrk/edit',
-    d:'Darrel\u2019s working document.'},
-   {t:'SOP folder in Drive',k:'drive',
-    u:'https://drive.google.com/drive/folders/1Vwzn9u8iI6l_ygwhpu_8ObWHyqgiKdYr',
-    d:'Including archived versions.'}
-  ],
-  check:['Read all six procedures',
-    'Complete one Post-Meeting record start to finish',
-    'Run the Wednesday Group Chat protocol once',
-    'Know what to do when a payment fails',
-    'Raise one change request where a step was unclear']},
-
- {id:'m4', n:'04', t:'The Tools',
-  why:'The tools are the visible difference between us and the other twenty-two and a half thousand brokers. A coach who cannot demonstrate them cannot sell the programme.',
+   {t:'The 20-stage workflow',d:'One page: all twenty stages, the three swim lanes, who owns each stage. Keep it open beside the mentee’s Kanban.',u:''},
+   {t:'Installing the workflow in Mercury',d:'Step by step guide for adding the twenty statuses to a mentee’s Mercury.',u:''}
+  ]},
+ {t:'4. Procedures',
+  when:'How the business runs when Ben is not in the room. Follow the procedure; raise a change request if a step is unclear.',
   res:[
-   {t:'BID Snippet Builder',k:'tool',d:'Compliant objectives, requirements and disclosure notes. Reported 100% approval rate.'},
-   {t:'Tax Return Navigator',k:'tool',d:'Company tax returns, trusts and add-backs.'},
-   {t:'Commercial Loan Triage Tool',k:'tool',d:'Structuring commercial deals and lender presentations.'},
-   {t:'Broker Scale Matrix',k:'tool',d:'VA and employee scaling decisions.'},
-   {t:'Purchase Range Reckoner',k:'tool',d:'Branded per broker. Handed over in Week 2.'},
-   {t:'Partner Value Pack',k:'tool',d:'Referral partner pack. Handed over in Week 3.'}
-  ],
-  check:['Demonstrate every tool without preparation',
-    'Brand a Purchase Range Reckoner for a mentee',
-    'Explain which tool solves which mentee problem',
-    'Know which tools are already covered by an episode']},
-
- {id:'m5', n:'05', t:'The Systems',
-  why:'Five systems carry the business. A coach needs enough of each to work without asking, and to know which one owns which piece of data.',
+   {t:'All procedures, in this app',d:'Every SOP with steps, checklists and sign-off points.',tab:'sops'},
+   {t:'FYIBC SOP master document',d:'Darrel’s working document.',u:'https://docs.google.com/document/d/13rzl3dQNuAbCp_nIbYg51dYs1Xarfb5zUhNugM2Kmrk/edit'},
+   {t:'SOP folder, including archived versions',d:'Older versions, kept for reference.',u:'https://drive.google.com/drive/folders/1Vwzn9u8iI6l_ygwhpu_8ObWHyqgiKdYr'},
+   {t:'Post-meeting record template',d:'The template for the summary that goes to the client after each session.',u:''}
+  ]},
+ {t:'5. The tools',
+  when:'The tools we hand to mentees. Open the one that fits the problem in front of you.',
   res:[
-   {t:'The Bridge, this hub',k:'tab',tab:'fyi',theme:'theme-fyi',
-    d:'Clients, prospects, statistics, guests, events, SOPs, calendar.'},
-   {t:'Airtable, FYI Business Coaching base',k:'ext',u:'https://airtable.com/',
-    d:'The source of truth for clients, prospects and Argo. Coaches, Clients, Revenue Events, Prospects, Relationships, Argo Clients.'},
-   {t:'Mercury Nexus',k:'ext',u:'https://www.connective.com.au/',d:'Mentee CRM and analytics.'},
-   {t:'FYI Tribe, GoHighLevel',k:'ext',u:'https://app.gohighlevel.com/',
-    d:'Client portal, course library, the Wednesday Group Chat back catalogue under 900.'},
-   {t:'Fireflies',k:'ext',u:'https://app.fireflies.ai/',d:'Meeting transcripts and summaries.'}
-  ],
-  check:['Log in to all five',
-    'Find a client record in Airtable and explain every field',
-    'Upload a post-meeting record to GoHighLevel',
-    'Pull a Fireflies transcript and write a session note from it',
-    'Know which system owns which data, and never edit in the wrong one']},
-
- {id:'m6', n:'06', t:'The Wednesday Group Chat',
-  why:'The weekly group session is the most visible thing we do. A coach will be asked to host or find guests for it.',
+   {t:'BID Snippet Builder',d:'Objectives, requirements and disclosure notes. Includes a short how-to.',u:''},
+   {t:'Tax Return Navigator',d:'Company tax returns, trusts and add-backs.',u:''},
+   {t:'Commercial Loan Triage Tool',d:'Structuring commercial deals and lender presentations.',u:''},
+   {t:'Broker Scale Matrix',d:'VA and employee scaling decisions.',u:''},
+   {t:'Purchase Range Reckoner',d:'Branded per mentee. Handed over in Week 2.',u:''},
+   {t:'Partner Value Pack',d:'Referral partner pack. Handed over in Week 3.',u:''},
+   {t:'Which tool for which problem',d:'A one page guide matching common mentee problems to the right tool.',u:''}
+  ]},
+ {t:'6. Our systems',
+  when:'Quick start guides for each system, plus where each piece of data lives.',
   res:[
-   {t:'Guest schedule and gap radar',k:'tab',tab:'guests',theme:'theme-guests',
-    d:'Who is booked, where the gaps are, and twelve suggested topics.'},
-   {t:'Wednesday Group Chat Protocol',k:'drive',
-    u:'https://docs.google.com/document/d/1AHYzhDhEUF-hIv9ZcYeW06vw3_W0A5JkSN5irecrr6Y/edit',
-    d:'Tuesday promo, guest reconfirmation, Wednesday reminders.'},
-   {t:'Video Library Audit',k:'drive',
-    u:'https://docs.google.com/spreadsheets/d/1PIu33NxgXyiYUJTgZqgf2R-iFzaUikKD7M63PW5NceU/edit',
-    d:'Every episode indexed by number, date, theme and quality score.'}
-  ],
-  check:['Attend four sessions before hosting one',
-    'Run the pre-session protocol solo',
-    'Host one session with Ben present',
-    'Know how to find whether a topic has already been covered']},
-
- {id:'m7', n:'07', t:'Coaching the Person',
-  why:'The method is fixed, the delivery is not. DISC tells a coach how to teach the person in front of them.',
+   {t:'Where data lives',d:'One page: which system owns which information, so edits always go in the right place.',u:''},
+   {t:'Coaches’ Corner quick start',d:'Clients, prospects, relationships, supervision and the First 30 Days, in this app.',u:''},
+   {t:'Airtable quick start',d:'The client record and what each field means.',u:''},
+   {t:'Mercury Nexus quick start',d:'Mentee CRM and analytics, from a coach’s point of view.',u:''},
+   {t:'FYI Tribe quick start',d:'The client portal, course library and the Wednesday Group Chat back catalogue.',u:''},
+   {t:'Fireflies quick start',d:'Finding a transcript and turning it into a session note.',u:''}
+  ]},
+ {t:'7. The Wednesday Group Chat',
+  when:'If you are asked to host a session or find a guest.',
   res:[
-   {t:'Client files with DISC profiles',k:'tab',tab:'clients',theme:'theme-clients',
-    d:'Every client carries a DISC profile, engagement rating and lifecycle stage.'},
-   {t:'Profile Me DISC assessment',k:'ext',u:'https://www.profileme.com.au/',d:'Sent to every mentee at onboarding.'}
-  ],
-  check:['Complete your own DISC profile',
-    'Explain how you would coach a Lion differently from an Owl',
-    'Read three client files and predict their weak swim lane',
-    'Understand the coaching versus mentoring distinction']},
-
- {id:'m8', n:'08', t:'The Commercials',
-  why:'A coach will be asked what things cost and what else we do. Getting this wrong costs revenue or credibility.',
+   {t:'Wednesday Group Chat Protocol',d:'Tuesday promo, guest reconfirmation and Wednesday reminders.',u:'https://docs.google.com/document/d/1AHYzhDhEUF-hIv9ZcYeW06vw3_W0A5JkSN5irecrr6Y/edit'},
+   {t:'Video Library Audit',d:'Every episode indexed by number, date, theme and quality score. Check here before suggesting a topic.',u:'https://docs.google.com/spreadsheets/d/1PIu33NxgXyiYUJTgZqgf2R-iFzaUikKD7M63PW5NceU/edit'},
+   {t:'Guest schedule',d:'Who is booked and where the gaps are.',u:''}
+  ]},
+ {t:'8. Coaching the person',
+  when:'The method is fixed; the delivery is not. These help you adjust to the person in front of you.',
   res:[
-   {t:'Product set and cross-sell',k:'tab',tab:'clients',theme:'theme-clients',
-    d:'All eight products with pricing, on every client file.'},
-   {t:'Business statistics',k:'tab',tab:'stats',theme:'theme-stats',
-    d:'Revenue, billing calendar, client movement, cross-sell white space.'}
-  ],
-  check:['Quote every programme and price from memory',
-    'Explain the Mercury Pro upgrade and what it includes',
-    'Explain Argo Virtual and what a VA costs',
-    'Know when to hand a cross-sell to Ben rather than pitch it yourself',
-    'Never discount without Ben\u2019s approval']}
+   {t:'DISC style guide',d:'How to coach each style, with examples of what works and what stalls.',u:''},
+   {t:'Profile Me DISC assessment',d:'Sent to every mentee at onboarding. Take your own to see how it reads.',u:'https://www.profileme.com.au/'},
+   {t:'Coaching and mentoring, in practice',d:'When to coach, when to mentor, and how to tell which a session needs.',u:''}
+  ]},
+ {t:'9. Products and pricing',
+  when:'When a mentee asks what something costs or what else we offer.',
+  res:[
+   {t:'Product set and pricing sheet',d:'All programs and current prices.',u:''},
+   {t:'Mercury Pro upgrade',d:'What it includes and who it suits.',u:''},
+   {t:'Argo Virtual one pager',d:'What a VA does and what one costs.',u:''},
+   {t:'Cross-sell and discount guide',d:'When to raise another product, and the rule that discounts go through Ben.',u:''}
+  ]}
 ];
 
 /* Netlify Identity puts the invite/confirmation token in the URL fragment
