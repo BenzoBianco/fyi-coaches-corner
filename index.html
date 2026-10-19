@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>FYI Coaches' Corner v1.09.36</title>
+<title>FYI Coaches' Corner v1.09.37</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23E8801A'/%3E%3Ctext x='32' y='43' font-family='Arial, Helvetica, sans-serif' font-weight='800' font-size='27' fill='%23ffffff' text-anchor='middle'%3ECC%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet">
@@ -256,7 +256,7 @@ main{padding:22px;max-width:1140px;margin:0 auto}
 
 <div id="app">
   <header class="top">
-    <div class="brand">FYI Coaches' Corner<span class="verBadge" id="verBadge" onclick="toggleChangelog()" title="Click for what's new">v1.09.36</span><small id="coachBadge"></small></div>
+    <div class="brand">FYI Coaches' Corner<span class="verBadge" id="verBadge" onclick="toggleChangelog()" title="Click for what's new">v1.09.37</span><small id="coachBadge"></small></div>
     <div class="who">
       <span id="whoEmail"></span>
       <button onclick="doLogout()">Sign out</button>
@@ -396,8 +396,16 @@ function copySupervisionEmail(clientId){
   } else { fallback(); }
 }
 
-const APP_VERSION = '1.09.36';
+const APP_VERSION = '1.09.37';
+/* Coach chips on the Clients tab. Edit these when the team changes. */
+const CURRENT_COACHES = ['Ben','Belinda'];
+const RETIRED_COACHES = ['Helen'];
 const RELEASES = [
+  {v:'1.09.37', d:'20/10/2026', t:'Belinda added, Helen archived from the coach filters', items:[
+    'The coach filter row on Clients now always shows Ben and Belinda. Anyone else appears only while they have an Active client.',
+    'Helen no longer appears. Her past clients stay reachable under Previous clients and Everyone, nothing is deleted.',
+    'SOP wording that named Helen now names Belinda or reads as any coach.'
+  ]},
   {v:'1.09.36', d:'19/10/2026', t:'Coach Training rewritten as a resource hub', items:[
     'The sign-off checklists and progress bar are gone. Coach Training now points to the coaches\u2019 shared drive, section by section, with a link beside each resource.',
     'Resources without a link yet show \u201cBeing added\u201d, so links can be dropped in without changing the layout.'
@@ -911,7 +919,12 @@ function renderClients(){
     chipRow.appendChild(b);
   });
   if(STATE.principal){
-    const coaches=[...new Set(STATE.clients.map(c=>c.c).filter(Boolean))].sort();
+    /* Chips: current coaches always show, so a new coach has a chip before
+       their first client lands. Anyone else shows only while they still
+       have an Active client, and a retired coach never shows. Their past
+       clients stay reachable under Previous clients and Everyone. */
+    const withActive=new Set(STATE.clients.filter(c=>c.clientStatus==='Active').map(c=>c.c).filter(Boolean));
+    const coaches=[...new Set([...CURRENT_COACHES,...withActive])].filter(n=>!RETIRED_COACHES.includes(n)).sort();
     coaches.forEach(name=>{
       const id='coach:'+name;
       const b=document.createElement('button'); b.className='cl-filter'+(STATE.clientFilter===id?' active':'');
@@ -2538,9 +2551,9 @@ const SOPS=[
  notes:['Any variations must be documented in GHL Notes','Team members must always check GHL before taking action','Follow up every 48 hours if the mentee delays DISC, agreements or payments']},
 
 {id:'s08',g:'Mortgage Broker Foundation Program',n:'Post-Meeting for Mentees',
- purpose:'To ensure actions are captured, progress is tracked and accountability is maintained after each session with Ben or Helen.',
- scope:'All mentees attending coaching sessions with Ben or Helen.',
- inputs:['Zoom recording, Ben or Helen','ChatGPT','Google Drive client folder'],
+ purpose:'To ensure actions are captured, progress is tracked and accountability is maintained after each session with Ben or Belinda.',
+ scope:'All mentees attending coaching sessions with Ben or Belinda.',
+ inputs:['Zoom recording, Ben or Belinda','ChatGPT','Google Drive client folder'],
  steps:[
   {t:'Download the Zoom recording',b:['Download the video file only','Save in the client Google Drive under Zoom Meetings','Name it YYYY.MM.DD - LAST NAME, First Name']},
   {t:'Copy the Zoom summary notes',b:['Locate the auto-generated Zoom Summary','Copy the full text']},
@@ -2621,7 +2634,7 @@ const SOPS=[
  scope:'All FYI Admin Team members responsible for managing mentee offboarding.',
  inputs:['Offboarding notice from mentee','FYI Tribe access','FYI Master Sheet','WGC distribution lists','FYI Feedback distribution list','Google Drive client folder','GoHighLevel','Meeting recordings stored in Google Drive'],
  steps:[
-  {t:'Receive offboarding notice',b:['Confirm receipt of the offboarding request','Update the Offboarding Checklist in Trello to initiate the process','Notify Ben or Helen that offboarding has commenced']},
+  {t:'Receive offboarding notice',b:['Confirm receipt of the offboarding request','Update the Offboarding Checklist in Trello to initiate the process','Notify Ben or Belinda that offboarding has commenced']},
   {t:'Send confirmation of termination',b:['Send the Confirmation of Mentorship Termination Notice to the mentee','Save a copy of the email in the mentee Google Drive folder','Update GHL notes to reflect the communication']},
   {t:'Verify final payment',b:['Check the subscription or invoice status in GHL','Confirm all payments have been finalised','If payment is outstanding, follow the standard payment follow-up process before proceeding']},
   {t:'Schedule access removal',b:['Schedule removal of all access one day after the mentorship end date, 30 days after receipt of the Offboarding Notice','Set a calendar reminder to complete the removal on the scheduled date']},
@@ -2707,7 +2720,7 @@ const SOPS=[
  purpose:'To ensure that when a coach takes leave, every mentee is told before it happens, sessions are '+
    'covered or rescheduled, and the response times promised in the Participation Agreement are honoured '+
    'rather than quietly stretched.',
- scope:'All FYI coaches taking planned leave. Applies to Ben and to any contractor coach, including Helen. '+
+ scope:'All FYI coaches taking planned leave. Applies to Ben and to any contractor coach. '+
    'Unplanned absence follows the same steps compressed into whatever notice exists.',
  inputs:['The coach\u2019s leave dates, first and last day away',
    'The Coach Leave panel on Future Events in The Bridge',
