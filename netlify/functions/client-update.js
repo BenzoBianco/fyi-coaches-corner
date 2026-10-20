@@ -43,7 +43,8 @@ const FIELD_MAP = {
   contactLog: 'Contact Log',
   mercuryAddon: 'Mercury Pro Addon',
   addonMonths:  'Addon Months',
-  clientSummary: 'Client Summary'
+  clientSummary: 'Client Summary',
+  sharedWith:   'Shared With'
 };
 
 async function findRecord(base, pat, name) {
@@ -121,6 +122,8 @@ export default async (req, context) => {
       }
       /* Coaches cannot reassign a client to someone else from this app. */
       delete fields['Coach'];
+      /* Only Ben and admin staff decide who a client is shared with. */
+      delete fields['Shared With'];
     }
 
     const r2 = await at(base, pat, CLIENTS, '', { method: 'PATCH', body: {

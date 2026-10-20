@@ -69,8 +69,18 @@ function mapClient(r) {
     addonEndDate: f['Add On End Date'] || '',
     addonActive: !!f['Add on Active'],
     actualFee: (f['Actual Fee Monthly']===0 || f['Actual Fee Monthly']) ? f['Actual Fee Monthly'] : null,
-    clientSummary: f['Client Summary'] || ''
+    clientSummary: f['Client Summary'] || '',
+    lendingType: f['Lending Type'] || '',
+    sharedWith: Array.isArray(f['Shared With']) ? f['Shared With'] : []
   };
+}
+
+/* A client shared with a non-owning coach is read only and carries no money:
+   fees and add-on values are zeroed here, on the server, so they never reach
+   the browser. */
+function redactShared(c) {
+  return { ...c, shared: true, sharedWith: [], f: 0, mercuryAddon: 0, addonMonths: 0,
+    actualFee: null, addonEndDate: '', addonActive: false };
 }
 
 function mapProspect(r) {
@@ -153,7 +163,9 @@ export default async (req, context) => {
     let relationships = relationshipRecords.map(mapRelationship).filter(r => r.n);
 
     if (!principal) {
-      clients = clients.filter(c => c.c === coach);
+      clients = clients
+        .filter(c => c.c === coach || (c.sharedWith || []).includes(coach))
+        .map(c => c.c === coach ? c : redactShared(c));
       prospects = prospects.filter(p => p.coach === coach);
       relationships = relationships.filter(r => r.owner === coach);
     }
