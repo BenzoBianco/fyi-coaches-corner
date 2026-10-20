@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>FYI Coaches' Corner v1.09.39</title>
+<title>FYI Coaches' Corner v1.09.40</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23E8801A'/%3E%3Ctext x='32' y='43' font-family='Arial, Helvetica, sans-serif' font-weight='800' font-size='27' fill='%23ffffff' text-anchor='middle'%3ECC%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet">
@@ -256,7 +256,7 @@ main{padding:22px;max-width:1140px;margin:0 auto}
 
 <div id="app">
   <header class="top">
-    <div class="brand">FYI Coaches' Corner<span class="verBadge" id="verBadge" onclick="toggleChangelog()" title="Click for what's new">v1.09.39</span><small id="coachBadge"></small></div>
+    <div class="brand">FYI Coaches' Corner<span class="verBadge" id="verBadge" onclick="toggleChangelog()" title="Click for what's new">v1.09.40</span><small id="coachBadge"></small></div>
     <div class="who">
       <span id="whoEmail"></span>
       <button onclick="doLogout()">Sign out</button>
@@ -396,13 +396,16 @@ function copySupervisionEmail(clientId){
   } else { fallback(); }
 }
 
-const APP_VERSION = '1.09.39';
+const APP_VERSION = '1.09.40';
 /* Coach chips on the Clients tab. Edit these when the team changes. */
 const CURRENT_COACHES = ['Ben','Belinda'];
 const RETIRED_COACHES = ['Helen'];
 /* Coaches Ben can share a client with. Must match the options on the Clients > Shared With field in Airtable. */
 const SHARE_COACHES = ['Belinda'];
 const RELEASES = [
+  {v:'1.09.40', d:'20/10/2026', t:'Fixed dead filter buttons after an empty result', items:[
+    'Picking a filter that returned no clients (Belinda\u2019s chip while she has none) switched every other filter, search and sort control off until a reload. The empty message was rebuilding the page and wiping its click handlers. Same fix applied to an empty Prospects list and to the SOP group headings.'
+  ]},
   {v:'1.09.39', d:'20/10/2026', t:'Share a client with another coach', items:[
     'Every client file now has a Share this client box for Ben and admin staff, with a tick per coach (Belinda for now). It saves the moment you tick it.',
     'A shared client appears in that coach\u2019s list tagged Shared by Ben, view only. Fees are hidden, nothing can be edited, and shared clients stay out of their dashboard counts.',
@@ -991,7 +994,7 @@ function renderClients(){
   countLine.textContent=list.length+' client'+(list.length===1?'':'s')+(noStartCount?' \u00b7 '+noStartCount+' without a start date':'');
   m.appendChild(countLine);
 
-  if(!list.length){ m.innerHTML+='<div class="empty">No clients found.</div>'; return; }
+  if(!list.length){ const e=document.createElement('div'); e.className='empty'; e.textContent='No clients found.'; m.appendChild(e); return; }
   const grid=document.createElement('div'); grid.className='grid';
   list.forEach(c=>{
     const card=document.createElement('div'); card.className='card'+ragClass(c.rag);
@@ -1675,7 +1678,7 @@ function renderProspects(){
   let list = STATE.prospects.filter(p=> STATE.showArchivedProspects ? p.archived : !p.archived);
   list = list.slice().sort((a,b)=>(b.idle||0)-(a.idle||0));
 
-  if(!list.length){ m.innerHTML+='<div class="empty">'+(STATE.showArchivedProspects?'No archived prospects.':'No active prospects found.')+'</div>'; return; }
+  if(!list.length){ const e=document.createElement('div'); e.className='empty'; e.textContent=(STATE.showArchivedProspects?'No archived prospects.':'No active prospects found.'); m.appendChild(e); return; }
 
   const grid=document.createElement('div'); grid.className='grid';
   list.forEach(p=>{
@@ -2103,7 +2106,7 @@ function renderSOPs(){
   });
   const wrap=document.createElement('div');
   Object.entries(groups).forEach(([g,items])=>{
-    wrap.innerHTML+='<div class="sopGroup">'+g+'</div>';
+    const gh=document.createElement('div'); gh.className='sopGroup'; gh.textContent=g; wrap.appendChild(gh);
     const list=document.createElement('div'); list.className='sopList';
     items.forEach(s=>{
       const row=document.createElement('div'); row.className='sopRow';
