@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>FYI Coaches' Corner v1.09.38</title>
+<title>FYI Coaches' Corner v1.09.39</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23E8801A'/%3E%3Ctext x='32' y='43' font-family='Arial, Helvetica, sans-serif' font-weight='800' font-size='27' fill='%23ffffff' text-anchor='middle'%3ECC%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet">
@@ -256,7 +256,7 @@ main{padding:22px;max-width:1140px;margin:0 auto}
 
 <div id="app">
   <header class="top">
-    <div class="brand">FYI Coaches' Corner<span class="verBadge" id="verBadge" onclick="toggleChangelog()" title="Click for what's new">v1.09.38</span><small id="coachBadge"></small></div>
+    <div class="brand">FYI Coaches' Corner<span class="verBadge" id="verBadge" onclick="toggleChangelog()" title="Click for what's new">v1.09.39</span><small id="coachBadge"></small></div>
     <div class="who">
       <span id="whoEmail"></span>
       <button onclick="doLogout()">Sign out</button>
@@ -396,11 +396,19 @@ function copySupervisionEmail(clientId){
   } else { fallback(); }
 }
 
-const APP_VERSION = '1.09.38';
+const APP_VERSION = '1.09.39';
 /* Coach chips on the Clients tab. Edit these when the team changes. */
 const CURRENT_COACHES = ['Ben','Belinda'];
 const RETIRED_COACHES = ['Helen'];
+/* Coaches Ben can share a client with. Must match the options on the Clients > Shared With field in Airtable. */
+const SHARE_COACHES = ['Belinda'];
 const RELEASES = [
+  {v:'1.09.39', d:'20/10/2026', t:'Share a client with another coach', items:[
+    'Every client file now has a Share this client box for Ben and admin staff, with a tick per coach (Belinda for now). It saves the moment you tick it.',
+    'A shared client appears in that coach\u2019s list tagged Shared by Ben, view only. Fees are hidden, nothing can be edited, and shared clients stay out of their dashboard counts.',
+    'New Shared with Belinda filter chip for Ben, and a Shared tag on his own cards. Untick to withdraw instantly.',
+    'Enforced on the server, not just hidden: a coach cannot write to a shared client or change who it is shared with.'
+  ]},
   {v:'1.09.38', d:'20/10/2026', t:'Logged contact now counts on the dashboard', items:[
     'Not contacted 30d+, the no-contact count and the Last contact line on cards now use the latest of the Zoom date and anything in the client\u2019s Contact log. Before this, a logged call, message or visit never moved the dashboard.',
     'The free-text Notes box carries no date, so it does not count as contact. Use the Contact log for that.'
@@ -721,7 +729,7 @@ function lastTouch(c){
 }
 function renderDashboard(){
   const m=document.getElementById('main');
-  const active = STATE.clients.filter(c=>c.clientStatus==='Active');
+  const active = STATE.clients.filter(c=>c.clientStatus==='Active' && !c.shared);
   const nearingGrad = active.filter(c=>c.daysToGrad!=null && c.daysToGrad<=60 && c.daysToGrad>=0);
   active.forEach(c=>{ c._lt=lastTouch(c); });
   const notContacted = active.filter(c=>c._lt.days!=null && c._lt.days>30);
@@ -949,6 +957,12 @@ function renderClients(){
       b.textContent=name+"'s"; b.onclick=()=>{ STATE.clientFilter=id; render(); };
       chipRow.appendChild(b);
     });
+    SHARE_COACHES.forEach(name=>{
+      const id='shared:'+name;
+      const b=document.createElement('button'); b.className='cl-filter'+(STATE.clientFilter===id?' active':'');
+      b.textContent='Shared with '+name; b.onclick=()=>{ STATE.clientFilter=id; render(); };
+      chipRow.appendChild(b);
+    });
   }
   m.appendChild(chipRow);
 
@@ -959,12 +973,14 @@ function renderClients(){
      because a coach chip or a future filter doesn't happen to check
      Status itself. Status is the one real signal for this, so nothing
      new was added, this just makes every filter respect it consistently. */
+  const sharedFilterName = (!activeFilter && STATE.clientFilter && STATE.clientFilter.indexOf('shared:')===0) ? STATE.clientFilter.slice(7) : null;
   const stillInProgramme = c => c.clientStatus==='Active';
   const bypassStatusCheck = STATE.clientFilter==='everyone' || STATE.clientFilter==='previous' || STATE.clientFilter==='exitmissing';
   let list = STATE.clients.filter(c=>{
     if(!bypassStatusCheck && !stillInProgramme(c)) return false;
     if(activeFilter) return activeFilter.test(c);
     if(coachFilterName) return c.c===coachFilterName;
+    if(sharedFilterName) return (c.sharedWith||[]).includes(sharedFilterName);
     return true;
   });
   list = list.filter(c=>!q || c.n.toLowerCase().includes(q));
@@ -987,6 +1003,8 @@ function renderClients(){
     const nextSession = (STATE.sessions||{})[c.n.split(' ')[0]];
 
     let html = '<h3>'+c.n+'</h3>';
+    if(c.shared) html += '<div class="meta" style="margin-top:2px"><span class="tag grey">Shared by Ben, view only</span></div>';
+    else if(STATE.principal && (c.sharedWith||[]).length) html += '<div class="meta" style="margin-top:2px"><span class="tag" style="background:#E8F1FB;border-color:#BCD3EE;color:#2F5C93">Shared with '+c.sharedWith.join(', ')+'</span></div>';
     if(nextSession){
       const dIn = daysUntil(nextSession);
       html += '<div style="font-size:.76rem;font-weight:700;color:#8A671B;margin-top:2px">Next session '+new Date(nextSession).toLocaleDateString('en-AU')+' &middot; '+(dIn===0?'today':dIn===1?'in 1 day':'in '+dIn+' days')+'</div>';
@@ -1128,6 +1146,16 @@ function renderClientDetail(){
     '<span class="savedNote" id="clientSaveNote"></span></div>';
   m.appendChild(d);
 
+  if(STATE.principal){
+    const sh=document.createElement('div'); sh.className='detail'; sh.style.marginTop='14px';
+    sh.innerHTML='<h2 style="font-size:1rem">Share this client</h2>'+
+      '<p style="color:var(--muted,#69707F);font-size:13px;margin:-6px 0 10px">A shared client appears in that coach\u2019s list as view only, with fees hidden. Untick to withdraw it straight away.</p>'+
+      SHARE_COACHES.map(name=>'<label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;margin:6px 0">'+
+        '<input type="checkbox" style="width:18px;height:18px;accent-color:var(--accent,#4A6FA5)" '+((c.sharedWith||[]).includes(name)?'checked':'')+' onchange="toggleShare(\''+c.airtableId+'\',\''+name+'\',this.checked)"> Share with '+name+'</label>').join('')+
+      '<span class="savedNote" id="shareNote"></span>';
+    m.appendChild(sh);
+  }
+
   if(c.mandatedMonths) m.appendChild(supervisionPanel(c));
 
   m.appendChild(bpPanel(c));
@@ -1138,6 +1166,29 @@ function renderClientDetail(){
   if(mi) m.appendChild(mi);
 
   m.appendChild(p30Panel(c));
+
+  if(c.shared){
+    /* Shared by Ben: read only. The server refuses writes too, this just stops the dead buttons. */
+    const ban=document.createElement('div'); ban.className='detail'; ban.style.cssText='margin-bottom:14px;background:#FFF8E5;border-color:#E9D9A6';
+    ban.innerHTML='<b>Shared by Ben, view only.</b> You can read this client, but changes, contact logs and tick-offs are switched off. Fees are hidden.';
+    m.insertBefore(ban, m.children[1]||null);
+    m.querySelectorAll('input:not([type=search]),select,textarea').forEach(el=>{ el.disabled=true; });
+    m.querySelectorAll('button.btn').forEach(el=>{ if((el.getAttribute('onclick')||'').indexOf('copy')>-1) return; el.disabled=true; el.style.opacity='.45'; el.style.cursor='not-allowed'; });
+  }
+}
+
+async function toggleShare(id, name, on){
+  const c=STATE.clients.find(x=>x.airtableId===id);
+  const next=new Set(c.sharedWith||[]); if(on) next.add(name); else next.delete(name);
+  const arr=[...next];
+  const note=document.getElementById('shareNote'); if(note) note.textContent='Saving...';
+  try{
+    const r=await authedFetch('/.netlify/functions/client-update',{method:'POST', body:JSON.stringify({recordId:id, name:c.n, fields:{sharedWith:arr}})});
+    const d=await r.json();
+    if(!r.ok || d.ok===false){ if(note) note.textContent=d.message||'Save failed.'; return; }
+    c.sharedWith=arr;
+    if(note) note.textContent=(on?'Shared with ':'Withdrawn from ')+name+'.';
+  }catch(e){ if(note) note.textContent='Could not reach the server.'; }
 }
 
 async function addClientContactLog(clientId){
