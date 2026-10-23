@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>FYI Coaches' Corner v1.09.43</title>
+<title>FYI Coaches' Corner v1.09.44</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23E8801A'/%3E%3Ctext x='32' y='43' font-family='Arial, Helvetica, sans-serif' font-weight='800' font-size='27' fill='%23ffffff' text-anchor='middle'%3ECC%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet">
@@ -256,7 +256,7 @@ main{padding:22px;max-width:1140px;margin:0 auto}
 
 <div id="app">
   <header class="top">
-    <div class="brand">FYI Coaches' Corner<span class="verBadge" id="verBadge" onclick="toggleChangelog()" title="Click for what's new">v1.09.43</span><small id="coachBadge"></small></div>
+    <div class="brand">FYI Coaches' Corner<span class="verBadge" id="verBadge" onclick="toggleChangelog()" title="Click for what's new">v1.09.44</span><small id="coachBadge"></small></div>
     <div class="who">
       <span id="whoEmail"></span>
       <button onclick="doLogout()">Sign out</button>
@@ -269,7 +269,7 @@ main{padding:22px;max-width:1140px;margin:0 auto}
     <button data-tab="prospects" onclick="setTab('prospects')">Prospects</button>
     <button data-tab="relationships" onclick="setTab('relationships')">Relationships</button>
     <button data-tab="sops" onclick="setTab('sops')">SOPs</button>
-    <button data-tab="training" onclick="setTab('training')">Coach Training</button>
+    <button data-tab="training" onclick="setTab('training')">Coaching Resources</button>
   </nav>
   <main id="main"></main>
 </div>
@@ -396,26 +396,30 @@ function copySupervisionEmail(clientId){
   } else { fallback(); }
 }
 
-const APP_VERSION = '1.09.43';
+const APP_VERSION = '1.09.44';
 /* Coach chips on the Clients tab. Edit these when the team changes. */
 const CURRENT_COACHES = ['Ben','Belinda'];
 const RETIRED_COACHES = ['Helen'];
 /* Coaches Ben can share a client with. Must match the options on the Clients > Shared With field in Airtable. */
 const SHARE_COACHES = ['Belinda'];
 const RELEASES = [
-  {v:'1.09.43', d:'23/10/2026', t:'Mercury admin SOP link updated', items:[
+  {v:'1.09.44', d:'23/10/2026', t:'Coach Training is now Coaching Resources', items:[
+    'The Coach Training tab is renamed Coaching Resources.',
+    'The Open the Coaching Resources folder button now goes to the new Coaching Resources folder in Google Drive, which holds the dated Mercury admin access SOP.'
+  ]},
+  {v:'1.09.44', d:'23/10/2026', t:'Mercury admin SOP link updated', items:[
     'The Mercury admin access instructions now open the dated version of the procedure (created 23 October 2026), with FYI branding and logo.'
   ]},
-  {v:'1.09.43', d:'23/10/2026', t:'Coach Training: LastPass and Guardian first', items:[
+  {v:'1.09.44', d:'23/10/2026', t:'Coach Training: LastPass and Guardian first', items:[
     'Start here now opens with Install LastPass and Install the Guardian app, ahead of everything else.',
     'The Mercury admin access instructions now link to the new FYI branded procedure, which notes that the support team does this and coaches do not need to.'
   ]},
-  {v:'1.09.43', d:'23/10/2026', t:'Commercial Know How course viewer', items:[
+  {v:'1.09.44', d:'23/10/2026', t:'Commercial Know How course viewer', items:[
     'Clients tagged Commercial now show Commercial Know How in place of First 30 Days: the onboarding card, then Part A (Background Knowledge, A01 to A11) and Part B (Processes, Policies and Systems, B12 to B22) in the same card layout.',
     'Each module carries Belinda\u2019s manuscript text as written, with a Covered with this mentee tick that saves to a new Airtable field, Commercial Progress. B21, B22 and the onboarding card show Content to come until Belinda writes them.',
     'New Lending type selector in the Engagement panel (Resi, Commercial, BOP). Set it to Commercial to switch a client over.'
   ]},
-  {v:'1.09.43', d:'20/10/2026', t:'Fixed dead filter buttons after an empty result', items:[
+  {v:'1.09.44', d:'20/10/2026', t:'Fixed dead filter buttons after an empty result', items:[
     'Picking a filter that returned no clients (Belinda\u2019s chip while she has none) switched every other filter, search and sort control off until a reload. The empty message was rebuilding the page and wiping its click handlers. Same fix applied to an empty Prospects list and to the SOP group headings.'
   ]},
   {v:'1.09.39', d:'20/10/2026', t:'Share a client with another coach', items:[
@@ -2240,7 +2244,7 @@ function renderTraining(){
   const m=document.getElementById('main');
   const head=document.createElement('div'); head.className='module';
   const root=TRAIN_DRIVE_ROOT
-    ? '<a class="btn" href="'+TRAIN_DRIVE_ROOT+'" target="_blank" rel="noopener" style="display:inline-block;text-decoration:none;margin-top:12px">Open the coaches’ shared drive</a>'
+    ? '<a class="btn" href="'+TRAIN_DRIVE_ROOT+'" target="_blank" rel="noopener" style="display:inline-block;text-decoration:none;margin-top:12px">Open the Coaching Resources folder</a>'
     : '<div class="why" style="margin:12px 0 0">The shared drive link is being added.</div>';
   head.innerHTML='<h3 style="font-size:1.05rem">Everything you need, in one place</h3>'+
     '<div class="why" style="margin-bottom:0">Each section below points to the matching folder in the coaches’ shared drive. There is nothing to memorise and nothing to sign off. Open what you need, when you need it, and ask Ben or Darrel if something is missing or out of date.</div>'+root;
@@ -2691,7 +2695,7 @@ const SOPS=[
   {t:'2.6 Orientation Complete',b:['Move the mentee to the Orientation Complete pipeline stage','An automated email sends the Discovery Form Questionnaire and Mercury Admin Access instructions','If the automatic email did not send, send it manually including the DISC result','Schedule and secure the first twelve weekly meetings with Ben, 30 minutes each','Create the first Post-Meeting Record following the Post-Meeting SOP','Add the mentee to ClickSend, MBFP Mentees Group, for SMS reminders']},
   {t:'2.7 Send the starter video watchlist',b:[
     'Email the eight starter videos in order, with when each should be watched',
-    'The list is on the Coach Training tab and on every client file under The First 30 Days',
+    'The list is on the Coaching Resources tab and on every client file under The First 30 Days',
     'Mention it in the onboarding meeting so the mentee expects it',
     'This replaces explaining the same ground live in Week 1 and Week 2']},
   {t:'2.8 Ready for Program to Start',b:['Confirm all documents are saved and the mentee is ready to begin']}
@@ -2953,7 +2957,7 @@ const SOPS=[
 ];
 
 /* Paste the shared drive's top-level folder link here. */
-const TRAIN_DRIVE_ROOT='';
+const TRAIN_DRIVE_ROOT='https://drive.google.com/drive/folders/1bS7iNf_FVRSZNMxuYaBbxDb6ONF4SOlw';
 /* Each resource: t = title, d = what it is, u = Drive link (leave '' until supplied),
    tab = open a tab inside this app instead of a Drive link. */
 const TRAIN_SECTIONS=[
