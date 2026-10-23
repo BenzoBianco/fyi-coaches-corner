@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>FYI Coaches' Corner v1.09.41</title>
+<title>FYI Coaches' Corner v1.09.42</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23E8801A'/%3E%3Ctext x='32' y='43' font-family='Arial, Helvetica, sans-serif' font-weight='800' font-size='27' fill='%23ffffff' text-anchor='middle'%3ECC%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet">
@@ -256,7 +256,7 @@ main{padding:22px;max-width:1140px;margin:0 auto}
 
 <div id="app">
   <header class="top">
-    <div class="brand">FYI Coaches' Corner<span class="verBadge" id="verBadge" onclick="toggleChangelog()" title="Click for what's new">v1.09.41</span><small id="coachBadge"></small></div>
+    <div class="brand">FYI Coaches' Corner<span class="verBadge" id="verBadge" onclick="toggleChangelog()" title="Click for what's new">v1.09.42</span><small id="coachBadge"></small></div>
     <div class="who">
       <span id="whoEmail"></span>
       <button onclick="doLogout()">Sign out</button>
@@ -396,19 +396,23 @@ function copySupervisionEmail(clientId){
   } else { fallback(); }
 }
 
-const APP_VERSION = '1.09.41';
+const APP_VERSION = '1.09.42';
 /* Coach chips on the Clients tab. Edit these when the team changes. */
 const CURRENT_COACHES = ['Ben','Belinda'];
 const RETIRED_COACHES = ['Helen'];
 /* Coaches Ben can share a client with. Must match the options on the Clients > Shared With field in Airtable. */
 const SHARE_COACHES = ['Belinda'];
 const RELEASES = [
-  {v:'1.09.41', d:'23/10/2026', t:'Commercial Know How course viewer', items:[
+  {v:'1.09.42', d:'23/10/2026', t:'Coach Training: LastPass and Guardian first', items:[
+    'Start here now opens with Install LastPass and Install the Guardian app, ahead of everything else.',
+    'The Mercury admin access instructions now link to the new FYI branded procedure, which notes that the support team does this and coaches do not need to.'
+  ]},
+  {v:'1.09.42', d:'23/10/2026', t:'Commercial Know How course viewer', items:[
     'Clients tagged Commercial now show Commercial Know How in place of First 30 Days: the onboarding card, then Part A (Background Knowledge, A01 to A11) and Part B (Processes, Policies and Systems, B12 to B22) in the same card layout.',
     'Each module carries Belinda\u2019s manuscript text as written, with a Covered with this mentee tick that saves to a new Airtable field, Commercial Progress. B21, B22 and the onboarding card show Content to come until Belinda writes them.',
     'New Lending type selector in the Engagement panel (Resi, Commercial, BOP). Set it to Commercial to switch a client over.'
   ]},
-  {v:'1.09.41', d:'20/10/2026', t:'Fixed dead filter buttons after an empty result', items:[
+  {v:'1.09.42', d:'20/10/2026', t:'Fixed dead filter buttons after an empty result', items:[
     'Picking a filter that returned no clients (Belinda\u2019s chip while she has none) switched every other filter, search and sort control off until a reload. The empty message was rebuilding the page and wiping its click handlers. Same fix applied to an empty Prospects list and to the SOP group headings.'
   ]},
   {v:'1.09.39', d:'20/10/2026', t:'Share a client with another coach', items:[
@@ -2953,6 +2957,8 @@ const TRAIN_SECTIONS=[
  {t:'1. Start here',
   when:'Your first week. A short orientation to how FYI works and what a mentee experiences.',
   res:[
+   {t:'First: install LastPass',d:'Our recommended password manager. Download it before anything else, so logins live in one safe place and never in email or notes.',u:'https://www.lastpass.com/download'},
+   {t:'Install the Guardian app on your phone',d:'We use the Guardian app. It downloads as an app on your phone; install it before your first login.',u:''},
    {t:'Welcome to FYI Business Coaching',d:'One page: who we are, who we serve, how a mentee moves through the program.',u:''},
    {t:'The FYI Method at a glance',d:'The idea behind the program and the principles every session comes back to.',u:''},
    {t:'Navigating the Finance Maze',d:'Ben’s book. The mindset behind how we coach.',u:''},
@@ -2964,7 +2970,7 @@ const TRAIN_SECTIONS=[
    {t:'The First 30 Days, in the client file',d:'The full onboarding procedure, with prompts, timed agendas, scripts and task lists, inside any client.',tab:'clients'},
    {t:'The First 30 Days, printable copy',d:'The same procedure as a Word document and a PDF, for reading offline or handing on.',u:'https://drive.google.com/drive/folders/1fLyvjd0-yBtaahmMRCItjEa1XsUcTQef'},
    {t:'Starter video watchlist',d:'The eight videos a new mentee watches, in order, with when each is due.',u:''},
-   {t:'Mercury admin access instructions',d:'What to send the mentee so the FYI team can see their deals.',u:''},
+   {t:'Mercury admin access instructions',d:'What the mentee is sent so the FYI team can see their deals. Our support team does this; coaches do not need to.',u:'https://docs.google.com/document/d/1oT2mM3HbvZV3ySwCOcpxzpyslfE-AVONk2jRpzMQSwg/edit'},
    {t:'Goals sheet',d:'The sheet completed in Week 1 and emailed to Connective for Mercury Nexus analytics.',u:''}
   ]},
  {t:'3. Reading a mentee’s pipeline',
