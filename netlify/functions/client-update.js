@@ -37,6 +37,8 @@ const FIELD_MAP = {
   emailInContacts:   'Email In Contacts',
   addressInContacts: 'Address In Contacts',
   p30running: 'First 30 Days Running',
+  comProg:    'Commercial Progress',
+  lendingType: 'Lending Type',
   p30:        'First 30 Days Progress',
   bestPractice: 'Best Practice Tips Passed',
   email:      'Email',
@@ -88,6 +90,7 @@ export default async (req, context) => {
     const col = FIELD_MAP[k];
     if (!col) { skipped.push(k); return; }
     if (v === undefined || v === null) return;
+    if (k === 'lendingType' && v === '') { fields[col] = null; return; } /* clears the select */
     fields[col] = (k === 'f' || k === 'mandatedMonths' || k === 'mercuryAddon' || k === 'addonMonths') ? Number(v) || 0 : v;
   });
 

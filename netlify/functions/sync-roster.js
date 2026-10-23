@@ -54,6 +54,7 @@ function mapClient(r) {
     emailInContacts: !!f['Email In Contacts'],
     addressInContacts: !!f['Address In Contacts'],
     p30running: !!f['First 30 Days Running'],
+    comProg: f['Commercial Progress'] || '',
     p30: f['First 30 Days Progress'] || '',
     bestPractice: f['Best Practice Tips Passed'] || '',
     gradDate: f['Graduation Date'] || '',
