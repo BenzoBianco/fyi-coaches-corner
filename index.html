@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>FYI Coaches' Corner v1.09.48</title>
+<title>FYI Coaches' Corner v1.09.49</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23E8801A'/%3E%3Ctext x='32' y='43' font-family='Arial, Helvetica, sans-serif' font-weight='800' font-size='27' fill='%23ffffff' text-anchor='middle'%3ECC%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 :root{ --radius:10px; }
 /* Theme palettes, taken directly from The Bridge, one per tab, so Coaches'
@@ -224,6 +224,49 @@ main{padding:22px;max-width:1140px;margin:0 auto}
 .relTracker .rt-history-item{display:flex;gap:10px;font-size:12.5px;padding:4px 0;color:var(--rt-ink-soft)}
 .relTracker .rt-history-item b{color:var(--rt-navy);min-width:90px}
 .relTracker .rt-no-history{color:var(--rt-ink-soft);font-size:12.5px;font-style:italic}
+
+/* ---- Dalio Loop console look (v1.09.49): one palette, Montserrat throughout,
+   dark header with a gold rule, underline tabs, white rounded cards. ---- */
+body,body.theme-clients,body.theme-prospects,body.theme-rel,body.theme-sop,body.theme-training{--bg:#F2F3F8;--card:#FFFFFF;--primary:#333547;--accent:#6090C7;--accent2:#C59C44;--text:#333547;--muted:#6B6F80;--border:#DFE1EA}
+*{font-family:'Montserrat',sans-serif !important}
+body{font-size:15px;line-height:1.5}
+#loginScreen{background:#333547}
+.loginBox{border-radius:14px}
+.loginBox button{background:#6090C7;border-radius:10px}
+header.top{background:#333547;border-bottom:4px solid #C59C44;padding:16px 24px}
+header.top .brand{font-size:1.35rem;font-weight:700;letter-spacing:.005em}
+header.top .verBadge{background:rgba(255,255,255,.14);border:0;color:#E8EAF2;font-weight:600;padding:3px 10px}
+header.top .brand small{color:#C9CCDA}
+header.top .who{color:#E8EAF2}
+header.top .who button{background:transparent;border:1px solid rgba(255,255,255,.55);color:#fff;border-radius:9px;padding:9px 16px;font-size:.85rem;font-weight:500}
+header.top .who button:hover{background:rgba(255,255,255,.1)}
+nav{background:var(--bg);border-bottom:0;padding:22px 24px 0;gap:30px;max-width:1140px;margin:0 auto;overflow-x:auto;flex-wrap:nowrap}
+nav button{background:transparent;border:0;border-bottom:3px solid #D8DAE3;border-radius:0;padding:10px 6px 12px;color:var(--muted);font-size:.95rem;font-weight:500;flex:1 1 auto;text-align:left}
+nav button:hover{color:var(--primary);border-bottom-color:#C59C44;background:transparent}
+nav button.active{background:transparent;color:var(--primary);font-weight:700;border-bottom-color:#C59C44}
+main{padding:22px 24px 40px}
+.card{background:var(--card);border-radius:14px;border-color:var(--border);padding:16px 18px}
+.card h3{font-weight:700;font-size:1rem}
+.detail,.sopDoc,.module{border-radius:14px;padding:26px 28px;background:var(--card)}
+.detail h2,.sopDoc h2{font-weight:700;font-size:1.6rem;color:var(--primary)}
+.sopGroup{font-size:.7rem;letter-spacing:.06em}
+.banner{background:#F8F6EC;border:0;border-left:4px solid #C59C44;border-radius:0 8px 8px 0;color:var(--primary);padding:14px 20px;font-size:.95rem}
+.banner.ok{background:#E8F3EA;border:1px solid #B9DCC0;border-left:1px solid #B9DCC0;border-radius:8px;color:#1F4D2B}
+.banner.err{background:#FBEBEA;border:1px solid #E6B3AF;border-left:4px solid #C0453F;color:#8E2E28}
+.btn{background:#6090C7;border-radius:9px;padding:11px 20px;font-size:.9rem;font-weight:600}
+.btn.secondary{background:transparent;color:var(--primary);border:1px solid #9AA0B3}
+.btn.ghost{border-color:var(--border)}
+.cl-filter{background:var(--card);border-radius:999px;font-size:.8rem;font-weight:500;padding:7px 14px}
+.cl-filter.active{background:var(--primary);color:#fff;border-color:var(--primary)}
+.toolbar input[type=search],.field input,.field select,.field textarea{background:#fff;border:1px solid #CFD3DE;border-radius:9px;padding:11px 13px;font-size:.92rem;color:var(--text)}
+.cd2-row input,.cd2-row select,.cd2-row textarea{background:#fff;border:1px solid #CFD3DE;border-radius:8px;padding:8px 11px;font-size:.85rem;color:var(--text)}
+.cd2-panel{background:var(--card);border-radius:14px}
+.cd2-panel h4{font-size:.78rem;color:var(--primary);letter-spacing:.04em}
+.field label,.cd2-row label{font-size:.76rem;font-weight:700;text-transform:none;letter-spacing:0;color:var(--primary)}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:#6090C7}
+.progressBar .fill{background:#6090C7}
+.tag{font-weight:500}
+.toolbar select{background:#fff;border:1px solid #CFD3DE;border-radius:9px;padding:10px 12px;font-size:.85rem;color:var(--text)}
 </style>
 </head>
 <body class="theme-clients">
@@ -256,7 +299,7 @@ main{padding:22px;max-width:1140px;margin:0 auto}
 
 <div id="app">
   <header class="top">
-    <div class="brand">FYI Coaches' Corner<span class="verBadge" id="verBadge" onclick="toggleChangelog()" title="Click for what's new">v1.09.48</span><small id="coachBadge"></small></div>
+    <div class="brand">FYI Coaches' Corner<span class="verBadge" id="verBadge" onclick="toggleChangelog()" title="Click for what's new">v1.09.49</span><small id="coachBadge"></small></div>
     <div class="who">
       <span id="whoEmail"></span>
       <button onclick="doLogout()">Sign out</button>
@@ -396,43 +439,47 @@ function copySupervisionEmail(clientId){
   } else { fallback(); }
 }
 
-const APP_VERSION = '1.09.48';
+const APP_VERSION = '1.09.49';
 /* Coach chips on the Clients tab. Edit these when the team changes. */
 const CURRENT_COACHES = ['Ben','Belinda'];
 const RETIRED_COACHES = ['Helen'];
 /* Coaches Ben can share a client with. Must match the options on the Clients > Shared With field in Airtable. */
 const SHARE_COACHES = ['Belinda'];
 const RELEASES = [
-  {v:'1.09.48', d:'23/10/2026', t:'Guardian SOP and the book linked', items:[
+  {v:'1.09.49', d:'23/10/2026', t:'New look to match the Dalio Loop console', items:[
+    'Dark header with a gold rule, underline tabs with a gold active marker, white rounded cards, Montserrat throughout, one FYI palette across every tab.',
+    'Bigger, clearer headings and body text, outlined header buttons, gold-edged notices and rounded inputs. Nothing about how the app works has changed.'
+  ]},
+  {v:'1.09.49', d:'23/10/2026', t:'Guardian SOP and the book linked', items:[
     'Install the Guardian app on your phone now opens a new step by step procedure for iPhone and Android.',
     'Navigating the Finance Maze now opens the PDF in Coaching Resources.'
   ]},
-  {v:'1.09.48', d:'23/10/2026', t:'Onboarding documents name Ben or Belinda', items:[
+  {v:'1.09.49', d:'23/10/2026', t:'Onboarding documents name Ben or Belinda', items:[
     'The Welcome document and the Mercury admin access procedure now say the onboarding meeting is run by Ben or Belinda, and that whichever is the mentee\u2019s mentor receives Mercury admin access. Both have a gap after every bullet. Coaching Resources links updated.'
   ]},
-  {v:'1.09.48', d:'23/10/2026', t:'Welcome document spacing', items:[
+  {v:'1.09.49', d:'23/10/2026', t:'Welcome document spacing', items:[
     'The Welcome document now has a clear gap after every bullet. The three Start here links open the updated version.'
   ]},
-  {v:'1.09.48', d:'23/10/2026', t:'Welcome document linked', items:[
+  {v:'1.09.49', d:'23/10/2026', t:'Welcome document linked', items:[
     'Welcome to FYI Business Coaching, The FYI Method at a glance and Who to ask now open the new dated Welcome document in Coaching Resources: who we are, who we serve, how we coach, how a mentee moves through the program, and who to ask.'
   ]},
-  {v:'1.09.48', d:'23/10/2026', t:'Coach Training is now Coaching Resources', items:[
+  {v:'1.09.49', d:'23/10/2026', t:'Coach Training is now Coaching Resources', items:[
     'The Coach Training tab is renamed Coaching Resources.',
     'The Open the Coaching Resources folder button now goes to the new Coaching Resources folder in Google Drive, which holds the dated Mercury admin access SOP.'
   ]},
-  {v:'1.09.48', d:'23/10/2026', t:'Mercury admin SOP link updated', items:[
+  {v:'1.09.49', d:'23/10/2026', t:'Mercury admin SOP link updated', items:[
     'The Mercury admin access instructions now open the dated version of the procedure (created 23 October 2026), with FYI branding and logo.'
   ]},
-  {v:'1.09.48', d:'23/10/2026', t:'Coach Training: LastPass and Guardian first', items:[
+  {v:'1.09.49', d:'23/10/2026', t:'Coach Training: LastPass and Guardian first', items:[
     'Start here now opens with Install LastPass and Install the Guardian app, ahead of everything else.',
     'The Mercury admin access instructions now link to the new FYI branded procedure, which notes that the support team does this and coaches do not need to.'
   ]},
-  {v:'1.09.48', d:'23/10/2026', t:'Commercial Know How course viewer', items:[
+  {v:'1.09.49', d:'23/10/2026', t:'Commercial Know How course viewer', items:[
     'Clients tagged Commercial now show Commercial Know How in place of First 30 Days: the onboarding card, then Part A (Background Knowledge, A01 to A11) and Part B (Processes, Policies and Systems, B12 to B22) in the same card layout.',
     'Each module carries Belinda\u2019s manuscript text as written, with a Covered with this mentee tick that saves to a new Airtable field, Commercial Progress. B21, B22 and the onboarding card show Content to come until Belinda writes them.',
     'New Lending type selector in the Engagement panel (Resi, Commercial, BOP). Set it to Commercial to switch a client over.'
   ]},
-  {v:'1.09.48', d:'20/10/2026', t:'Fixed dead filter buttons after an empty result', items:[
+  {v:'1.09.49', d:'20/10/2026', t:'Fixed dead filter buttons after an empty result', items:[
     'Picking a filter that returned no clients (Belinda\u2019s chip while she has none) switched every other filter, search and sort control off until a reload. The empty message was rebuilding the page and wiping its click handlers. Same fix applied to an empty Prospects list and to the SOP group headings.'
   ]},
   {v:'1.09.39', d:'20/10/2026', t:'Share a client with another coach', items:[
