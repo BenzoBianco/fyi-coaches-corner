@@ -27,7 +27,9 @@ const FIELD_MAP = {
   keyDateLabel: 'Key Date Label',
   keyDateValue: 'Key Date Value',
   nextAction:   'Next Action',
-  log:          'Contact Log'
+  log:          'Contact Log',
+  archived:     'Archived',
+  retired:      'Retired'
 };
 
 async function findRecord(base, pat, name) {

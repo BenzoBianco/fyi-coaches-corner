@@ -135,7 +135,8 @@ function mapRelationship(r) {
     keyDateValue: f['Key Date Value'] || '',
     nextAction: f['Next Action'] || '',
     log: f['Contact Log'] || '',
-    archived: !!f['Archived']
+    archived: !!f['Archived'],
+    retired: !!f['Retired']
   };
 }
 
