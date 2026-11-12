@@ -47,6 +47,13 @@ export default async (req, context) => {
      must name one, same as it must for Ben. */
   fields['Coach'] = principal ? (body.coach || coach || '') : coach;
 
+  /* A client with no Status fails the Clients tab's default 'Active roster'
+     filter (clientStatus === 'Active'), so it was created in Airtable and
+     then vanished from the coach's screen. Belinda created the same client
+     twice on 12 Nov 2026 because of this. Default it here, and the coach can
+     change it on the file. */
+  if (!fields['Status']) fields['Status'] = 'Active';
+
   try {
     const res = await fetch(`https://api.airtable.com/v0/${base}/${CLIENTS}`, {
       method: 'POST',
